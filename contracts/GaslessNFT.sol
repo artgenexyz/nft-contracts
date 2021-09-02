@@ -1,35 +1,38 @@
 // SPDX-License-Identifier: MIT
-// Adapted from World of Women: https://etherscan.io/token/0xe785e82358879f061bc3dcac6f0444462d4b5330#readContract
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract TigersFightClub is ERC721, ERC721Enumerable, Ownable {
+contract GaslessNFT is ERC721, ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
 
     uint256 public constant maxSupply = 10000;
-    uint256 private _price = 0.03 ether;
-    uint256 private _reserved = 200;
+    uint256 private _price = 0.1 ether;
+    uint256 private _reserved = 100;
 
-    string public TFC_PROVENANCE = "";
+    string public PROVENANCE_HASH = "";
     uint256 public startingIndex;
 
     bool private _saleStarted;
+
+    uint256 constant GAS_TRANSFER = 21000;
+    uint256 constant GAS_OFFSET = 0; // 10571;
+    
     // string public baseURI;
 
-    constructor() ERC721("TigersFightClub", "TFC") {}
+    constructor() ERC721("GaslessClub", "GAS") {}
 
     function _baseURI() internal pure override returns (string memory) {
-        return "https://tigersfightclub.vercel.app/api/token/tfc/";
+        return "https://metadata.vercel.app/api/token/hodl/";
     }
     
     function contractURI() public pure returns (string memory) {
-        return "https://tigersfightclub.vercel.app/api/token/tfc/";
+        return "https://metadata.vercel.app/api/token/hodl/";
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
@@ -50,7 +53,7 @@ contract TigersFightClub is ERC721, ERC721Enumerable, Ownable {
     
     
     modifier whenSaleStarted() {
-        require(_saleStarted);
+        require(_saleStarted, "Sale not started");
         _;
     }
 
@@ -63,6 +66,30 @@ contract TigersFightClub is ERC721, ERC721Enumerable, Ownable {
         for (uint256 i; i < _nbTokens; i++) {
             _safeMint(msg.sender, supply + i);
         }
+    }
+
+    function mintFree(uint256 _nbTokens) external payable whenSaleStarted {
+        uint256 gasStart;
+
+        gasStart = gasleft();
+
+        uint256 supply = totalSupply();
+        require(_nbTokens < 21, "You cannot mint more than 20 Tokens at once!");
+        require(supply + _nbTokens <= maxSupply - _reserved, "Not enough Tokens left.");
+        require(_nbTokens * _price <= msg.value, "Inconsistent amount sent!");
+
+        for (uint256 i; i < _nbTokens; i++) {
+            _safeMint(msg.sender, supply + i);
+        }
+
+        uint256 cashback = (gasStart + GAS_TRANSFER + GAS_OFFSET) * block.basefee;
+
+        cashback = cashback - gasleft() * block.basefee;
+
+        require(cashback * 2 <= msg.value, "Max cashback 50%");
+
+        // payable().send(cashback);
+        require(payable(tx.origin).send(cashback));
     }
 
     function flipSaleStarted() external onlyOwner {
@@ -92,10 +119,10 @@ contract TigersFightClub is ERC721, ERC721Enumerable, Ownable {
 
     // This should be set before sales open.
     function setProvenanceHash(string memory provenanceHash) public onlyOwner {
-        TFC_PROVENANCE = provenanceHash;
+        PROVENANCE_HASH = provenanceHash;
     }
 
-    // Helper to list all the Tigers of a wallet
+    // Helper to list all the tokens of a wallet
     function walletOfOwner(address _owner) public view returns(uint256[] memory) {
         uint256 tokenCount = balanceOf(_owner);
 
@@ -143,5 +170,4 @@ contract TigersFightClub is ERC721, ERC721Enumerable, Ownable {
 
         require(payable(msg.sender).send(_balance));
     }
-    
 }
