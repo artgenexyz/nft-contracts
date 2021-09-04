@@ -53,10 +53,11 @@ contract("GaslessNFT", function (accounts) {
   });
 
   // test that the contract is able to transfer a token
-  xit("should transfer a token", async function () {
+  it("should transfer a token", async function () {
     const contract = await GaslessNFT.deployed();
-    const tokenId = await contract.mint({ from: accounts[0] });
-    await contract.transfer(accounts[1], tokenId, { from: accounts[0] });
+    const tokenId = 0;
+    await contract.mint(1, { from: accounts[0], value: 0.1 * ether });
+    await contract.transferFrom(accounts[0], accounts[1], tokenId, { from: accounts[0] });
     assert.equal(await contract.ownerOf(tokenId), accounts[1]);
   });
 
@@ -91,7 +92,7 @@ contract("GaslessNFT", function (accounts) {
     console.log('balanceDifference', balanceAfter - balanceBefore, 'wei');
 
     // output balance difference in ether
-    console.log('balanceDifference', (balanceAfter - balanceBefore) / ether, 'ether');
+    console.log('balanceDifference', (balanceAfter - balanceBefore) / ether, '%');
 
     // check that balance difference before and after transaction is less than 0.001 ether
     assert.isBelow(balanceAfter - balanceBefore, 0.001);
