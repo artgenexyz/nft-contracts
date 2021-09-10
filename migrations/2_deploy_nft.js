@@ -5,7 +5,7 @@ const BurnNFT = artifacts.require("BurnNFT");
 const TemplateNFT = artifacts.require("TemplateNFT");
 
 module.exports = function (deployer) {
-  deployer.deploy(AvatarNFT, "30000000000000000", 200, 500, 20, "https://metadata.buildship.dev/", "Avatar Collection NFT", "NFT");
+  deployer.deploy(AvatarNFT, "30000000000000000", 500, 200, 20, "https://metadata.buildship.dev/", "Avatar Collection NFT", "NFT");
 
   deployer.deploy(GaslessNFT);
   deployer.deploy(BurnNFT);

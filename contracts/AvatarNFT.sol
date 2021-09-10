@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
-    uint256 private _price; // = 0.03 ether;
-    uint256 private _reserved; // = 200;
+    uint256 internal _price; // = 0.03 ether;
+    uint256 internal _reserved; // = 200;
 
     uint256 public MAX_SUPPLY; // = 10000;
     uint256 public MAX_TOKENS_PER_MINT; // = 20;
@@ -22,8 +22,9 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     string public baseURI;
 
     constructor(
-        uint256 _startPrice, uint256 _nReserved,
-        uint256 _maxSupply, uint256 _maxTokensPerMint,
+        uint256 _startPrice, uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxTokensPerMint,
         string memory _uri,
         string memory _name, string memory _symbol
     ) ERC721(_name, _symbol) {
@@ -84,7 +85,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
     function mint(uint256 _nbTokens) external payable whenSaleStarted whenSaleAllowed(msg.sender) {
         uint256 supply = totalSupply();
-        require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than 20 Tokens at once!");
+        require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
         require(supply + _nbTokens <= MAX_SUPPLY - _reserved, "Not enough Tokens left.");
         require(_nbTokens * _price <= msg.value, "Inconsistent amount sent!");
 

@@ -12,7 +12,7 @@ contract AvatarNFTWithMintPass is AvatarNFT {
 
     address public constant MINT_PASS_ADDRESS = 0x0000000000000000000000000000000000000000;
 
-    constructor() AvatarNFT(0.03 ether, 10, 100, 20, "https://", "Avatar With Mint Pass", "PASS") {}
+    constructor() AvatarNFT(0.03 ether, 100, 5, 5, "https://mintpass.io", "Avatar With Mint Pass", "PASS") {}
 
     function _checkSaleAllowed(address _to)
         internal
