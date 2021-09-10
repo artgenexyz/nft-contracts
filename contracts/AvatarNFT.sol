@@ -8,22 +8,31 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
-    uint256 private _price = 0.03 ether;
-    uint256 private _reserved = 200;
+    uint256 private _price; // = 0.03 ether;
+    uint256 private _reserved; // = 200;
 
-    uint256 public constant MAX_SUPPLY = 10000;
-    uint256 public constant MAX_TOKENS_PER_MINT = 20;
+    uint256 public MAX_SUPPLY; // = 10000;
+    uint256 public MAX_TOKENS_PER_MINT; // = 20;
 
     uint256 public startingIndex;
-
-    address public constant MINT_PASS_ADDRESS = 0x0000000000000000000000000000000000000000;
 
     bool private _saleStarted;
 
     string public PROVENANCE_HASH = "";
-    string public baseURI = "https://metadata.buildship.dev/api/token/NFT/";
+    string public baseURI;
 
-    constructor() ERC721("Avatar Collection NFT", "NFT") {}
+    constructor(
+        uint256 _startPrice, uint256 _nReserved,
+        uint256 _maxSupply, uint256 _maxTokensPerMint,
+        string memory _uri,
+        string memory _name, string memory _symbol
+    ) ERC721(_name, _symbol) {
+        _price = _startPrice;
+        _reserved = _nReserved;
+        MAX_SUPPLY = _maxSupply;
+        MAX_TOKENS_PER_MINT = _maxTokensPerMint;
+        baseURI = _uri;
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
@@ -52,19 +61,28 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     {
         return super.supportsInterface(interfaceId);
     }
-    
-    
+
+    function _checkSaleAllowed(address)
+        internal
+        view
+        virtual
+        returns (bool)
+    {
+        // override this if you need custom logic
+        return true;
+    }
+
     modifier whenSaleStarted() {
         require(_saleStarted, "Sale not started");
         _;
     }
 
-    modifier withMintPass() {
-        // empty. See AvatarNFTWithMintPass.sol
+    modifier whenSaleAllowed(address _to) {
+        require(_checkSaleAllowed(_to), "Sale not allowed");
         _;
     }
 
-    function mint(uint256 _nbTokens) external payable whenSaleStarted withMintPass {
+    function mint(uint256 _nbTokens) external payable whenSaleStarted whenSaleAllowed(msg.sender) {
         uint256 supply = totalSupply();
         require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than 20 Tokens at once!");
         require(supply + _nbTokens <= MAX_SUPPLY - _reserved, "Not enough Tokens left.");
