@@ -5,7 +5,7 @@ import "./AvatarNFT.sol";
 
 contract TextApesNFT is AvatarNFT {
 
-    constructor() AvatarNFT(0.05 ether, 100, 5, 5, "https://buildship-metadata-6zjvb4idy-caffeinum.vercel.app/api/token/textapes/", "Text Apes", "TEXTAPES") {}
+    constructor() AvatarNFT(0.05 ether, 100, 5, 5, "https://buildship-metadata-6xz0ctx2i-caffeinum.vercel.app/api/token/textapes/", "Text Apes", "TEXTAPES") {}
 
     function upgradeMaxSupply(uint256 newSupply) external onlyOwner {
         require(newSupply > MAX_SUPPLY, "You can only increase maxSupply");
