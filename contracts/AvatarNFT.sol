@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// Want to launch your own collection ? Check out https://buildship.dev
 contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
     uint256 internal _price; // = 0.03 ether;
