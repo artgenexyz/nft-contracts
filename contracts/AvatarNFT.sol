@@ -17,6 +17,8 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
     uint256 public startingIndex;
 
+    address payable beneficiary;
+
     bool private _saleStarted;
 
     string public PROVENANCE_HASH = "";
@@ -46,6 +48,13 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
 
     function setBaseURI(string calldata uri) public onlyOwner {
         baseURI = uri;
+    }
+
+    function setBeneficiary(address payable _beneficiary) public onlyOwner {
+        // require non set
+        require(beneficiary == address(0));
+
+        beneficiary = _beneficiary;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
@@ -84,7 +93,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         _;
     }
 
-    function mint(uint256 _nbTokens) external payable whenSaleStarted whenSaleAllowed(msg.sender) {
+    function mint(uint256 _nbTokens) whenSaleStarted whenSaleAllowed(msg.sender) external payable virtual {
         uint256 supply = totalSupply();
         require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
         require(supply + _nbTokens <= MAX_SUPPLY - _reserved, "Not enough Tokens left.");
@@ -147,7 +156,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         _reserved = _reserved - _number;
     }
 
-    function setStartingIndex() public {
+    function setStartingIndex() public virtual {
         require(startingIndex == 0, "Starting index is already set");
 
         // BlockHash only works for the most 256 recent blocks.
@@ -169,9 +178,11 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     }
 
     function withdraw() public onlyOwner {
+        require(beneficiary != address(0), "Beneficiary not set");
+
         uint256 _balance = address(this).balance;
 
-        require(payable(msg.sender).send(_balance));
+        require(payable(beneficiary).send(_balance));
     }
 
     
