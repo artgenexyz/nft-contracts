@@ -1,3 +1,5 @@
+const { expectRevert } = require("@openzeppelin/test-helpers");
+
 const AvatarNFT = artifacts.require("AvatarNFT");
 
 const ether = 1e18;
@@ -104,15 +106,52 @@ contract("AvatarNFT", accounts => {
         }
     });
 
-    it("should not be able to mint more than 500 tokens, when 500 tokens are minted, it should fail", async () => {
+    // it should not be able to call withdraw from owner account
+    it("should be able to call withdraw from owner account", async () => {
         const nft = await AvatarNFT.deployed();
+
+        expectRevert(
+            nft.withdraw(),
+            "Beneficiary not set"
+        )
+    });
+    // it should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner
+    xit("should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner", async () => {
+        const nft = await AvatarNFT.deployed();
+
+        // save owner's balance and beneficiary's balance before withdraw
+        const ownerBalance = await web3.eth.getBalance(accounts[0]);
+        const beneficiaryBalance = await web3.eth.getBalance(accounts[1]);
+
+        // setBeneficiary
+        await nft.setBeneficiary(accounts[1], { from: accounts[0] });
+        // withdraw
+        const tx = await nft.withdraw({ from: accounts[1] });
+        assert.ok(tx);
+
+        // check that owner balance is not changed
+        assert(ownerBalance.toString() === await web3.eth.getBalance(accounts[0]).toString());
+        // check that beneficiary balance is increased
+        assert(
+            beneficiaryBalance.toString().lt(
+                await web3.eth.getBalance(accounts[1]).toString()
+            )
+        );
+
+    });
+
+
+    it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
+        const nft = await AvatarNFT.new("1000000000000000", 200, 40, 20, "https://metadata.buildship.dev/", "Avatar Collection NFT", "NFT");
+
+        await nft.flipSaleStarted();
 
         // set price to 0.0001 ether
         await nft.setPrice(0.0001 * ether);
 
-        // try minting 20 * 101 tokens, which is more than the max allowed
+        // try minting 20 * 20 tokens, which is more than the max allowed (200)
         try {
-            await Promise.all(Array(50).fill().map(() =>
+            await Promise.all(Array(20).fill().map(() =>
                 nft.mint(20, { from: accounts[0], value: 0.0001 * 20 * ether })
             ));
         } catch (error) {
