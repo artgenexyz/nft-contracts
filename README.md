@@ -38,7 +38,7 @@ truffle test
 
 ```bash
 truffle migrate --network rinkeby
-truffle run verify SubscriptionManager --network rinkeby
+truffle run verify MoonNFT --network rinkeby
 ```
 
 ### Bonus

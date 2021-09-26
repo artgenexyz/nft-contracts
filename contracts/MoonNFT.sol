@@ -24,10 +24,10 @@ contract MoonNFT is ReferralNFT {
     ) {}
 
     function getPrice(Tier tier) public view returns (uint256) {
-        if (tier == Tier.President) return 100 ether;
-        if (tier == Tier.Prestige) return 50 ether;
-        if (tier == Tier.VIP) return 25 ether;
-        if (tier == Tier.Elite) return 10 ether;
+        if (tier == Tier.President) return 5 ether;
+        if (tier == Tier.Prestige) return 1 ether;
+        if (tier == Tier.VIP) return 0.5 ether;
+        if (tier == Tier.Elite) return 0.2 ether;
 
         return getPrice();
     }
@@ -79,7 +79,7 @@ contract MoonNFT is ReferralNFT {
         require(false, "Not implemented");
     }
 
-    function mintReferral(Tier tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
+    function mintTierReferral(Tier tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
         uint256 supply = getSupply(tier);
         uint256 price = getPrice(tier);
         uint256 start;
@@ -90,6 +90,8 @@ contract MoonNFT is ReferralNFT {
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
         for (uint256 i; i < nTokens; i++) {
+            // Be careful! Should always update tierSupply when minting!
+            tierSupply[tier] += 1;
             _safeMint(msg.sender, start + supply + i);
         }
 
