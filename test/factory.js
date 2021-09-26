@@ -23,6 +23,7 @@ contract("NFTFactory", accounts => {
         assert.ok(factory.address);
     });
 
+    // TODO: test that deployed NFTs have different owners
 
-
+    // TODO: test factory
 })
