@@ -2,7 +2,7 @@ const NFTFactory = artifacts.require("NFTFactory");
 
 module.exports = async function (deployer) {
 
-  deployer.deploy(NFTFactory);
+  await deployer.deploy(NFTFactory);
 
   // const factory = await NFTFactory.deployed();
 
