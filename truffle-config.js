@@ -51,7 +51,7 @@ module.exports = {
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       skipDryRun: true,
       // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      // networkCheckTimeout: 10000, // If you have a slow internet connection, try configuring a longer timeout in your Truffle config.
+      networkCheckTimeout: 30000, // If you have a slow internet connection, try configuring a longer timeout in your Truffle config.
     },
     polygon: {
       provider: () => new HDWalletProvider({
@@ -88,6 +88,7 @@ module.exports = {
   },
   plugins: [
     'truffle-plugin-verify',
+    'solidity-coverage',
   ],
 
   api_keys: {
