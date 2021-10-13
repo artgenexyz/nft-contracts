@@ -4,3 +4,8 @@ node_modules
 
 .env
 .mnemonic
+
+coverage
+coverage.json
+
+.coverage_*

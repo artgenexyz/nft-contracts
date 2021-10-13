@@ -71,7 +71,8 @@ contract("GaslessNFT", function (accounts) {
 
 
   // test that it can mint token and the amount of ether transferred approximates the cost of the transaction
-  it("should mint a token and the amount of ether transferred approximates the cost of the transaction", async function () {
+  it("should mint a token and the amount of ether transferred approximates the cost of the transaction [ @skip-on-coverage ]", async function () {
+
     const contract = await GaslessNFT.deployed();
 
     // get account balance before the transaction and save
