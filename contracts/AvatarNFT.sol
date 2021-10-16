@@ -88,12 +88,13 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         _;
     }
 
+    // TODO: NOT USED ANYWHERE, ALSO INCONSISTENT LOGIC. REMOVE?
     modifier whenSaleAllowed(address _to) {
         require(_checkSaleAllowed(_to), "Sale not allowed");
         _;
     }
 
-    function mint(uint256 _nbTokens) whenSaleStarted whenSaleAllowed(msg.sender) external payable virtual {
+    function mint(uint256 _nbTokens) whenSaleStarted whenSaleAllowed(msg.sender) public payable virtual {
         uint256 supply = totalSupply();
         require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
         require(supply + _nbTokens <= MAX_SUPPLY - _reserved, "Not enough Tokens left.");
@@ -105,6 +106,8 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     }
 
     function flipSaleStarted() external onlyOwner {
+        require(beneficiary != address(0), "Beneficiary not set");
+
         _saleStarted = !_saleStarted;
 
         if (_saleStarted && startingIndex == 0) {
@@ -117,15 +120,15 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     }
 
     // Make it possible to change the price: just in case
-    function setPrice(uint256 _newPrice) external onlyOwner {
+    function setPrice(uint256 _newPrice) external virtual onlyOwner {
         _price = _newPrice;
     }
 
-    function getPrice() public view returns (uint256){
+    function getPrice() public view virtual returns (uint256){
         return _price;
     }
 
-    function getReservedLeft() public view returns (uint256) {
+    function getReservedLeft() public view virtual returns (uint256) {
         return _reserved;
     }
 
@@ -145,7 +148,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         return tokensId;
     }
 
-    function claimReserved(uint256 _number, address _receiver) external onlyOwner {
+    function claimReserved(uint256 _number, address _receiver) external onlyOwner virtual {
         require(_number <= _reserved, "That would exceed the max reserved.");
 
         uint256 _tokenId = totalSupply();
@@ -177,7 +180,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         }
     }
 
-    function withdraw() public onlyOwner {
+    function withdraw() public virtual onlyOwner {
         require(beneficiary != address(0), "Beneficiary not set");
 
         uint256 _balance = address(this).balance;
@@ -185,5 +188,5 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         require(payable(beneficiary).send(_balance));
     }
 
-    
+
 }

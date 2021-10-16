@@ -31,6 +31,8 @@ contract("TemplateNFT", accounts => {
     // it should mint successfully
     it("should mint successfully when sale is started", async () => {
         const nft = await TemplateNFT.deployed();
+        // setBeneficiary
+        await nft.setBeneficiary(accounts[1]);
         // flipSaleStarted
         await nft.flipSaleStarted();
         // mint
