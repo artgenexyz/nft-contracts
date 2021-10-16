@@ -1,3 +1,5 @@
+const { assert } = require("chai");
+
 const GaslessNFT = artifacts.require("GaslessNFT");
 
 const ether = 1e18;
@@ -6,7 +8,9 @@ const ether = 1e18;
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("GaslessNFT", function (accounts) {
+contract("GaslessNFT", function (accounts, network) {
+  const [ owner, beneficiary ] = accounts;
+
   it("should assert true", async function () {
     await GaslessNFT.deployed();
     return assert.isTrue(true);
@@ -21,6 +25,7 @@ contract("GaslessNFT", function (accounts) {
   // test that after you flip sale started, saleStarted is true
   it("should flip sale started", async function () {
     const contract = await GaslessNFT.deployed();
+    await contract.setBeneficiary(beneficiary, {from: owner});
     await contract.flipSaleStarted();
     const saleStarted = await contract.saleStarted();
     assert.equal(saleStarted, true);
