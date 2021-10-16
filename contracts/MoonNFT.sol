@@ -2,108 +2,86 @@
 pragma solidity ^0.8.2;
 
 import "./ReferralNFT.sol";
+import "./TierNFT.sol";
 
-enum Tier {
-    Standard, // default
-    Elite,
-    VIP,
-    Prestige,
-    President
-}
+contract MoonNFT is ReferralNFT, TierNFT {
 
-contract MoonNFT is ReferralNFT {
-    mapping (Tier => uint256) tierSupply;
+    constructor()
+        AvatarNFT(
+            0.08 ether, // starting price
+            10000, // total
+            0, // reserved
+            20, // max tokens per mint
+            "https://buildship-metadata-caffeinum-buildship.vercel.app/api/token/moon/",
+            "NFT Moon Metaverse", "MOON"
+        )
+        ReferralNFT(3000 /* referral fee in 0.01% */)
+        TierNFT() {
+        }
 
-    constructor() ReferralNFT(
-        0.05 ether, // starting price
-        10000, // total
-        0, // reserved
-        20, // max tokens per mint
-        200, // referral fee in 0.01%
-        "https://metadata.buildship.dev/api/token/moon", "NFT Moon Metaverse", "MOON"
-    ) {}
+    function initTiers() internal override {
+        // data from OpenSea minted tokens
+        _reservedByTier[Tier.Standard] = 50; // 50 or 67
+        _reservedByTier[Tier.Elite] = 15;
+        _reservedByTier[Tier.VIP] = 9;
+        _reservedByTier[Tier.Prestige] = 6;
+        _reservedByTier[Tier.President] = 3;
+        _reservedByTier[Tier.Genesis] = 1;
 
-    function getPrice(Tier tier) public view returns (uint256) {
-        if (tier == Tier.President) return 5 ether;
-        if (tier == Tier.Prestige) return 1 ether;
-        if (tier == Tier.VIP) return 0.5 ether;
-        if (tier == Tier.Elite) return 0.2 ether;
+        _priceByTier[Tier.Standard] = 0.08 ether;
+        _priceByTier[Tier.Elite] = 0.2 ether;
+        _priceByTier[Tier.VIP] = 0.3 ether;
+        _priceByTier[Tier.Prestige] = 0.7 ether;
+        _priceByTier[Tier.President] = 1.2 ether;
+        _priceByTier[Tier.Genesis] = 100 ether; // isn't used, because only 1 and it's reserved
 
-        return getPrice();
+        _tierRanges[Tier.Genesis] = Range(0, 0);
+        _tierRanges[Tier.President] = Range(1, 10);
+        _tierRanges[Tier.Prestige] = Range(11, 110);
+        _tierRanges[Tier.VIP] = Range(111, 1110);
+        _tierRanges[Tier.Elite] = Range(1111, 3110);
+        _tierRanges[Tier.Standard] = Range(3111, 9999);
     }
 
-    // Ranges for the tokens:
-    // Only 10 tokens are President, tokenId = 0-9
-    // Only 100 tokens are Prestige, tokenId = 10-109
-    // Only 1000 tokens are VIP, tokenId = 110-1109
-    // Only 3000 tokens are Elite, tokenId = 1110-3109
-    // Other tokens are Standard, up to tokenId = 9999
-    function getRange(Tier tier) public pure returns (uint256, uint256) {
-        if (tier == Tier.President) return (1, 10);
-        if (tier == Tier.Prestige) return (11, 110);
-        if (tier == Tier.VIP) return (111, 1110);
-        if (tier == Tier.Elite) return (1111, 3110);
-        return (3111, 9999);
-    }
-
-    function getSupply(Tier tier) public view returns(uint256) {
-        return tierSupply[tier];
-    }
-
-    function getMaxSupply(Tier tier) public pure returns(uint256) {
-        if (tier == Tier.President) return 10;
-        if (tier == Tier.Prestige) return 100;
-        if (tier == Tier.VIP) return 1000;
-        if (tier == Tier.Elite) return 3000;
-        return 5889;
-    }
-
-    // function getNextTokenId(Tier tier) public view returns(uint256) {
-    //     uint256 start;
-    //     (start, ) = getRange(tier);
-
-    //     require(start + getSupply(tier) < getMaxSupply(tier), "Tier supply is full");
-    //     return start + getSupply(tier);
-    // }
-
-    function setStartingIndex() public override {
-        startingIndex = 0;
-    }
-
-    function mint(uint256) public payable override {
+    function mint(uint256, address payable) public payable override {
         require(false, "Not implemented");
     }
 
-    function mintReferral(uint256, address payable
-    ) public payable override {
+    function mint(Tier, uint256) public payable override {
         require(false, "Not implemented");
     }
 
-    function mintTierReferral(Tier tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
-        uint256 supply = getSupply(tier);
-        uint256 price = getPrice(tier);
-        uint256 start;
-        (start, ) = getRange(tier);
+    function mint(Tier tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
+        super.mint(tier, nTokens);
 
-        require(nTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
-        require(supply + nTokens <= getMaxSupply(tier), "Not enough Tokens left.");
-        require(nTokens * price <= msg.value, "Inconsistent amount sent!");
+        _updateReferral(nTokens, referral);
 
-        for (uint256 i; i < nTokens; i++) {
-            // Be careful! Should always update tierSupply when minting!
-            tierSupply[tier] += 1;
-            _safeMint(msg.sender, start + supply + i);
-        }
-
-        // Verify its correct referral
-        // Send referral amount
-        // TODO: check reentrancy
-        if (referral != msg.sender && referral != owner()) {
-            userTotalReferrals[referral] += nTokens;
-            pendingWithdrawals[referral] += msg.value * REFERRAL_PERCENT / 10000;
-        }
-
+        // Balance is transferred right away at purchase
+        require(payable(beneficiary).send(msg.value));
     }
 
+    // ------ Overrides FOR TierNFT
+
+    // Override works right-to-left, https://solidity-by-example.org/inheritance/
+    function getReservedLeft() public view override(AvatarNFT, TierNFT) returns(uint256) {
+        return super.getReservedLeft();
+    }
+
+    function getPrice() public view override(AvatarNFT, TierNFT) returns(uint256 price) {
+        return super.getPrice();
+    }
+
+    function claimReserved(uint256 nTokens, address receiver) public pure override(AvatarNFT, TierNFT) {
+        // require(false, "Not implemented");
+        super.claimReserved(nTokens, receiver);
+    }
+
+    function setStartingIndex() public override(AvatarNFT, TierNFT) {
+        super.setStartingIndex();
+    }
+
+    function mint(uint256 nTokens) public payable override(AvatarNFT, TierNFT) {
+        super.mint(nTokens);
+    }
 
 }
