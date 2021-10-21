@@ -123,8 +123,8 @@ contract("Market", function (accounts) {
 
   // prepare users: buy tokens from extras for each user
   it("should be possible to buy tokens from extras", async function () {
-    await extras.addItem("Skin", ether.muln(0.05), 100, { from: admin });
-    await extras.addItem("Weapon", ether.muln(0.01), 200, { from: admin });
+    await extras.addItem("Skin", "https://uri", ether.muln(0.05), 100, { from: admin });
+    await extras.addItem("Weapon", "https://uri", ether.muln(0.01), 200, { from: admin });
 
     await extras.startSaleAll({ from: admin });
 
