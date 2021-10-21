@@ -5,9 +5,9 @@ const AvatarNFT = artifacts.require("AvatarNFT");
 module.exports = async function(deployer) {
   // deployer.deploy(AvatarNFT, "30000000000000000", 500, 200, 20, "https://metadata.buildship.dev/", "Avatar Collection NFT", "NFT");
 
-  const mintPass = await AvatarNFT.new("3000000000000000", 500, 200, 20, "https://mintpass.io", "Test Mint Pass", "MINTPASS");
+  // const mintPass = await AvatarNFT.new("3000000000000000", 500, 200, 20, "https://mintpass.io", "Test Mint Pass", "MINTPASS");
 
-  await deployer.deploy(AmeegosExtras, mintPass.address);
+  await deployer.deploy(AmeegosExtras);
 
   const extras = await AmeegosExtras.deployed();
 
