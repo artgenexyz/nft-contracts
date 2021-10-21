@@ -39,10 +39,6 @@ contract AmeegosExtras is ERC1155, Ownable {
         ERC1155("https://metadata.buildship.dev/api/token/ameegos-extra/{id}")
     {}
 
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
-    }
-
     struct GameItem {
         uint256 price;
         uint256 maxSupply;
@@ -68,6 +64,18 @@ contract AmeegosExtras is ERC1155, Ownable {
         return _saleStarted[itemId];
     }
 
+    function contractURI() public pure returns (string memory output) {
+        string memory json = Base64.encode(bytes(string(abi.encodePacked(
+            '{',
+            '"name": "Ameegos Extra Items Collection",',
+            '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+            '"external_link": "https://ameegos.io"',
+            '}'
+        ))));
+
+        output = string(abi.encodePacked('data:application/json;base64,', json));
+    }
+
     function uri(uint256 tokenId) public view override returns (string memory output) {
         // on-chain metadata inspired by Loot https://etherscan.io/address/0xff9c1b15b16263c61d017ee9f65c50e4ae0113d7#code
 
@@ -76,7 +84,7 @@ contract AmeegosExtras is ERC1155, Ownable {
         string memory json = Base64.encode(bytes(string(abi.encodePacked(
             '{',
             '"name": "', item.name, '",',
-            '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt \n https://twitter.com/AmeegosOfficial \n https://ameegos.io/",',
+            '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
             '"image": "', item.imageUrl, '"',
             '}'
         ))));
