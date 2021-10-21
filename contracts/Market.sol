@@ -63,7 +63,10 @@ contract Market is ERC1155Holder, Ownable {
     function list(uint256 tokenId, uint256 amount, uint256 price) public {
         // transfer token from user
         require(tokenContract.balanceOf(msg.sender, tokenId) >= amount, "Not enough tokens");
-        tokenContract.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
+        require(tokenContract.isApprovedForAll(msg.sender, address(this)), "Cant list for sale if not approved for all");
+
+        // NO transfer, insteaf we just approve
+        // tokenContract.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
 
         // create selling offer
         Offer memory offer = Offer(price, amount, payable(msg.sender));
@@ -75,7 +78,7 @@ contract Market is ERC1155Holder, Ownable {
 
         require(offer.owner == msg.sender, "Only owner can unlist");
 
-        tokenContract.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
+        // tokenContract.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
 
         offer.amount -= amount;
 
@@ -93,13 +96,22 @@ contract Market is ERC1155Holder, Ownable {
         // check user passed enough ETH
         require(msg.value >= offer.price * amount, "Not enough ETH");
 
+        if(!tokenContract.isApprovedForAll(offer.owner, address(this))) {
+            delete offers[tokenId];
+            require(false, "Cant buy, offer is not valid");
+        }
+
         // transfer tokens to user
-        tokenContract.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
         offer.amount -= amount;
+        tokenContract.safeTransferFrom(offer.owner, msg.sender, tokenId, amount, "");
 
         // payout to buyer
         // TODO: hack, change to pendingWithdrawals
-        require(offer.owner.send(offer.price * amount));
+        uint256 rest = msg.value - offer.price * amount;
+        // TODO: take fee?
+
+        offer.owner.transfer(offer.price * amount);
+        payable(msg.sender).transfer(rest);
 
         // if no more tokens, remove offer
         if (offer.amount == 0) {
