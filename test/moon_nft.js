@@ -160,12 +160,12 @@ contract("MoonNFT", accounts => {
 
         await expectRevert(
             nft.getPrice(tier),
-            "revert"
+            "Invalid tier."
         );
 
         await expectRevert(
             nft.methods[MINT_TIER_REFERRAL](tier, 1, referral, { value: 0.08 * ether, from: buyer }),
-            "revert"
+            "Invalid tier."
         );
     });
 

@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.8;
 
 import "./AvatarNFT.sol";
 
-// TODO: refactor to support different tiers
-enum Tier {
-    Standard, // default
-    Elite,
-    VIP,
-    Prestige,
-    President,
-    Genesis
-}
+type TierId is uint8;
+
+// TODO: remove or store for reference in contract
+// struct TierInfo {
+//     string name;
+// }
 
 struct Range {
     uint128 start;
@@ -19,19 +16,28 @@ struct Range {
 }
 
 abstract contract TierNFT is AvatarNFT {
-    mapping (Tier => uint256) internal _supplyByTier;
+    mapping (TierId => uint256) internal _supplyByTier;
 
     // IMPORTANT: must be set in initTiers!
-    mapping (Tier => Range) internal _tierRanges;
-    mapping (Tier => uint256) internal _priceByTier;
-    mapping (Tier => uint256) internal _reservedByTier;
+    mapping (TierId => Range) internal _tierRanges;
+    mapping (TierId => uint256) internal _priceByTier;
+    mapping (TierId => uint256) internal _reservedByTier;
 
-    constructor () {
-        initTiers();
+    TierId immutable FIRST_TIER;
+    TierId immutable LAST_TIER;
 
-        for (uint256 i = uint(Tier.Standard); i < uint(Tier.Genesis); i++) {
-            Tier nextTier = Tier(i + 1);
-            Tier tier = Tier(i);
+    constructor (uint8 tierLength) {
+        initTiers(tierLength);
+
+        // TODO: check arrays have same length
+        // TODO: TEST the tiers you can create this way
+
+        FIRST_TIER = TierId.wrap(0);
+        LAST_TIER = TierId.wrap(tierLength - 1);
+
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i < TierId.unwrap(LAST_TIER); i++) {
+            TierId nextTier = TierId.wrap(i + 1);
+            TierId tier = TierId.wrap(i);
 
             // check that the tier ranges are sorted
             // but keep in mind they go backwards
@@ -45,14 +51,15 @@ abstract contract TierNFT is AvatarNFT {
         }
 
         // check that prices aren't zero
-        for (uint256 i = uint(Tier.Standard); i <= uint(Tier.Genesis); i++) {
-            Tier tier = Tier(i);
+
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i <= TierId.unwrap(LAST_TIER); i++) {
+            TierId tier = TierId.wrap(i);
             require(_priceByTier[tier] > 0, "Tier prices must be greater than zero");
         }
 
     }
 
-    function initTiers() internal virtual;
+    function initTiers(uint8 tierLength) internal virtual;
 
     // function getPrice(Tier tier) public view returns (uint256) {
     //     if (tier == Tier.Genesis) return 100 ether; // isn't used, because only 1 and it's reserved
@@ -123,10 +130,12 @@ abstract contract TierNFT is AvatarNFT {
     // }
 
     function getPrice() public view override virtual returns (uint256) {
-        return getPrice(Tier.Standard);
+        return getPrice(FIRST_TIER);
     }
 
-    function getPrice(Tier tier) public view returns (uint256) {
+    function getPrice(TierId tier) public view returns (uint256) {
+        require(TierId.unwrap(tier) >= TierId.unwrap(FIRST_TIER) && TierId.unwrap(tier) <= TierId.unwrap(LAST_TIER), "Invalid tier.");
+
         return _priceByTier[tier];
 
         // if (tier == Tier.Genesis) return 100 ether; // isn't used, because only 1 and it's reserved
@@ -144,7 +153,7 @@ abstract contract TierNFT is AvatarNFT {
     // Only 1000 tokens are VIP, tokenId = 110-1109
     // Only 3000 tokens are Elite, tokenId = 1110-3109
     // Other tokens are Standard, up to tokenId = 9999
-    function getRange(Tier tier) public view returns (uint256, uint256) {
+    function getRange(TierId tier) public view returns (uint256, uint256) {
         return (_tierRanges[tier].start, _tierRanges[tier].end);
 
         // if (tier == Tier.Genesis) return (0, 0);
@@ -155,11 +164,11 @@ abstract contract TierNFT is AvatarNFT {
         // return (3111, 9999);
     }
 
-    function getSupply(Tier tier) public view returns(uint256) {
+    function getSupply(TierId tier) public view returns(uint256) {
         return _supplyByTier[tier];
     }
 
-    function getMaxSupply(Tier tier) public view returns(uint256) {
+    function getMaxSupply(TierId tier) public view returns(uint256) {
         (uint256 start, uint256 end) = getRange(tier);
 
         return end - start + 1; // to include range start
@@ -176,8 +185,8 @@ abstract contract TierNFT is AvatarNFT {
         // total of reserved left
         uint256 total = 0;
 
-        for (uint256 i = uint(Tier.Standard); i <= uint(Tier.Genesis); i++) {
-            total += _reservedByTier[Tier(i)];
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i <= TierId.unwrap(LAST_TIER); i++) {
+            total += _reservedByTier[ TierId.wrap(i) ];
         }
 
         // total += _reservedByTier[Tier.Standard];
@@ -190,7 +199,7 @@ abstract contract TierNFT is AvatarNFT {
         return total;
     }
 
-    function getReservedLeft(Tier tier) public view returns(uint256) {
+    function getReservedLeft(TierId tier) public view returns(uint256) {
         return _reservedByTier[tier];
     }
 
@@ -203,7 +212,9 @@ abstract contract TierNFT is AvatarNFT {
         require(false, "Not implemented");
     }
 
-    function claimReserved(Tier tier, uint256 _number, address _receiver) public {
+    function claimReserved(TierId tier, uint256 _number, address _receiver) public {
+        require(TierId.unwrap(tier) >= TierId.unwrap(FIRST_TIER) && TierId.unwrap(tier) <= TierId.unwrap(LAST_TIER), "Invalid tier.");
+
         require(_number <= _reservedByTier[tier], "That would exceed the max reserved.");
 
         uint256 start;
@@ -223,7 +234,9 @@ abstract contract TierNFT is AvatarNFT {
         require(false, "Not implemented");
     }
 
-    function mint(Tier tier, uint256 nTokens) whenSaleStarted public payable virtual {
+    function mint(TierId tier, uint256 nTokens) whenSaleStarted public payable virtual {
+        require(TierId.unwrap(tier) >= TierId.unwrap(FIRST_TIER) && TierId.unwrap(tier) <= TierId.unwrap(LAST_TIER), "Invalid tier.");
+
         uint256 supply = getSupply(tier);
         uint256 price = getPrice(tier);
         uint256 start;

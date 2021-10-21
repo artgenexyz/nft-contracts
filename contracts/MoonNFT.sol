@@ -4,6 +4,15 @@ pragma solidity ^0.8.2;
 import "./ReferralNFT.sol";
 import "./TierNFT.sol";
 
+enum Tier {
+    Standard, // default
+    Elite,
+    VIP,
+    Prestige,
+    President,
+    Genesis
+}
+
 contract MoonNFT is ReferralNFT, TierNFT {
 
     constructor()
@@ -16,42 +25,43 @@ contract MoonNFT is ReferralNFT, TierNFT {
             "NFT Moon Metaverse", "MOON"
         )
         ReferralNFT(3000 /* referral fee in 0.01% */)
-        TierNFT() {
-        }
+        TierNFT(6)
+        {}
 
-    function initTiers() internal override {
+    function initTiers(uint8) internal override {
         // data from OpenSea minted tokens
-        _reservedByTier[Tier.Standard] = 50; // 50 or 67
-        _reservedByTier[Tier.Elite] = 15;
-        _reservedByTier[Tier.VIP] = 9;
-        _reservedByTier[Tier.Prestige] = 6;
-        _reservedByTier[Tier.President] = 3;
-        _reservedByTier[Tier.Genesis] = 1;
+        _reservedByTier[TierId.wrap(uint8(Tier.Standard))] = 50; // 50 or 67
+        _reservedByTier[TierId.wrap(uint8(Tier.Elite))] = 15;
+        _reservedByTier[TierId.wrap(uint8(Tier.VIP))] = 9;
+        _reservedByTier[TierId.wrap(uint8(Tier.Prestige))] = 6;
+        _reservedByTier[TierId.wrap(uint8(Tier.President))] = 3;
+        _reservedByTier[TierId.wrap(uint8(Tier.Genesis))] = 1;
 
-        _priceByTier[Tier.Standard] = 0.08 ether;
-        _priceByTier[Tier.Elite] = 0.2 ether;
-        _priceByTier[Tier.VIP] = 0.3 ether;
-        _priceByTier[Tier.Prestige] = 0.7 ether;
-        _priceByTier[Tier.President] = 1.2 ether;
-        _priceByTier[Tier.Genesis] = 100 ether; // isn't used, because only 1 and it's reserved
+        _priceByTier[TierId.wrap(uint8(Tier.Standard))] = 0.08 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Elite))] = 0.2 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.VIP))] = 0.3 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Prestige))] = 0.7 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.President))] = 1.2 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Genesis))] = 100 ether; // isn't used, because only 1 and it's reserved
 
-        _tierRanges[Tier.Genesis] = Range(0, 0);
-        _tierRanges[Tier.President] = Range(1, 10);
-        _tierRanges[Tier.Prestige] = Range(11, 110);
-        _tierRanges[Tier.VIP] = Range(111, 1110);
-        _tierRanges[Tier.Elite] = Range(1111, 3110);
-        _tierRanges[Tier.Standard] = Range(3111, 9999);
+        // inverted!
+        _tierRanges[TierId.wrap(uint8(Tier.Genesis))] = Range(0, 0);
+        _tierRanges[TierId.wrap(uint8(Tier.President))] = Range(1, 10);
+        _tierRanges[TierId.wrap(uint8(Tier.Prestige))] = Range(11, 110);
+        _tierRanges[TierId.wrap(uint8(Tier.VIP))] = Range(111, 1110);
+        _tierRanges[TierId.wrap(uint8(Tier.Elite))] = Range(1111, 3110);
+        _tierRanges[TierId.wrap(uint8(Tier.Standard))] = Range(3111, 9999);
     }
 
     function mint(uint256, address payable) public payable override {
         require(false, "Not implemented");
     }
 
-    function mint(Tier, uint256) public payable override {
+    function mint(TierId, uint256) public payable override {
         require(false, "Not implemented");
     }
 
-    function mint(Tier tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
+    function mint(TierId tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
         super.mint(tier, nTokens);
 
         _updateReferral(nTokens, referral);
