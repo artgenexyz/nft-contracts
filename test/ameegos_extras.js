@@ -12,7 +12,7 @@ const AmeegosExtras = artifacts.require("AmeegosExtras");
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
 contract("AmeegosExtras", function (accounts) {
-  const [ owner, user1, user2 ] = accounts;
+  const [ owner, user1, user2, user3 ] = accounts;
 
   it("should assert true", async function () {
     await AmeegosExtras.deployed();
@@ -69,7 +69,7 @@ contract("AmeegosExtras", function (accounts) {
 
     assert(totalItems, 0, "there should be no items until we create");
 
-    await extras.addItem("Test Item", 1e18.toString(), 1000, false);
+    await extras.addItem("Test Item", "https://uri", 1e18.toString(), 1000, false);
 
     const totalItems2 = await extras.totalItems();
 
@@ -102,9 +102,9 @@ contract("AmeegosExtras", function (accounts) {
 
     const totalItems = await extras.totalItems();
 
-    await extras.addItem("Lizard Skin", (10 * 1e16).toString(), 100, true);
-    await extras.addItem("Stone Armour", (5 * 1e16).toString(), 200, true);
-    await extras.addItem("Golden Sword", (20 * 1e16).toString(), 50, true);
+    await extras.addItem("Lizard Skin", "https://uri", (10 * 1e16).toString(), 100, true);
+    await extras.addItem("Stone Armour", "https://uri", (5 * 1e16).toString(), 200, true);
+    await extras.addItem("Golden Sword", "https://uri", (20 * 1e16).toString(), 50, true);
 
     const totalItems2 = await extras.totalItems();
 
@@ -137,7 +137,7 @@ contract("AmeegosExtras", function (accounts) {
     const totalItems = await extras.totalItems();
 
     try {
-      await extras.addItem("Test Item", 1e18.toString(), 0, true);
+      await extras.addItem("Test Item", "https://uri", 1e18.toString(), 0, true);
     } catch (error) {
       // Error message should include "Invalid maxSupply"
       assert.include(error.message, "Invalid maxSupply");
@@ -182,9 +182,11 @@ contract("AmeegosExtras", function (accounts) {
 
     const extras = await AmeegosExtras.deployed();
 
-    const itemId = 2; // Stone Armour
+    const itemId = 4; // Incredible Capricorn
 
-    await extras.buyItem(2, 200, { from: user1, value: 200 * 5 * 1e16 });
+    await extras.addItem("Incredible Capricorn", "https://uri", (2 * 1e16).toString(), 200, true);
+
+    await extras.buyItem(4, 200, { from: user1, value: 200 * 2 * 1e16 });
 
     // check item.mintedSupply equals to item.maxSupply
 
@@ -195,7 +197,7 @@ contract("AmeegosExtras", function (accounts) {
     // check that can't buy more
 
     try {
-      await extras.buyItem(2, 1, { from: user1, value: 5 * 1e16 });
+      await extras.buyItem(4, 1, { from: user1, value: 2 * 1e16 });
     } catch (err) {
       // should include "Out of stock"
       assert.include(err.message, "Out of stock");
@@ -253,19 +255,15 @@ contract("AmeegosExtras", function (accounts) {
 
   });
 
-  // it should be able to update URI
-  it("should be able to update URI", async function () {
+
+  it("should be able to call URI", async function () {
     const extras = await AmeegosExtras.deployed();
 
-    const newURI = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-
-    await extras.setURI(newURI, { from: owner });
-
-    const itemId = 2; // Stone Armour, but URI is the same for all items
+    const itemId = 2; // Stone Armour
 
     const uri = await extras.uri(itemId);
 
-    assert.equal(uri, newURI, "URI should be updated");
+    assert.include(uri, 'application/json', "URI should encode json into base64");
 
   });
 
@@ -283,6 +281,23 @@ contract("AmeegosExtras", function (accounts) {
     }
   });
 
+  // it should be able to buyItemBatch
+  it("should be able to buyItemBatch", async function () {
+    const extras = await AmeegosExtras.deployed();
 
+    const itemIds = [1, 2]; // Lizard Skin, Stone Armour
+
+    const amounts = [5, 5]; // 5 Lizard Skin, 5 Stone Armour
+
+    const total = 5 * 10 * 1e16 + 5 * 5 * 1e16;
+
+    await extras.buyItemBatch(itemIds, amounts, { from: user3, value: total });
+
+    const lizards = await extras.balanceOf(user3, 1);
+    const stones = await extras.balanceOf(user3, 2);
+
+    assert.equal(lizards, 5, "items 1 should be bought");
+    assert.equal(stones, 5, "items 2 should be bought");
+  });
 
 });

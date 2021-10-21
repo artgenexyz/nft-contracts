@@ -113,13 +113,13 @@ contract AmeegosExtras is ERC1155, Ownable {
 
         for (uint256 i = 0; i < itemIds.length; i++) {
             require(itemIds[i] < totalItems, "No itemId");
-            require(_saleStarted[itemIds[i]]);
+            require(_saleStarted[itemIds[i]], "Sale not started for some of IDs");
         }
 
         uint256 billAmount = 0;
 
         for (uint256 i = 0; i < itemIds.length; i++) {
-            GameItem storage item = items[itemIds[i]];
+            GameItem memory item = items[itemIds[i]];
             billAmount += item.price * amounts[0];
         }
 
@@ -129,7 +129,7 @@ contract AmeegosExtras is ERC1155, Ownable {
 
             GameItem storage item = items[itemIds[i]];
 
-            require(item.mintedSupply + amounts[i] <= items[itemIds[i]].maxSupply, "Out of stock");
+            require(item.mintedSupply + amounts[i] <= item.maxSupply, "Out of stock");
 
             item.mintedSupply += amounts[i];
         }
