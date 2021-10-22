@@ -7,6 +7,7 @@ module.exports = async function(deployer, network) {
 
   // not tested yet
   // const moon = await MoonNFT.new();
+
   const moon = await MoonNFT.deployed();
 
   if (network !== "development" && network !== "soliditycoverage") {
