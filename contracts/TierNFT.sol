@@ -129,6 +129,20 @@ abstract contract TierNFT is AvatarNFT {
     //     _reservedByTier[tier] -= _number;
     // }
 
+    function getTier(uint256 tokenId) public view returns (TierId) {
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i < TierId.unwrap(LAST_TIER); i++) {
+            TierId tier = TierId.wrap(i);
+
+            if (tokenId >= _tierRanges[tier].start && tokenId < _tierRanges[tier].end) {
+                return tier;
+            }
+        }
+
+        require(false, "TokenId not found in any tier");
+
+        return TierId.wrap(0);
+    }
+
     function getPrice() public view override virtual returns (uint256) {
         return getPrice(FIRST_TIER);
     }
