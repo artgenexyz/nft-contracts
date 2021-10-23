@@ -48,6 +48,7 @@ module.exports = {
       provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${INFURA_KEY}`),
       network_id: 1,
       gas: 8500000,
+      gasPrice: 50e9, // 50 gwei
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       skipDryRun: false,
       timeoutBlocks: 200,
