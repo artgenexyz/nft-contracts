@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 // This implementation has free mint passes, limited by address
 contract MintPass is ERC1155, Ownable {
-    constructor(uint256 _maxSupply, uint256 _maxPerAddress)
-        ERC1155("https://metadata.buildship.dev/api/token/ameegos-extra/{id}")
+    constructor(uint256 _maxSupply, uint256 _maxPerAddress, string memory uri)
+        ERC1155(uri)
     {
         maxSupply = _maxSupply;
         maxPerAddress = _maxPerAddress;

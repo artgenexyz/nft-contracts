@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
@@ -8,7 +7,6 @@ import "../MintPass.sol";
 
 import "./AmeegosNFT.sol";
 
-// so recap for the mintpass:
 
 // - 6000 mint passes max
 // - free to claim, up to 10 per address
@@ -21,7 +19,7 @@ import "./AmeegosNFT.sol";
 contract AmeegosMintPass is MintPass, ERC721Holder {
     AmeegosNFT immutable public originalContract;
 
-    constructor (AmeegosNFT original) MintPass(6000, 10) {
+    constructor (AmeegosNFT original) MintPass(6000, 10, "https://metadata.buildship.dev/api/token/ameegos-mint-pass/{id}") {
         originalContract = original;
     }
 
@@ -48,16 +46,6 @@ contract AmeegosMintPass is MintPass, ERC721Holder {
     // @notice Should never be called under normal circumstances!
     function emergencyWithdraw(address to) public onlyOwner {
         flushTokens(to);
-    }
-
-    function tokensOfOwner(address owner) public view returns (uint256[] memory tokenIds) {
-        tokenIds = new uint256[](originalContract.balanceOf(owner));
-
-        // uint256 balance = originalContract.balanceOf(owner);
-
-        for (uint256 index = 0; index < tokenIds.length; index++) {
-            tokenIds[index] = originalContract.tokenOfOwnerByIndex(owner, index);
-        }
     }
 
     function flushTokens(address receiver) private {
