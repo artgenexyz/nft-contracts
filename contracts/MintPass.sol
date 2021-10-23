@@ -43,6 +43,11 @@ contract MintPass is ERC1155, Ownable {
         _saleStarted = !_saleStarted;
     }
 
+    // Just in case some ETH stuck here
+    function withdraw() public onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
     // ---- User functions
 
     function claim(uint256 nTokens) public whenSaleStarted {
