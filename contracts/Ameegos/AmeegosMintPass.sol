@@ -30,7 +30,8 @@ contract AmeegosMintPass is MintPass, ERC721Holder {
         require(originalContract.isWhitelisted(address(this)), "Minting failed");
         require(originalContract.onlyWhitelisted(), "Public sale started");
 
-        require(amount <= balanceOf(msg.sender, MINT_PASS_ID), "Not enough mint pass");
+        // No need to check, because _burn will fail anyway
+        // require(amount <= balanceOf(msg.sender, MINT_PASS_ID), "Not enough mint pass");
 
         _burn(msg.sender, MINT_PASS_ID, amount);
 
@@ -41,7 +42,7 @@ contract AmeegosMintPass is MintPass, ERC721Holder {
         // transfer all AmeegosNFT tokens to msg.sender
         flushTokens(msg.sender);
 
-        require(originalContract.balanceOf(address(this)) == 0, "Broken state, shouldn't have tokens");
+        // require(originalContract.balanceOf(address(this)) == 0, "Broken state, shouldn't have tokens");
     }
 
     // @notice Should never be called under normal circumstances!
@@ -50,9 +51,11 @@ contract AmeegosMintPass is MintPass, ERC721Holder {
     }
 
     function tokensOfOwner(address owner) public view returns (uint256[] memory tokenIds) {
-        uint256 balance = originalContract.balanceOf(owner);
+        tokenIds = new uint256[](originalContract.balanceOf(owner));
 
-        for (uint256 index = 0; index < balance; index++) {
+        // uint256 balance = originalContract.balanceOf(owner);
+
+        for (uint256 index = 0; index < tokenIds.length; index++) {
             tokenIds[index] = originalContract.tokenOfOwnerByIndex(owner, index);
         }
     }
@@ -61,8 +64,7 @@ contract AmeegosMintPass is MintPass, ERC721Holder {
         uint256 nextTokenId;
         uint256 balance = originalContract.balanceOf(address(this));
 
-        // IMPORTANT: going backwards, because tokens are transferred as we go in the
-        while (originalContract.balanceOf(address(this)) > 0) {
+        while (balance > 0) {
             nextTokenId = originalContract.tokenOfOwnerByIndex(address(this), 0);
 
             originalContract.safeTransferFrom(address(this), receiver, nextTokenId);
