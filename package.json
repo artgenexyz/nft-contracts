@@ -17,6 +17,7 @@
     "ethereum-waffle": "^3.4.0",
     "ganache-cli": "^6.12.2",
     "mocha": "^9.1.1",
+    "solidity-coverage": "^0.7.17",
     "truffle": "^5.4.8",
     "truffle-plugin-verify": "^0.5.12"
   }

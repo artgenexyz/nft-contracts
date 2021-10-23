@@ -7,6 +7,7 @@ const mnemonic = fs.readFileSync(".mnemonic").toString().trim();
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 
 module.exports = {
   /**
@@ -50,7 +51,19 @@ module.exports = {
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       skipDryRun: true,
       // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      // networkCheckTimeout: 10000, // If you have a slow internet connection, try configuring a longer timeout in your Truffle config.
+      networkCheckTimeout: 30000, // If you have a slow internet connection, try configuring a longer timeout in your Truffle config.
+    },
+    polygon: {
+      provider: () => new HDWalletProvider({
+        mnemonic,
+        providerOrUrl: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
+        shareNonce: false,
+      }),
+      network_id: 137,
+      gas: 8500000,
+      gasPrice: 50e9,
+      confirmations: 1,
+      skipDryRun: true,
     },
   },
 
@@ -75,10 +88,12 @@ module.exports = {
   },
   plugins: [
     'truffle-plugin-verify',
+    'solidity-coverage',
   ],
 
   api_keys: {
     etherscan: ETHERSCAN_API_KEY,
+    polygonscan: POLYGONSCAN_API_KEY,
   }
 
 };
