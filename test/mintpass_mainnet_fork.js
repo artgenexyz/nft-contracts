@@ -127,22 +127,16 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
         // check that user2 has NFT now
         // check that pass contract doesn't have any tokens
 
-        // await pass.emergencyWithdraw();
-
-        // const tokens = await pass.tokensOfOwner(pass.address);
-
-        // console.log('tokens', tokens);
-
-        await pass.emergencyWithdraw(user2);
-
-
-        // await nft.safeTransferFrom(pass.address, user2, );
+        // await pass.emergencyWithdraw(user2);
 
         const passNFTbalance = await nft.balanceOf(pass.address);
         assert.equal(passNFTbalance, 0, "pass should have 0 NFT");
 
         const user2NFT = await nft.balanceOf(user2);
         assert.equal(user2NFT - user2NFTBefore, 1, "user2 should have 1 new NFT");
+
+        const tokens = await pass.tokensOfOwner(user2);
+        console.log('tokens', tokens);
 
     });
 
