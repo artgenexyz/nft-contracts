@@ -95,6 +95,7 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
         await nft.whitelistUsers([pass.address], { from: unlocked });
         await nft.setOnlyWhitelisted(true, { from: unlocked });
         await nft.setNftPerAddressLimit(6000, { from: unlocked }); // because MintPass needs to be able to mint from their address
+        await nft.setmaxMintAmount(10, { from: unlocked }); // because MintPass needs to be able to mint from their address
         await nft.pause(false, { from: unlocked });
 
         // await nft.setmaxMintAmount(3, { from: unlocked });
@@ -135,8 +136,6 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
         const user2NFT = await nft.balanceOf(user2);
         assert.equal(user2NFT - user2NFTBefore, 1, "user2 should have 1 new NFT");
 
-        const tokens = await pass.tokensOfOwner(user2);
-        console.log('tokens', tokens);
 
     });
 
@@ -192,6 +191,8 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
     it("should fail if you try to mint more than 3", async function () {
         const cost = await nft.cost();
 
+        await nft.setmaxMintAmount(3, { from: unlocked }); // because MintPass needs to be able to mint from their address
+
         // // check that user1 still has at least 4 mint passes, otherwise test will fail due to other error
         // const user1MintPasses = await pass.balanceOf(user1);
         // assert.equal(user1MintPasses, 4, "user1 should have 4 MintPasses");
@@ -200,6 +201,9 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
             pass.redeem(4, { from: user1, value: cost * 4 }),
             "max mint amount per session exceeded"
         );
+
+        await nft.setmaxMintAmount(10, { from: unlocked }); // because MintPass needs to be able to mint from their address
+
     });
 
     // it should bring everything back to normal
