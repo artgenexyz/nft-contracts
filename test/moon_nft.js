@@ -1,4 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { assert } = require("chai");
 
 const MoonNFT = artifacts.require("MoonNFT");
 const BN = web3.utils.BN;
@@ -366,7 +367,91 @@ contract("MoonNFT", accounts => {
 
     });
 
+    // it should check that getTier(tokenId) returns correct tier for each token
+    it("should check that getTier(tokenId) returns correct tier for each token", async () => {
 
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        // skip Genesis
+        for (let tier = 0; tier <= 4; tier++) {
+
+            const amount = 1;
+            const price = await nft.getPrice(tier);
+
+            const tx = await nft.methods[MINT_TIER_REFERRAL](tier, amount, referral, { value: price * amount, from: anotherBuyer });
+
+            const { tokenId } = tx.logs[0].args;
+
+            const tier2 = await nft.getTier(tokenId);
+
+            assert.equal(tier, tier2);
+        }
+
+        const genesisTier = await nft.getTier(0); // tokenId = 0 should be Genesis
+
+        assert.equal(genesisTier, 5);
+
+    });
+
+    // it should check that getTier(tokenId) fails for non-existent token
+    it("should check that getTier(tokenId) fails for non-existent token", async () => {
+
+        const range = await nft.getRange(0); // 0 is Standard, 3111-9999
+
+        const lastTokenId = range[1];
+
+        await expectRevert(
+            nft.getTier(lastTokenId.addn(1).toNumber()),
+            "TokenId not found in any tier"
+        );
+
+    });
+
+    // it should be able to mint all tokens from tier Prestige and President (3,4) and check that tokenIds not interfere
+    it("should be able to mint all tokens from tier Prestige and President (3,4) and check that tokenIds not interfere", async () => {
+
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        let tx;
+        let tier = 3; // Prestige
+        let price = await nft.getPrice(tier);
+        let mintSupply = await nft.getMaxSupply(tier) - await nft.getSupply(tier) - await nft.getReservedLeft(tier);
+
+        // const balanceBefore = await nft.balanceOf(anotherBuyer);
+
+        // // mint 1 tokens per transaction, 10 times in a row
+        // for (let i = 0; i < mintSupply; i++) {
+        //     const amount = 1;
+        //     tx = await nft.methods[MINT_TIER_REFERRAL](tier, amount, referral, { value: price * amount, from: anotherBuyer })
+        // }
+
+
+        tier = 4; // President
+        price = await nft.getPrice(tier);
+        mintSupply = await nft.getMaxSupply(tier) - await nft.getSupply(tier) - await nft.getReservedLeft(tier);
+
+        // claim all President tokens
+        const reserved = await nft.getReservedLeft(tier);
+
+        tx = await nft.claimReserved(tier, reserved, owner, { from: owner });
+
+        // const { tokenId } = tx.logs[0].args;
+
+        // mint 1 tokens per transaction, 10 times in a row
+        for (let i = 0; i < mintSupply; i++) {
+            const amount = 1;
+            tx = await nft.methods[MINT_TIER_REFERRAL](tier, amount, referral, { value: price * amount, from: anotherBuyer })
+        }
+
+        // const balanceAfter = await nft.balanceOf(anotherBuyer);
+
+        // check that last minted token is equal to the start of the Prestige range
+        const lastTokenId = tx.receipt.logs[0].args.tokenId;
+        const range = await nft.getRange(3);
+
+        assert.equal(lastTokenId.toNumber() + 1, range[0].toNumber());
+
+    });
 
 
 

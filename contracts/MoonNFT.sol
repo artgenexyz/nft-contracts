@@ -21,7 +21,7 @@ contract MoonNFT is ReferralNFT, TierNFT {
             10000, // total
             0, // reserved
             20, // max tokens per mint
-            "https://buildship-metadata-caffeinum-buildship.vercel.app/api/token/moon/",
+            "https://metadata.buildship.dev/api/token/moon/",
             "NFT Moon Metaverse", "MOON"
         )
         ReferralNFT(3000 /* referral fee in 0.01% */)
@@ -54,11 +54,11 @@ contract MoonNFT is ReferralNFT, TierNFT {
     }
 
     function mint(uint256, address payable) public payable override {
-        require(false, "Not implemented");
+        revert("Not implemented");
     }
 
     function mint(TierId, uint256) public payable override {
-        require(false, "Not implemented");
+        revert("Not implemented");
     }
 
     function mint(TierId tier, uint256 nTokens, address payable referral) whenSaleStarted public payable {
@@ -82,7 +82,7 @@ contract MoonNFT is ReferralNFT, TierNFT {
     }
 
     function claimReserved(uint256 nTokens, address receiver) public pure override(AvatarNFT, TierNFT) {
-        // require(false, "Not implemented");
+        // revert("Not implemented");
         super.claimReserved(nTokens, receiver);
     }
 
