@@ -4,7 +4,7 @@ const { BN } = web3.utils;
 
 const Market = artifacts.require("Market");
 
-const AmeegosExtras = artifacts.require("AmeegosExtras");
+const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
 
 /*
  Simple ERC1155 marketplace. It represents in-game items, so each option corresponds to an game item, like: Skin, Weapon, Armor.
@@ -105,7 +105,7 @@ contract("Market", function (accounts) {
 
   // it should be possible to deploy marketplace
   it("should be possible to deploy marketplace", async function () {
-    extras = await AmeegosExtras.deployed();
+    extras = await AmeegosMarketplace.deployed();
 
     marketplace = await Market.new(extras.address, { from: admin });
 
