@@ -5,11 +5,6 @@ import "./AvatarNFT.sol";
 
 type TierId is uint8;
 
-// TODO: remove or store for reference in contract
-// struct TierInfo {
-//     string name;
-// }
-
 struct Range {
     uint128 start;
     uint128 end;
@@ -138,9 +133,7 @@ abstract contract TierNFT is AvatarNFT {
             }
         }
 
-        require(false, "TokenId not found in any tier");
-
-        return TierId.wrap(0);
+        revert("TokenId not found in any tier");
     }
 
     function getPrice() public view override virtual returns (uint256) {
@@ -223,7 +216,7 @@ abstract contract TierNFT is AvatarNFT {
     }
 
     function claimReserved(uint256, address) public pure override virtual {
-        require(false, "Not implemented");
+        revert("Not implemented");
     }
 
     function claimReserved(TierId tier, uint256 _number, address _receiver) public {
@@ -245,7 +238,7 @@ abstract contract TierNFT is AvatarNFT {
     }
 
     function mint(uint256) public payable override virtual {
-        require(false, "Not implemented");
+        revert("Not implemented");
     }
 
     function mint(TierId tier, uint256 nTokens) whenSaleStarted public payable virtual {
