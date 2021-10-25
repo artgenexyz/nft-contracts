@@ -12,11 +12,11 @@ const owner = "0x2195601e1EA42363C85AC7868143b80d20Db978f";
 module.exports = async function(deployer, network) {
   let nft;
 
-  if (network === "development" || network === "soliditycoverage") {
+  if (network === "development" || network === "soliditycoverage" || network === "rinkeby") {
     await deployer.deploy(AmeegosNFT, "Ameegos Metaverse", "AMEEGOS", "uri://test", "uri://test");
 
     nft = await AmeegosNFT.deployed();
-  } else {
+  } else if (network === "mainnet") {
     nft = await AmeegosNFT.at(AMEEGOS_CONTRACT);
   }
 

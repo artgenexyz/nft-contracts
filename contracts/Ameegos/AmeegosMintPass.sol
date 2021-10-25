@@ -7,6 +7,15 @@ import "../MintPass.sol";
 
 import "./AmeegosNFT.sol";
 
+// interface IAmeegosNFT {
+//     function mint(uint256 _mintAmount) external payable;
+//     function balanceOf(address _owner) external view returns (uint256);
+//     function isWhitelisted(address _owner) external view returns (bool);
+//     function onlyWhitelisted() external view returns (bool);
+//     function tokenOfOwnerByIndex(address _owner, uint256 _index) external view returns (uint256);
+//     function safeTransferFrom(address _owner, address _receiver, uint256 tokenId) external;
+// }
+
 
 // - 6000 mint passes max
 // - free to claim, up to 10 per address
