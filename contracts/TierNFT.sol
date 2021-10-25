@@ -6,6 +6,7 @@ import "./AvatarNFT.sol";
 type TierId is uint8;
 
 struct Range {
+    // @notice is inclusive of both start and end!
     uint128 start;
     uint128 end;
 }
@@ -24,7 +25,10 @@ abstract contract TierNFT is AvatarNFT {
     constructor (uint8 tierLength) {
         initTiers(tierLength);
 
-        // TODO: check arrays have same length
+        require(_reserved == 0, "Reserved must be 0 because it tracks separately");
+
+        require(tierLength > 0, "Tier length must be greater than 0");
+
         // TODO: TEST the tiers you can create this way
 
         FIRST_TIER = TierId.wrap(0);
@@ -33,16 +37,28 @@ abstract contract TierNFT is AvatarNFT {
         for (uint8 i = TierId.unwrap(FIRST_TIER); i < TierId.unwrap(LAST_TIER); i++) {
             TierId nextTier = TierId.wrap(i + 1);
             TierId tier = TierId.wrap(i);
+            Range memory next = _tierRanges[nextTier];
+            Range memory current = _tierRanges[tier];
 
             // check that the tier ranges are sorted
             // but keep in mind they go backwards
-            require(_tierRanges[nextTier].start < _tierRanges[tier].start, "Tier ranges must be sorted");
+            require(next.start < current.start, "Tier ranges must be sorted");
             // check that the tier ranges are connected and not overlapping
-            require(_tierRanges[nextTier].end + 1 == _tierRanges[tier].start, "Tier ranges must not overlap and should connect seamlessly");
+            require(next.end + 1 == current.start, "Tier ranges must not overlap and should connect seamlessly");
 
-            // check that the tier ranges are non-empty
-            require(_tierRanges[tier].start < _tierRanges[tier].end, "Tier ranges must not be empty");
+        }
 
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i <= TierId.unwrap(LAST_TIER); i++) {
+            TierId tier = TierId.wrap(i);
+            Range memory current = _tierRanges[tier];
+            // check that the tier ranges are non-empty, ranges are inclusive of both ids
+            require(current.start < current.end + 1, "Tier ranges must not be empty");
+        }
+
+        // check that reserved is less than supply
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i <= TierId.unwrap(LAST_TIER); i++) {
+            TierId tier = TierId.wrap(i);
+            require(_reservedByTier[tier] <= _tierRanges[tier].end + 1 - _tierRanges[tier].start, "Tier reserved must be less than or equal to max supply");
         }
 
         // check that prices aren't zero
@@ -125,10 +141,10 @@ abstract contract TierNFT is AvatarNFT {
     // }
 
     function getTier(uint256 tokenId) public view returns (TierId) {
-        for (uint8 i = TierId.unwrap(FIRST_TIER); i < TierId.unwrap(LAST_TIER); i++) {
+        for (uint8 i = TierId.unwrap(FIRST_TIER); i <= TierId.unwrap(LAST_TIER); i++) {
             TierId tier = TierId.wrap(i);
 
-            if (tokenId >= _tierRanges[tier].start && tokenId < _tierRanges[tier].end) {
+            if (tokenId >= _tierRanges[tier].start && tokenId <= _tierRanges[tier].end) {
                 return tier;
             }
         }
