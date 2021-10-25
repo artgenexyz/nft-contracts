@@ -29,8 +29,6 @@ abstract contract TierNFT is AvatarNFT {
 
         require(tierLength > 0, "Tier length must be greater than 0");
 
-        // TODO: TEST the tiers you can create this way
-
         FIRST_TIER = TierId.wrap(0);
         LAST_TIER = TierId.wrap(tierLength - 1);
 
