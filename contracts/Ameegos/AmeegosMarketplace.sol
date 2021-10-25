@@ -27,6 +27,23 @@ import "./Base64.sol";
  */
 
 
+/*
+DONE:
+- add claimItem onlyOwner whenSaleStarted = false
+- remove URI not used
+- can we edit imageUrl later? No
+- buy limit per address ? No
+
+
+TODO:
+- burn?
+- double-check description
+- buyItem with AGOS (fix price in AGOS or in ETH if you pay in AGOS?)
+- addItem - price in AGOS
+- create AGOS token for testing
+
+*/
+
 /// @custom:security-contact aleks@buildship.dev
 contract AmeegosMarketplace is ERC1155, Ownable {
     using Strings for uint256;
@@ -36,7 +53,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     uint256 constant DEVELOPER_FEE = 1000; // of 10000;
 
     constructor()
-        ERC1155("https://metadata.buildship.dev/api/token/ameegos-extra/{id}")
+        ERC1155("override")
     {}
 
     struct GameItem {
@@ -145,25 +162,41 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         _mintBatch(msg.sender, itemIds, amounts, "");
     }
 
-    // function buyItemToken(uint256 itemId, uint256 amount) public whenSaleStarted(itemId) {
-
-    // }
-
-    // function claimItem(uint256 itemId, uint256 amount) public whenSaleStarted(itemId) /* withMintPass(amount) */ {
-
-    //     require(itemId < totalItems, "No itemId");
-
-    //     GameItem storage item = items[itemId];
-
-    //     require(item.mintedSupply + amount <= item.maxSupply, "Out of stock");
-
-    //     item.mintedSupply += amount;
-    //     _mint(msg.sender, itemId, amount, "");
-
-    // }
-
 
     // ----- Admin functions -----
+
+    // claimItem onlyOwner, allows admin to claim any amount of any token,
+    function claimItem(uint256 itemId, uint256 amount) public onlyOwner {
+        // require(_saleStarted[itemId] == false, "Only claim when sale is not active");
+
+        require(itemId < totalItems, "No itemId");
+
+        GameItem storage item = items[itemId];
+
+        require(item.mintedSupply + amount <= item.maxSupply, "Not enough minted supply");
+
+        item.mintedSupply += amount;
+        _mint(msg.sender, itemId, amount, "");
+    }
+
+    function claimItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts) public onlyOwner {
+        require(itemIds.length == amounts.length, "Length mismatch");
+
+        for (uint256 i = 0; i < itemIds.length; i++) {
+            // require(_saleStarted[itemIds[i]] == false, "ClaimItem only when sale is not active");
+            require(itemIds[i] < totalItems, "No itemId");
+        }
+
+        for (uint256 i = 0; i < itemIds.length; i++) {
+            GameItem storage item = items[itemIds[i]];
+
+            require(item.mintedSupply + amounts[i] <= item.maxSupply, "Not enough minted supply");
+
+            item.mintedSupply += amounts[i];
+        }
+
+        _mintBatch(msg.sender, itemIds, amounts, "");
+    }
 
     function flipSaleStarted(uint256 itemId) external onlyOwner {
         _saleStarted[itemId] = !_saleStarted[itemId];
@@ -192,6 +225,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         // should start sale right after adding?
         _saleStarted[newItemId] = startSale;
 
+        emit ItemAdded(newItemId, name, imageUrl, price, maxSupply, startSale);
     }
 
     // Change price for item
@@ -212,5 +246,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         require(payable(msg.sender).send(baseAmount));
         require(payable(buildship).send(feesAmount));
     }
+
+    event ItemAdded(uint256 itemId, string name, string imageUrl, uint256 price, uint256 maxSupply, bool startSale);
 
 }
