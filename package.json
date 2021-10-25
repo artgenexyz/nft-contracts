@@ -20,5 +20,8 @@
     "solidity-coverage": "^0.7.17",
     "truffle": "^5.4.8",
     "truffle-plugin-verify": "^0.5.12"
+  },
+  "resolutions": {
+    "@solidity-parser/parser": "^0.14.0"
   }
 }
