@@ -236,7 +236,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const tx = await extras.withdraw({ from: owner });
 
-    const gasCost = await web3.eth.getGasPrice() * tx.receipt.gasUsed;
+    const gasCost = new BN(tx.receipt.gasUsed).mul(await web3.eth.getGasPrice());
 
     const buildshipBalanceAfter = await web3.eth.getBalance(buildship);
     const ownerBalanceAfter = await web3.eth.getBalance(owner);
@@ -250,7 +250,7 @@ contract("AmeegosMarketplace", function (accounts) {
     assert.equal(buildshipBalanceAfter - buildshipBalanceBefore, salesBalanceBefore / 10, "10% of salesBalanceBefore should go to buildship");
 
     assert.equal(
-      new BN(ownerBalanceAfter).sub(new BN(ownerBalanceBefore)).add(new BN(gasCost)).toString(),
+      new BN(ownerBalanceAfter).sub(new BN(ownerBalanceBefore)).add(gasCost).toString(),
       new BN(salesBalanceBefore).muln(9).divn(10).toString(),
       "90% of salesBalanceBefore should go to owner"
     );
@@ -267,6 +267,29 @@ contract("AmeegosMarketplace", function (accounts) {
 
     assert.include(uri, 'application/json', "URI should encode json into base64");
 
+  });
+
+  // it should be able to call and parse contractURI as base64 json
+  it("should be able to call and parse contractURI as base64 json", async function () {
+    const extras = await AmeegosMarketplace.deployed();
+
+    const uriData = await extras.contractURI();
+
+    // remove 'data:application/json;base64,' from beginning of string
+
+    const rawData = uriData.replace('data:application/json;base64,', '');
+
+    const uri = Buffer.from(rawData, 'base64').toString();
+
+    const json = JSON.parse(uri);
+
+    // '"name": "Ameegos Extra Items Collection",',
+    // '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+    // '"external_link": "https://ameegos.io"',
+
+    assert.equal(json.name, "Ameegos Extra Items Collection", "name should be Ameegos Extra Items Collection");
+    assert.equal(json.external_link, "https://ameegos.io");
+    assert.include(json.description, "Fight for Meegosa");
   });
 
   // it should not be able to buy if supply less ETH than price
@@ -302,4 +325,38 @@ contract("AmeegosMarketplace", function (accounts) {
     assert.equal(stones, 5, "items 2 should be bought");
   });
 
-});
+  // it should allow owner to claim items for free
+  it("should allow owner to claim items for free", async function () {
+    const extras = await AmeegosMarketplace.deployed();
+
+    const itemIds = [1, 2]; // Lizard Skin, Stone Armour
+
+    const amounts = [5, 5]; // 5 Lizard Skin, 5 Stone Armour
+    await extras.claimItemBatch(itemIds, amounts, { from: owner });
+
+    const lizards = await extras.balanceOf(owner, 1);
+    const stones = await extras.balanceOf(owner, 2);
+
+    assert.equal(lizards, 5, "items 1 should be claimed");
+    assert.equal(stones, 5, "items 2 should be claimed");
+  });
+
+  // it should allow owner to create new item and claim it all before sale started
+  it("should allow owner to create new item and claim it all before sale started", async function () {
+    const extras = await AmeegosMarketplace.deployed();
+
+    const amount = 100;
+
+    // addItem Bankless Banker with 100 supply
+    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), amount, { from: owner });
+
+    const { itemId } = tx.logs[0].args;
+
+    await extras.claimItem(itemId, amount, { from: owner });
+
+    const newItemBalance = await extras.balanceOf(owner, itemId);
+
+    assert.equal(newItemBalance, amount, "new item should be created");
+  });
+
+})
