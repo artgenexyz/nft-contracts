@@ -28,7 +28,7 @@ import "./Base64.sol";
 
 
 /// @custom:security-contact aleks@buildship.dev
-contract AmeegosExtras is ERC1155, Ownable {
+contract AmeegosMarketplace is ERC1155, Ownable {
     using Strings for uint256;
 
     // Buildship storage
