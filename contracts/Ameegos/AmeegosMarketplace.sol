@@ -217,7 +217,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     function withdraw() public onlyOwner {
         uint256 _balance = address(this).balance;
 
-        uint256 baseAmount = _balance * 9 / 10;
+        uint256 baseAmount = _balance * 17 / 20;
 
         require(payable(msg.sender).send(baseAmount));
 
