@@ -267,7 +267,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
         GameItem storage item = items[itemId];
 
-        require(item.mintedSupply + amount <= item.maxSupply, "Not enough minted supply");
+        require(item.mintedSupply + amount <= item.maxSupply, "Not enough supply");
 
         item.mintedSupply += amount;
         _mint(msg.sender, itemId, amount, "");
