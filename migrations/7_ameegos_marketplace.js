@@ -9,8 +9,8 @@ const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 module.exports = async function(deployer, network) {
     // Second stage of Ameegos deployment
 
-    await deployer.deploy(DemoAGOS, { overwrite: false });
-    await deployer.deploy(DemoShiba, { overwrite: false });
+    await deployer.deploy(DemoAGOS);
+    await deployer.deploy(DemoShiba);
 
     if (network == "development" || network == "soliditycoverage") {
     } else {
