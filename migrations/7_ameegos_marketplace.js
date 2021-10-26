@@ -9,19 +9,26 @@ const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 module.exports = async function(deployer, network) {
     // Second stage of Ameegos deployment
 
-    await deployer.deploy(DemoAGOS);
-    await deployer.deploy(DemoShiba);
+    let agos, shiba;
 
     if (network == "development" || network == "soliditycoverage") {
+        await deployer.deploy(DemoAGOS);
+        await deployer.deploy(DemoShiba);
+        
+        agos = await DemoAGOS.deployed();
+        shiba = await DemoShiba.deployed();
+    } else if (network == "rinkeby") {
+        agos = { address: "0xE09761C663276d8aD44C3F45c7529634056Da856" };
     } else {
-        // TODO: find Shiba and AGOS on mainnet and user their addresses here
+        await deployer.deploy(DemoAGOS);
+        agos = await DemoAGOS.deployed();
     }
-
-    const agos = await DemoAGOS.deployed();
-    const shiba = await DemoShiba.deployed();
-
-    await deployer.deploy(AmeegosMarketplace, agos.address, shiba.address);
+    await deployer.deploy(AmeegosMarketplace, agos.address);
     const extras = await AmeegosMarketplace.deployed();
 
-    // await deployer.deploy(Market, extras.address);
+    if (network == "development" || network == "soliditycoverage") {
+
+    } else {
+        extras.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
+    }
 };
