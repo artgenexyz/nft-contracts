@@ -372,9 +372,9 @@ contract("AmeegosMarketplace", function (accounts) {
 
     // mint DemoAGOS to user1
     const agos = await DemoAGOS.deployed();
-    await agos.mint(user1, 1);
+    await agos.mint(user1, (1 * 1e18).toString());
 
-    await agos.approve(extras.address, 100, { from: user1 })
+    await agos.approve(extras.address, (100 * 1e18).toString(), { from: user1 })
 
     await extras.claimItem(itemId, 1, { from: user1 });
 
