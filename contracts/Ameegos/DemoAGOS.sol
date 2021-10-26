@@ -7,3 +7,8 @@ contract DemoAGOS is ERC20PresetMinterPauser {
     constructor() ERC20PresetMinterPauser("Ameegos Mock Token", "AGOS") {}
 
 }
+
+contract DemoShiba is ERC20PresetMinterPauser {
+    constructor() ERC20PresetMinterPauser("Shiba Inu Mock Token", "SIMT") {}
+
+}

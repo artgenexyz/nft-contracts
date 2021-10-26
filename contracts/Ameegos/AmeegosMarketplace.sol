@@ -4,9 +4,26 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+
+// import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+// import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+// import "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
+// import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
+
+
+// import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+// import "@uniswap/v3-periphery/contracts/interfaces/IQuoter.sol";
+
+// interface IUniswapRouter is ISwapRouter {
+//     function refundETH() external payable;
+// }
+
+//   IUniswapRouter public constant uniswapRouter = IUniswapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+//   IQuoter public constant quoter = IQuoter(0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6);
 
 import "./Base64.sol";
 
@@ -34,18 +51,18 @@ DONE:
 - add claimItem onlyOwner whenSaleStarted = false
 - remove URI not used
 - can we edit imageUrl later? No
-- buy limit per address ? No
-
-
-TODO:
-- burn?
 - double-check description
-- buyItem with AGOS (fix price in AGOS or in ETH if you pay in AGOS?)
-- addItem - price in AGOS
+- buy limit per address ? No
+- burn?
 - create AGOS token for testing
 - deploy buildship on rinkeby to make sure we receive money
 
 */
+
+enum ItemType {
+    Payable,
+    Claimable,
+}
 
 /// @custom:security-contact aleks@buildship.dev
 contract AmeegosMarketplace is ERC1155, Ownable {
@@ -56,23 +73,23 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     address payable buildship = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     uint256 constant DEVELOPER_FEE = 1000; // of 10000;
 
-    // address public 
     address public immutable AGOS;
-    // address public immutable SHIBA;
+    address public immutable SHIBA;
 
-    constructor(address _AGOS)
+    address private SHIBA_ETH_LP = 0x5764a6F2212D502bC5970f9f129fFcd61e5D7563;
+
+    constructor(address _AGOS, address _SHIBA)
         ERC1155("override")
     {
         AGOS = _AGOS;
+        SHIBA = _SHIBA;
     }
 
     struct GameItem {
-        uint256 price;
-        uint256 priceAGOS;
-        // mapping (address => uint256) priceToken;
-        // mapping (address => bool) isTokenAllowed;
+        uint256 price; // in ETH, or always AGOS
         uint256 maxSupply;
         uint256 mintedSupply;
+        ItemType itemType;
         string name;
         string imageUrl;
     }
@@ -94,17 +111,17 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         return _saleStarted[itemId];
     }
 
-    function contractURI() public pure returns (string memory output) {
-        string memory json = Base64.encode(bytes(string(abi.encodePacked(
-            '{',
-            '"name": "Ameegos Extra Items Collection",',
-            '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
-            '"external_link": "https://ameegos.io"',
-            '}'
-        ))));
+    // function contractURI() public pure returns (string memory output) {
+    //     string memory json = Base64.encode(bytes(string(abi.encodePacked(
+    //         '{',
+    //         '"name": "Ameegos Marketplace",',
+    //         '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+    //         '"external_link": "https://ameegos.io"',
+    //         '}'
+    //     ))));
 
-        output = string(abi.encodePacked('data:application/json;base64,', json));
-    }
+    //     output = string(abi.encodePacked('data:application/json;base64,', json));
+    // }
 
     function uri(uint256 tokenId) public view override returns (string memory output) {
         // on-chain metadata inspired by Loot https://etherscan.io/address/0xff9c1b15b16263c61d017ee9f65c50e4ae0113d7#code
@@ -114,7 +131,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         string memory json = Base64.encode(bytes(string(abi.encodePacked(
             '{',
             '"name": "', item.name, '",',
-            '"description": "The Fight for Meegosa is an NFT community MMORPG that utilises blockchain technology to give the gamer true ownership of their in-game assets. Our vision is to become the leader in decentralised, play-to-earn, PVM & PVP gaming. Learn more in our discord: https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+            '"description": "The Fight for Meegosa is an NFT community MMORPG. Join the community and learn more in our Discord. https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
             '"image": "', item.imageUrl, '"',
             '}'
         ))));
@@ -123,7 +140,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
     }
 
-    // ----- User functions -----
+    // ----- Internal functions -----
 
     // Buy item
     function _buyItem(uint256 itemId, uint256 amount)
@@ -141,98 +158,109 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         _mint(msg.sender, itemId, amount, "");
     }
 
-    function _buyItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts)
-        internal
-    {
-        require(itemIds.length == amounts.length, "Length mismatch");
+    // function _buyItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts)
+    //     internal
+    // {
+    //     require(itemIds.length == amounts.length, "Length mismatch");
 
-        for (uint256 i = 0; i < itemIds.length; i++) {
-            require(itemIds[i] < totalItems, "No itemId");
-            require(_saleStarted[itemIds[i]], "Sale not started for some of IDs");
-        }
+    //     for (uint256 i = 0; i < itemIds.length; i++) {
+    //         require(itemIds[i] < totalItems, "No itemId");
+    //         require(_saleStarted[itemIds[i]], "Sale not started for some of IDs");
+    //     }
 
-        // uint256 billAmount = 0;
+    //     for (uint256 i = 0; i < itemIds.length; i++) {
 
-        // for (uint256 i = 0; i < itemIds.length; i++) {
-        //     GameItem memory item = items[itemIds[i]];
-        //     billAmount += item.price * amounts[0];
-        // }
+    //         GameItem storage item = items[itemIds[i]];
 
-        // require(msg.value >= billAmount, "Not enough ETH");
+    //         require(item.mintedSupply + amounts[i] <= item.maxSupply, "Out of stock");
 
-        for (uint256 i = 0; i < itemIds.length; i++) {
+    //         item.mintedSupply += amounts[i];
+    //     }
 
-            GameItem storage item = items[itemIds[i]];
+    //     _mintBatch(msg.sender, itemIds, amounts, "");
+    // }
 
-            require(item.mintedSupply + amounts[i] <= item.maxSupply, "Out of stock");
+    // -------- User functions
 
-            item.mintedSupply += amounts[i];
-        }
-
-        _mintBatch(msg.sender, itemIds, amounts, "");
-    }
-
+    // Pays in ETH, requires not Claimable
     function buyItem(uint256 itemId, uint256 amount)
         external
         payable
         whenSaleStarted(itemId)
     {
-
         require(itemId < totalItems, "No itemId");
 
         GameItem memory item = items[itemId];
 
+        require(item.itemType == ItemType.Payable, "Item is not payable, cant buy with ETH");
         require(item.price * amount <= msg.value, "Not enough ETH");
 
         _buyItem(itemId, amount);  
     }
 
-    // function buyItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts)
+    // // Pays in token, requires Payable
+    // function buyItemToken(uint256 itemId, uint256 amount, IERC20 token)
     //     external
-    //     payable
+    //     whenSaleStarted(itemId)
     // {
-    //     uint256 billAmount = 0;
+    //     require(itemId < totalItems, "No itemId");
 
-    //     for (uint256 i = 0; i < itemIds.length; i++) {
-    //         GameItem memory item = items[itemIds[i]];
-    //         billAmount += item.price * amounts[0];
-    //     }
+    //     GameItem memory item = items[itemId];
 
-    //     require(msg.value >= billAmount, "Not enough ETH");
+    //     require(item.itemType == ItemType.Payable, "Item is not payable, cant buy with ERC20");
 
-    //     _buyItemBatch(itemIds, amounts);
+    //     uint256 total = getPriceToken(token, itemId, amount);
+
+    //     IERC20(token).safeTransferFrom(msg.sender, address(this), total);
+
+    //     _buyItem(itemId, amount);
     // }
 
-    function totalToken(address, uint256 itemId, uint256 amount) public view returns (uint256) {
-        require(itemId < totalItems, "No itemId");
-
-        uint256 price = items[itemId].priceAGOS;
-
-        require(price != 0, "This item is not avaiable for AGOS");
-
-        return price * amount;
-    }
-
-    // buyItemToken, instead of ETH you send ERC20 token
-    function buyItemAGOS(uint256 itemId, uint256 amount, address token)
+    function claimItem(uint256 itemId, uint256 amount)
         external
         whenSaleStarted(itemId)
     {
-        require(token == AGOS, "Arbitrary ERC20 tokens arent supported");
+        require(itemId < totalItems, "No itemId");
 
-        uint256 total = totalToken(token, itemId, amount);
+        GameItem memory item = items[itemId];
 
-        // TODO: burn?
-        IERC20(token).safeTransferFrom(msg.sender, address(this), total);
+        require(item.itemType == ItemType.Claimable, "Item is not claimable");
 
-        // buy item
+        uint256 total = 1 * amount; // If price not set, fall back to 1 AGOS
+        // uint256 total = item.price > 0 ? item.price * amount : 1 * amount; // If price not set, fall back to 1 AGOS
+
+        // IERC20(AGOS).safeTransferFrom(msg.sender, address(this), total);
+
+        ERC20Burnable(AGOS).burnFrom(msg.sender, total);
+
         _buyItem(itemId, amount);
     }
 
+    // function getPriceToken(IERC20 token, uint256 itemId, uint256 amount) public view returns (uint256) {
+    //     require(itemId < totalItems, "No itemId");
+
+    //     GameItem memory item = items[itemId];
+
+    //     require(item.itemType == ItemType.Claimable, "Item is claimable, cant buy with ERC20");
+
+    //     if (address(token) == AGOS) {
+    //         return item.price * amount;
+    //     } else if (address(token) == SHIBA) {
+    //         (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(SHIBA_ETH_LP).slot0();
+
+    //         uint256 priceETH = items[itemId].price;
+
+    //         return priceETH * sqrtPriceX96 * amount;
+    //     } else {
+    //         return items[itemId].price * amount;
+    //     }
+
+    // }
+
     // ----- Admin functions -----
 
-    // claimItem onlyOwner, allows admin to claim any amount of any token,
-    function claimItem(uint256 itemId, uint256 amount) public onlyOwner {
+    // reserveItem onlyOwner, allows admin to claim any amount of any token,
+    function reserveItem(uint256 itemId, uint256 amount) public onlyOwner {
         // require(_saleStarted[itemId] == false, "Only claim when sale is not active");
 
         require(itemId < totalItems, "No itemId");
@@ -245,7 +273,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         _mint(msg.sender, itemId, amount, "");
     }
 
-    // function claimItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts) public onlyOwner {
+    // function reserveItemBatch(uint256[] calldata itemIds, uint256[] calldata amounts) public onlyOwner {
     //     require(itemIds.length == amounts.length, "Length mismatch");
 
     //     for (uint256 i = 0; i < itemIds.length; i++) {
@@ -276,13 +304,13 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
     // Add new item to the marketplace
     // @notice Dont forget to add tokenId metadata to backend
-    function addItem(string memory name, string memory imageUrl, uint256 price, uint256 priceAGOS, uint256 maxSupply, bool startSale) public onlyOwner {
+    function addItem(string memory name, string memory imageUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public onlyOwner {
         require(maxSupply > 0, "Invalid maxSupply");
 
         uint256 newItemId = totalItems;
 
         // create new item
-        GameItem memory item = GameItem(price, priceAGOS, maxSupply, 0, name, imageUrl);
+        GameItem memory item = GameItem(price, maxSupply, 0, itemType, name, imageUrl);
 
         // add item to the array
         items[newItemId] = item;
@@ -291,7 +319,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         // should start sale right after adding?
         _saleStarted[newItemId] = startSale;
 
-        emit ItemAdded(newItemId, name, imageUrl, price, maxSupply, startSale);
+        emit ItemAdded(newItemId, name, imageUrl, price, maxSupply, itemType, startSale);
     }
 
     // Change price for item
@@ -314,16 +342,16 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         require(payable(buildship).send(feesAmount));
     }
 
-    function withdrawToken(address token) public onlyOwner {
-        uint256 balance = IERC20(token).balanceOf(address(this));
+    // function withdrawToken(address token) public onlyOwner {
+    //     uint256 balance = IERC20(token).balanceOf(address(this));
 
-        uint256 baseAmount = balance * (10000 - DEVELOPER_FEE) / 10000;
-        uint256 feesAmount = balance * (DEVELOPER_FEE) / 10000;
+    //     uint256 baseAmount = balance * (10000 - DEVELOPER_FEE) / 10000;
+    //     uint256 feesAmount = balance * (DEVELOPER_FEE) / 10000;
 
-        IERC20(token).safeTransferFrom(address(this), msg.sender, baseAmount);
-        IERC20(token).safeTransferFrom(address(this), buildship, feesAmount);
-    }
+    //     IERC20(token).safeTransferFrom(address(this), msg.sender, baseAmount);
+    //     IERC20(token).safeTransferFrom(address(this), buildship, feesAmount);
+    // }
 
-    event ItemAdded(uint256 itemId, string name, string imageUrl, uint256 price, uint256 maxSupply, bool startSale);
+    event ItemAdded(uint256 itemId, string name, string imageUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale);
 
 }
