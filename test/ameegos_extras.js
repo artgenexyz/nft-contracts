@@ -73,7 +73,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     assert(totalItems, 0, "there should be no items until we create");
 
-    await extras.addItem("Test Item", "https://uri", 1e18.toString(), 0, 1000, false);
+    await extras.addItem("Test Item", "https://uri", 1e18.toString(), 1000, 1, false);
 
     const totalItems2 = await extras.totalItems();
 
@@ -106,9 +106,9 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const totalItems = await extras.totalItems();
 
-    await extras.addItem("Lizard Skin", "https://uri", (10 * 1e16).toString(), 0, 100, true);
-    await extras.addItem("Stone Armour", "https://uri", (5 * 1e16).toString(), 0, 200, true);
-    await extras.addItem("Golden Sword", "https://uri", (20 * 1e16).toString(), 0, 50, true);
+    await extras.addItem("Lizard Skin", "https://uri", (10 * 1e16).toString(), 100, 1, true);
+    await extras.addItem("Stone Armour", "https://uri", (5 * 1e16).toString(), 200, 1, true);
+    await extras.addItem("Golden Sword", "https://uri", (20 * 1e16).toString(), 50, 1, true);
 
     const totalItems2 = await extras.totalItems();
 
@@ -188,7 +188,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const itemId = 4; // Incredible Capricorn
 
-    await extras.addItem("Incredible Capricorn", "https://uri", (2 * 1e16).toString(), 0, 200, true);
+    await extras.addItem("Incredible Capricorn", "https://uri", (2 * 1e16).toString(), 200, 1, true);
 
     await extras.buyItem(4, 200, { from: user1, value: 200 * 2 * 1e16 });
 
@@ -272,7 +272,7 @@ contract("AmeegosMarketplace", function (accounts) {
   });
 
   // it should be able to call and parse contractURI as base64 json
-  it("should be able to call and parse contractURI as base64 json", async function () {
+  xit("should be able to call and parse contractURI as base64 json", async function () {
     const extras = await AmeegosMarketplace.deployed();
 
     const uriData = await extras.contractURI();
@@ -334,7 +334,7 @@ contract("AmeegosMarketplace", function (accounts) {
     const itemIds = [1, 2]; // Lizard Skin, Stone Armour
 
     const amounts = [5, 5]; // 5 Lizard Skin, 5 Stone Armour
-    await extras.claimItemBatch(itemIds, amounts, { from: owner });
+    await extras.reserveItemBatch(itemIds, amounts, { from: owner });
 
     const lizards = await extras.balanceOf(owner, 1);
     const stones = await extras.balanceOf(owner, 2);
@@ -350,11 +350,11 @@ contract("AmeegosMarketplace", function (accounts) {
     const amount = 100;
 
     // addItem Bankless Banker with 100 supply
-    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), 0, amount, { from: owner });
+    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), amount, 0, true, { from: owner });
 
     const { itemId } = tx.logs[0].args;
 
-    await extras.claimItem(itemId, amount, { from: owner });
+    await extras.reserveItem(itemId, amount, { from: owner });
 
     const newItemBalance = await extras.balanceOf(owner, itemId);
 
@@ -366,7 +366,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const extras = await AmeegosMarketplace.deployed();
 
-    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), 1, 100, { from: owner });
+    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), 100, 0, true, { from: owner });
 
     const { itemId } = tx.logs[0].args;
 
@@ -376,7 +376,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     await agos.approve(extras.address, 100, { from: user1 })
 
-    await extras.buyItemAGOS(itemId, 1, agos.address, { from: user1 });
+    await extras.claimItem(itemId, 1, { from: user1 });
 
     const newItemBalance = await extras.balanceOf(user1, itemId);
 
