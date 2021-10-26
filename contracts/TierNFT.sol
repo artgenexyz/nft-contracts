@@ -169,10 +169,10 @@ abstract contract TierNFT is AvatarNFT {
     }
 
     // Ranges for the tokens:
-    // Only 10 tokens are President, tokenId = 0-9
-    // Only 100 tokens are Prestige, tokenId = 10-109
-    // Only 1000 tokens are VIP, tokenId = 110-1109
-    // Only 3000 tokens are Elite, tokenId = 1110-3109
+    // Only 10 tokens are President, tokenId = 1-10
+    // Only 100 tokens are Prestige, tokenId = 11-110
+    // Only 1000 tokens are VIP, tokenId = 111-1110
+    // Only 3000 tokens are Elite, tokenId = 1111-3110
     // Other tokens are Standard, up to tokenId = 9999
     function getRange(TierId tier) public view returns (uint256, uint256) {
         return (_tierRanges[tier].start, _tierRanges[tier].end);

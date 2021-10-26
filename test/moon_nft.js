@@ -463,6 +463,57 @@ contract("MoonNFT", accounts => {
 
     });
 
+    // it should fail claiming unexistent tier
+    it("should fail claiming non-existent tier", async () => {
+        
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        const tier = 6; // non-existent tier
+        const amount = 2;
+        await expectRevert(
+            nft.getPrice(tier),
+            "Invalid tier."
+        );
+
+        await expectRevert(
+            nft.claimReserved(tier, amount, owner, { from: owner }),
+            "Invalid tier."
+        );
+    });
+
+    // it should fail minting VIP if you don't send enough ETH
+    it("should fail minting VIP if you don't send enough ETH", async () => {
+
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        const tier = 3; // VIP
+        const amount = 2;
+        const price = await nft.getPrice(tier);
+
+        const incorrectValue = price * 1;
+
+        await expectRevert(
+            nft.methods[MINT_TIER_REFERRAL](tier, amount, referral, { value: incorrectValue, from: anotherBuyer }),
+            "Inconsistent amount sent!"
+        );
+
+    })
+
+    // it should fail trying to mint more than 20 Standard tokens
+    it("should fail trying to mint more than 20 Standard tokens", async () => {
+
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        const tier = 0; // Standard
+        const amount = 21;
+        const price = await nft.getPrice(tier);
+
+        await expectRevert(
+            nft.methods[MINT_TIER_REFERRAL](tier, amount, referral, { value: price * amount, from: anotherBuyer }),
+            "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
+        );
+
+    });
 
 
 
