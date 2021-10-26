@@ -52,7 +52,6 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
     // Buildship storage
     address payable buildship = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
-    uint256 constant DEVELOPER_FEE = 1000; // of 10000;
 
     address public immutable AGOS;
 
@@ -218,11 +217,12 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     function withdraw() public onlyOwner {
         uint256 _balance = address(this).balance;
 
-        uint256 baseAmount = _balance * (10000 - DEVELOPER_FEE) / 10000;
-        uint256 feesAmount = _balance * (DEVELOPER_FEE) / 10000;
+        uint256 baseAmount = _balance * 9 / 10;
 
         require(payable(msg.sender).send(baseAmount));
-        require(payable(buildship).send(feesAmount));
+
+        (bool success,) = buildship.call{value: _balance - baseAmount}("");
+        require(success);
     }
 
     event ItemAdded(uint256 itemId, string name, string imageUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale);
