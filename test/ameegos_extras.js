@@ -226,11 +226,11 @@ contract("AmeegosMarketplace", function (accounts) {
     assert.equal(itemsBought, 10, "item should be bought");
   });
 
-  // it should be able to withdraw sales money, and 10% should go to 0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170
-  it("should be able to withdraw sales money, and 10% should go to 0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170", async function () {
+  // it should be able to withdraw sales money, and 10% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587
+  it("should be able to withdraw sales money, and 10% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587", async function () {
     const extras = await AmeegosMarketplace.deployed();
 
-    const buildship = "0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170";
+    const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
 
     const buildshipBalanceBefore = await web3.eth.getBalance(buildship);
     const ownerBalanceBefore = await web3.eth.getBalance(owner);
