@@ -305,8 +305,18 @@ contract("MoonNFT", accounts => {
         assert.equal(reservedTotalAfter, reservedTotalBefore.toNumber() - 2);
     });
 
+    // it shouldn't allow claimReserved for non-owner
+    it("shouldn't allow claimReserved for non-owner", async () => {
+        const [ owner, buyer, referral, anotherBuyer ] = accounts;
+
+        await expectRevert(
+            nft.claimReserved(0, 2, buyer, { from: anotherBuyer }),
+            "Ownable: caller is not the owner."
+        );
+    });
+
     // it should fail if you try to claim
-    it("should fail if you try to claim", async () => {
+    it("should fail if you try to claim reserved without tier info", async () => {
 
         // try claim but has error message "Not implemented"
         await expectRevert(

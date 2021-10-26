@@ -233,7 +233,7 @@ abstract contract TierNFT is AvatarNFT {
         revert("Not implemented");
     }
 
-    function claimReserved(TierId tier, uint256 _number, address _receiver) public {
+    function claimReserved(TierId tier, uint256 _number, address _receiver) public onlyOwner virtual {
         require(TierId.unwrap(tier) >= TierId.unwrap(FIRST_TIER) && TierId.unwrap(tier) <= TierId.unwrap(LAST_TIER), "Invalid tier.");
 
         require(_number <= _reservedByTier[tier], "That would exceed the max reserved.");
