@@ -60,8 +60,8 @@ DONE:
 */
 
 enum ItemType {
-    Payable,
-    Claimable,
+    Payable, // 0 = default
+    Claimable // 1
 }
 
 /// @custom:security-contact aleks@buildship.dev
