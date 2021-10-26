@@ -73,28 +73,12 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    function _checkSaleAllowed(address)
-        internal
-        view
-        virtual
-        returns (bool)
-    {
-        // override this if you need custom logic
-        return true;
-    }
-
     modifier whenSaleStarted() {
         require(_saleStarted, "Sale not started");
         _;
     }
 
-    // TODO: NOT USED ANYWHERE, ALSO INCONSISTENT LOGIC. REMOVE?
-    modifier whenSaleAllowed(address _to) {
-        require(_checkSaleAllowed(_to), "Sale not allowed");
-        _;
-    }
-
-    function mint(uint256 _nbTokens) whenSaleStarted whenSaleAllowed(msg.sender) public payable virtual {
+    function mint(uint256 _nbTokens) whenSaleStarted public payable virtual {
         uint256 supply = totalSupply();
         require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
         require(supply + _nbTokens <= MAX_SUPPLY - _reserved, "Not enough Tokens left.");
