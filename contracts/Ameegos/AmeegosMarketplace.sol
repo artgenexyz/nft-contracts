@@ -74,15 +74,15 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     uint256 constant DEVELOPER_FEE = 1000; // of 10000;
 
     address public immutable AGOS;
-    address public immutable SHIBA;
+    // address public immutable SHIBA;
 
-    address private SHIBA_ETH_LP = 0x5764a6F2212D502bC5970f9f129fFcd61e5D7563;
+    // address private SHIBA_ETH_LP = 0x5764a6F2212D502bC5970f9f129fFcd61e5D7563;
 
-    constructor(address _AGOS, address _SHIBA)
+    constructor(address _AGOS)
         ERC1155("override")
     {
         AGOS = _AGOS;
-        SHIBA = _SHIBA;
+        // SHIBA = _SHIBA;
     }
 
     struct GameItem {
