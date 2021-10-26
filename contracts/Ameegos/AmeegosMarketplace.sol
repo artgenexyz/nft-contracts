@@ -86,7 +86,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     }
 
     struct GameItem {
-        uint256 price; // in ETH, or always AGOS
+        uint256 price; // in ETH, or AGOS (with decimals)
         uint256 maxSupply;
         uint256 mintedSupply;
         ItemType itemType;
@@ -226,8 +226,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
         require(item.itemType == ItemType.Claimable, "Item is not claimable");
 
-        uint256 total = 1 * amount; // If price not set, fall back to 1 AGOS
-        // uint256 total = item.price > 0 ? item.price * amount : 1 * amount; // If price not set, fall back to 1 AGOS
+        uint256 total = item.price * amount; // this is in AGOS
 
         // IERC20(AGOS).safeTransferFrom(msg.sender, address(this), total);
 
