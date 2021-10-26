@@ -15,7 +15,7 @@ const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
  - users can purchase item if minter didn't run out of supply and if saleStarted = true
  - users can list item for sale
  - users can buy items from other users
- - admin can withdraw funds from sale, but 10% goes to the developer address "0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170"
+ - admin can withdraw funds from sale, but 10% goes to the developer address "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587"
  - tokens are burnable
  - admin can flipSaleStarted, switching between sale active or disabled (saleStarted is true/false)
 
@@ -47,7 +47,7 @@ const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
 //     // users can purchase item if minter didn't run out of supply and if saleStarted = true
 //     // users can list item for sale
 //     // users can buy items from other users
-//     // admin can withdraw funds from sale, but 10% goes to the developer address "0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170"
+//     // admin can withdraw funds from sale, but 10% goes to the developer address "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587"
 
 //     constructor (IERC1155 _tokenContract) {
 //         require(_tokenContract.supportsInterface(type(IERC1155).interfaceId), "Token is not supported");

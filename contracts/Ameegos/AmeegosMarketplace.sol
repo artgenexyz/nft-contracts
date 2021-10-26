@@ -18,7 +18,7 @@ import "./Base64.sol";
  - admin can change price for each item
  - users can purchase item if minter didn't run out of supply and if saleStarted = true
 
- - admin can withdraw funds from sale, but 10% goes to the developer address "0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170"
+ - admin can withdraw funds from sale, but 10% goes to the developer address "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587"
  - tokens are burnable
  - admin can flipSaleStarted, switching between sale active or disabled (saleStarted is true/false)
 
@@ -51,7 +51,7 @@ contract AmeegosMarketplace is ERC1155, Ownable {
     using Strings for uint256;
 
     // Buildship storage
-    address payable buildship = payable(0xeA06e7CeEAD9c45ff642Bd43c235664b522d5170);
+    address payable buildship = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     uint256 constant DEVELOPER_FEE = 1000; // of 10000;
 
     address public immutable AGOS;
