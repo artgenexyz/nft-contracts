@@ -249,12 +249,12 @@ contract("AmeegosMarketplace", function (accounts) {
     assert(salesBalanceAfter == 0, "contract should withdraw all money");
 
     // check that 10% of salesBalanceBefore goes to buildship, and 90% goes to owner
-    assert.equal(buildshipBalanceAfter - buildshipBalanceBefore, salesBalanceBefore / 10, "10% of salesBalanceBefore should go to buildship");
+    assert.equal(buildshipBalanceAfter - buildshipBalanceBefore, salesBalanceBefore * 15 / 100, "15% of salesBalanceBefore should go to buildship");
 
     assert.equal(
       new BN(ownerBalanceAfter).sub(new BN(ownerBalanceBefore)).add(gasCost).toString(),
-      new BN(salesBalanceBefore).muln(9).divn(10).toString(),
-      "90% of salesBalanceBefore should go to owner"
+      new BN(salesBalanceBefore).muln(85).divn(100).toString(),
+      "85% of salesBalanceBefore should go to owner"
     );
 
   });
