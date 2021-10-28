@@ -16,12 +16,12 @@ contract AvatarNFTWithMintPass is AvatarNFT {
 
     function _checkSaleAllowed(address _to)
         internal
-        override
         view
         returns (bool)
     {
         // override this if you need custom logic
         return ERC721(MINT_PASS_ADDRESS).balanceOf(_to) > 0;
     }
-    
+
+    // TODO: implement mint
 }
