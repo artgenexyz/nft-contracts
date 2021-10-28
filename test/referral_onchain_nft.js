@@ -1,12 +1,35 @@
 const { assert } = require("chai");
 
-const ReferralNFT = artifacts.require("ReferralNFT");
+const ReferralOnchainNFT = artifacts.require("ReferralOnchainNFT");
 
-contract("ReferralNFT", accounts => {
+const BN = web3.utils.BN;
+const MINT_REFERRAL = 'mint(uint256,address)'
+
+contract("ReferralOnchainNFT", accounts => {
     // it should deploy successfully
     it("should deploy successfully", async () => {
-        const nft = await ReferralNFT.deployed();
+        const nft = await ReferralOnchainNFT.deployed();
         assert.ok(nft.address);
+
+    });
+
+    // it should fail selling if beneficiary is not set
+    it("should fail selling if beneficiary is not set", async () => {
+        const nft = await ReferralOnchainNFT.deployed();
+
+        try {
+            await nft.flipSaleStarted();
+            assert.fail("Sale started without beneficiary");
+        } catch (error) {
+            assert.ok(error.message.includes("Beneficiary not set"));
+        }
+    });
+
+    // it should start sale after setting beneficiary
+    it("should start sale after setting beneficiary", async () => {
+        const nft = await ReferralOnchainNFT.deployed();
+
+        await nft.setBeneficiary(accounts[1]);
 
         await nft.flipSaleStarted();
 
@@ -21,12 +44,12 @@ contract("ReferralNFT", accounts => {
      */
 
     it("should mint token with referral info", async () => {
-        const nft = await ReferralNFT.deployed();
+        const nft = await ReferralOnchainNFT.deployed();
         const referral = accounts[1];
         const nTokens = 1;
         const price = await nft.getPrice();
 
-        const tx = await nft.mintReferral(nTokens, referral, { value: price.muln(nTokens) });
+        const tx = await nft.methods[MINT_REFERRAL](nTokens, referral, { value: price.muln(nTokens) });
 
         const { tokenId } = tx.logs[0].args;
 
@@ -40,13 +63,13 @@ contract("ReferralNFT", accounts => {
 
     // it should update referral balance in pendingWithdrawals when someone mints token
     it("should update referral balance in pendingWithdrawals when someone mints token", async () => {
-        const nft = await ReferralNFT.deployed();
+        const nft = await ReferralOnchainNFT.deployed();
         const referral = accounts[1];
         const nTokens = 2;
         const price = await nft.getPrice();
         const REFERRAL_PERCENT = await nft.REFERRAL_PERCENT();
 
-        await nft.mintReferral(nTokens, referral, { value: price.muln(nTokens) });
+        await nft.methods[MINT_REFERRAL](nTokens, referral, { value: price.muln(nTokens) });
 
         const pendingBalance = await nft.pendingWithdrawals(referral);
         const referralReward = price.mul(REFERRAL_PERCENT).divn(10000).muln(nTokens);
@@ -55,13 +78,13 @@ contract("ReferralNFT", accounts => {
         console.log('predicted reward', referralReward.toString());
 
         // assert pendingBalance more or equal to price * nTokens * REFERRAL_PERCENT / 10000
-        assert(pendingBalance.sub(referralReward).toNumber() >= 0);
+        assert(pendingBalance.sub(referralReward).gte(0), "Pending balance is less than expected");
         // expect(pendingBalance).to.be.bignumber.gte(referralReward);
 
     });
 
-    xit("should allow referral to withdraw his pendingBalance", async () => {
-        const nft = await ReferralNFT.deployed();
+    it("should allow referral to withdraw his pendingBalance", async () => {
+        const nft = await ReferralOnchainNFT.deployed();
         const referral = accounts[1];
 
         // save referral balance withdraw
@@ -75,29 +98,19 @@ contract("ReferralNFT", accounts => {
 
         // assert balanceAfter - balanceBefore >= pendingBalance - gasSpent
         const gasPrice = await web3.eth.getGasPrice();
-        const gasSpent = new BN(tx.receipt.gasUsed).mul(gasPrice);
-
-        console.log('pending balance', pendingBalance);
-        console.log('pending balance', pendingBalance.toString());
-        console.log('pending balance', new BN(pendingBalance));
-        console.log('pending balance', new BN(pendingBalance).toString());
-        console.log('gas spent', gasSpent.toString());
-
-        // expect(balanceAfter.sub(balanceBefore)).to.be.bignumber.gte(pendingBalance.sub(gasSpent));
+        console.log('tx', tx.receipt.gasUsed, gasPrice);
+        const gasSpent = new BN(gasPrice).muln(tx.receipt.gasUsed); //.mul(gasPrice);
 
         // check that pendingBalance is 0
         const pendingBalanceAfter = await nft.pendingWithdrawals(referral);
 
-        console.log('pendingBalanceAfter', pendingBalanceAfter)
-        console.log('pendingBalanceAfter', pendingBalanceAfter.toString())
-
-        // expect(pendingBalanceAfter).to.be.bignumber.equal(new BN(0));
+        assert.equal(pendingBalanceAfter.toNumber(), 0, "Pending balance is not zero");
 
     });
 
 
     xit("should mint tokens with referral info", async () => {
-        const nft = await ReferralNFT.deployed();
+        const nft = await ReferralOnchainNFT.deployed();
 
         const buyer = accounts[2];
         const referral = accounts[1];
@@ -108,7 +121,7 @@ contract("ReferralNFT", accounts => {
         const balanceBefore = await nft.balanceOf(buyer);
         const totalSupplyBefore = await nft.totalSupply();
 
-        await nft.mintReferral(amount, referral, { from: buyer, value: price.muln(amount) });
+        await nft.methods[MINT_REFERRAL](amount, referral, { from: buyer, value: price.muln(amount) });
 
         const balanceAfter = await nft.balanceOf(buyer);
         const totalSupplyAfter = await nft.totalSupply();
