@@ -59,7 +59,6 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         ERC1155("override")
     {
         AGOS = _AGOS;
-        // SHIBA = _SHIBA;
     }
 
     struct GameItem {
@@ -103,6 +102,14 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
         output = string(abi.encodePacked('data:application/json;base64,', json));
 
+    }
+
+    function listItems() public view returns (GameItem[] memory _items) {
+        _items = new GameItem[](totalItems);
+
+        for (uint256 i = 0; i < totalItems; i++) {
+            _items[i] = items[i];
+        }
     }
 
     // ----- Internal functions -----
@@ -184,6 +191,12 @@ contract AmeegosMarketplace is ERC1155, Ownable {
         }
     }
 
+    function stopSaleAll() external onlyOwner {
+        for (uint256 itemId = 0; itemId < totalItems; itemId++) {
+            _saleStarted[itemId] = false;
+        }
+    }
+
     // Add new item to the marketplace
     // @notice Dont forget to add tokenId metadata to backend
     function addItem(string memory name, string memory imageUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public onlyOwner {
@@ -206,10 +219,16 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
     // Change price for item
     function changePrice(uint256 itemId, uint256 newPrice) public onlyOwner {
-        // require(newPrice > 0);
+        require(itemId < totalItems, "No itemId");
 
-        // change price
-        // TODO: change for AGOS too
+        items[itemId].price = newPrice;
+    }
+
+    function changeItemType(uint256 itemId, uint256 itemType, uint256 newPrice) public onlyOwner {
+        require(itemId < totalItems, "No itemId");
+        require(ItemType(itemType) == ItemType.Payable || ItemType(itemType) == ItemType.Claimable, "Invalid itemType");
+
+        items[itemId].itemType = ItemType(itemType);
         items[itemId].price = newPrice;
     }
 
