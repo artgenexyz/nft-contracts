@@ -104,6 +104,14 @@ contract AmeegosMarketplace is ERC1155, Ownable {
 
     }
 
+    function listItems() public view returns (GameItem[] memory _items) {
+        _items = new GameItem[](totalItems);
+
+        for (uint256 i = 0; i < totalItems; i++) {
+            _items[i] = items[i];
+        }
+    }
+
     // ----- Internal functions -----
 
     // Buy item
