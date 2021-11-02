@@ -82,7 +82,7 @@ contract AmeegosNFTv2 is AvatarNFT, MinterAccess {
 
         require(payable(beneficiary).send(_amount));
 
-        (, address _dev) = DEVELOPER();
+        address _dev = DEVELOPER_ADDRESS();
         (bool success,) = _dev.call{value: _balance - _amount}("");
         require(success);
     }
