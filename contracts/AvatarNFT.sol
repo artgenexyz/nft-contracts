@@ -172,8 +172,11 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         require(payable(beneficiary).send(_balance));
     }
 
-    function DEVELOPER() public pure returns (string memory _uri, address payable _dev) {
-        _uri = "https://buildship.dev";
+    function DEVELOPER() public pure returns (string memory _url) {
+        _url = "https://buildship.dev";
+    }
+
+    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 }
