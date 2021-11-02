@@ -13,10 +13,14 @@ module.exports = async function(deployer, network) {
     }
 
     await deployer.deploy(AmeegosNFTv2);
-    const nft = await AmeegosNFTv2.deployed();
+    const nft = await AmeegosNFTv2.at("0xf033e4593056f91d43770e01d59449c987ba2e68");
 
     await deployer.deploy(AmeegosMintPassv2, nft.address);
-    const mint = await AmeegosMintPassv2.deployed();
+    const mint = await AmeegosMintPassv2.at("0x63420e1bf75079688dca30c9e866b1d3ed6ec083");
+
+    // await nft.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
+    // await mint.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
+    // return;
 
     await nft.setMinter(mint.address);
     await nft.setBeneficiary(AMEEGOS_ADMIN);
