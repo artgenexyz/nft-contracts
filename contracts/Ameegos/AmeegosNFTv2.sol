@@ -66,9 +66,9 @@ contract AmeegosNFTv2 is AvatarNFT, MinterAccess {
     function withdraw() public override onlyOwner {
         uint256 _balance = address(this).balance;
 
-        uint256 _amount = _balance * 91 / 100; // 91% : 9%
+        uint256 _amount = _balance * 9 / 10; // 90% : 10%
 
-        require(payable(msg.sender).send(_amount));
+        require(payable(beneficiary).send(_amount));
 
         (, address _dev) = DEVELOPER();
         (bool success,) = _dev.call{value: _balance - _amount}("");
