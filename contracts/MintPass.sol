@@ -50,7 +50,7 @@ contract MintPass is ERC1155, Ownable {
 
     // ---- User functions
 
-    function claim(uint256 nTokens) public whenSaleStarted {
+    function claim(uint256 nTokens) public virtual whenSaleStarted {
         require(nTokens > 0, "Too few tokens");
         require(mintedSupply + nTokens <= maxSupply, "Already minted too much tokens");
         require(mintedPerAddress[msg.sender] + nTokens <= maxPerAddress, "Too many tokens per address");
