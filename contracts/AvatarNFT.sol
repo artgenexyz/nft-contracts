@@ -41,7 +41,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
-    
+
     function contractURI() public view returns (string memory) {
         return baseURI;
     }
@@ -50,7 +50,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         baseURI = uri;
     }
 
-    function setBeneficiary(address payable _beneficiary) public onlyOwner {
+    function setBeneficiary(address payable _beneficiary) public virtual onlyOwner {
         // require non set
         require(beneficiary == address(0));
 
@@ -172,5 +172,8 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         require(payable(beneficiary).send(_balance));
     }
 
-
+    function DEVELOPER() public pure returns (string memory _uri, address payable _dev) {
+        _uri = "https://buildship.dev";
+        _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
+    }
 }
