@@ -22,9 +22,9 @@ contract MintPass is ERC1155, Ownable {
     uint256 immutable maxPerAddress;
     uint256 immutable maxSupply; // TODO: maybe admin can edit this?
 
-    uint256 private mintedSupply;
+    uint256 internal mintedSupply;
 
-    mapping (address => uint256) private mintedPerAddress;
+    mapping (address => uint256) internal mintedPerAddress;
 
     // ---- Sale control block
 
