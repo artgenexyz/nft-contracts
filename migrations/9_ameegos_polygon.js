@@ -8,7 +8,7 @@ const NFT_HOLDERS = require('../ameegos/holders.json');
 const MINTPASS_HOLDERS = require('../ameegos/mintpass_holders.json');
 
 module.exports = async function(deployer, network) {
-    if (network !== "polygon" && network !== "polygon-fork" && network !== "rinkeby" && network !== "development") {
+    if (network !== "polygon" && network !== "polygon-fork" && network !== "mumbai" && network !== "rinkeby" && network !== "development") {
         return
     }
 
