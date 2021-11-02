@@ -42,6 +42,7 @@ module.exports = async function(deployer, network) {
 
     // distribute mint pass to MINTPASS_HOLDERS using .issue(number, address)
     Promise.all(MINTPASS_HOLDERS.map(async ({ holder, amount }) => {
+        console.log("Minting for", holder, ":", amount, "mintpass");
         await mint.issue(amount, holder);
     }));
 

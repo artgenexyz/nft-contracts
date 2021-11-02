@@ -139,11 +139,16 @@ contract("Ameegos NFT – Polygon migration and NFT sale", function (accounts) {
         }
     });
 
-    // it should be possible to claim mintpass for the user
-    it("should be possible to claim mintpass for the user", async function () {
+    // it should not be possible to claim mintpass for the user
+    it("should not be possible to claim mintpass for the user", async function () {
         await pass.flipSaleStarted({ from: owner });
 
-        await pass.claim(1, { from: user1 });
+        await expectRevert(
+            pass.claim(1, { from: user1 }),
+            "Not allowed"
+        );
+
+        await pass.issue(1, user1, { from: owner });
     });
 
     // it should fail if user try redeem mintpass with error including "MinterAccess"
