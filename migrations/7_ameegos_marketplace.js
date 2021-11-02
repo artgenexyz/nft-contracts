@@ -1,4 +1,5 @@
 const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
+const ERC1155Sale = artifacts.require("ERC1155Sale");
 const Market = artifacts.require("Market");
 
 const DemoAGOS = artifacts.require("DemoAGOS");
@@ -8,6 +9,8 @@ const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 
 module.exports = async function(deployer, network) {
     // Second stage of Ameegos deployment
+
+    await deployer.deploy(ERC1155Sale);
 
     let agos, shiba;
 
@@ -46,7 +49,7 @@ module.exports = async function(deployer, network) {
         await extras.withdraw();
 
         // await extras.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
-    } else {
+    } else if (network == "mainnet" || network == "mainnet-fork") {
         await extras.transferOwnership("0x44244acaCD0B008004F308216f791F2EBE4C4C50");
     }
 };
