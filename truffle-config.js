@@ -8,6 +8,7 @@ const mnemonic = fs.readFileSync(".mnemonic").toString().trim();
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
+const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
 
 module.exports = {
   /**
@@ -59,11 +60,25 @@ module.exports = {
       provider: () => new HDWalletProvider({
         mnemonic,
         providerOrUrl: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
-        shareNonce: false,
+        // shareNonce: false,
       }),
       network_id: 137,
       gas: 8500000,
       gasPrice: 50e9,
+      confirmations: 1,
+      skipDryRun: true,
+    },
+    bsc: {
+      provider: () => new HDWalletProvider(mnemonic, "https://bsc-dataseed1.binance.org"),
+      network_id: 56,
+      gas: 8500000,
+      confirmations: 1,
+      skipDryRun: true,
+    },
+    chapel: {
+      provider: () => new HDWalletProvider(mnemonic, "https://data-seed-prebsc-1-s1.binance.org:8545"),
+      network_id: 97,
+      gas: 8500000,
       confirmations: 1,
       skipDryRun: true,
     },
@@ -89,6 +104,7 @@ module.exports = {
   api_keys: {
     etherscan: ETHERSCAN_API_KEY,
     polygonscan: POLYGONSCAN_API_KEY,
+    bscscan: BSCSCAN_API_KEY,
   }
 
 };
