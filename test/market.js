@@ -122,7 +122,7 @@ contract("Market", function (accounts) {
   });
 
   // prepare users: buy tokens from extras for each user
-  it("should be possible to buy tokens from extras", async function () {
+  xit("should be possible to buy tokens from extras", async function () {
     await extras.addItem("Skin", "https://uri", ether.muln(0.05), 100, { from: admin });
     await extras.addItem("Weapon", "https://uri", ether.muln(0.01), 200, { from: admin });
 
@@ -133,7 +133,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to list token for sale
-  it("should be possible to list token for sale", async function () {
+  xit("should be possible to list token for sale", async function () {
 
     await extras.setApprovalForAll(marketplace.address, true, { from: user1 });
 
@@ -149,7 +149,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy listed token
-  it("should be possible to buy 1 of 2 listed token", async function () {
+  xit("should be possible to buy 1 of 2 listed token", async function () {
     await marketplace.buy(0, 1, { from: user2, value: ether });
 
     const offer = await marketplace.offers(0);
@@ -164,7 +164,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy full offer, and offer is removed
-  it("should be possible to buy full offer, and offer is removed", async function () {
+  xit("should be possible to buy full offer, and offer is removed", async function () {
     await marketplace.buy(0, 1, { from: user3, value: ether });
 
     const offer = await marketplace.offers(0);

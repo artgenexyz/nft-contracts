@@ -226,8 +226,8 @@ contract("AmeegosMarketplace", function (accounts) {
     assert.equal(itemsBought, 10, "item should be bought");
   });
 
-  // it should be able to withdraw sales money, and 10% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587
-  it("should be able to withdraw sales money, and 10% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587", async function () {
+  // it should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587
+  it("should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587", async function () {
     const extras = await AmeegosMarketplace.deployed();
 
     const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
@@ -248,7 +248,7 @@ contract("AmeegosMarketplace", function (accounts) {
     assert(ownerBalanceAfter - ownerBalanceBefore > 0, "owner should have more money after withdraw");
     assert(salesBalanceAfter == 0, "contract should withdraw all money");
 
-    // check that 10% of salesBalanceBefore goes to buildship, and 90% goes to owner
+    // check that 15% of salesBalanceBefore goes to buildship, and 90% goes to owner
     assert.equal(buildshipBalanceAfter - buildshipBalanceBefore, salesBalanceBefore * 15 / 100, "15% of salesBalanceBefore should go to buildship");
 
     assert.equal(
