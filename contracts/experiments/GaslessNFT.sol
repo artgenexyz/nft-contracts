@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import './AvatarNFT.sol';
+import '../AvatarNFT.sol';
 
 contract GaslessNFT is AvatarNFT {
 
