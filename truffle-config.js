@@ -40,7 +40,7 @@ module.exports = {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${INFURA_KEY}`),
       network_id: 4,       // Rinkeby
       gas: 8500000,
-      gasPrice: 50e9,
+      gasPrice: 10e9,
       confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       skipDryRun: true,
       // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
@@ -69,7 +69,7 @@ module.exports = {
       skipDryRun: true,
     },
     mumbai: {
-      provider: () => new HDWalletProvider(mnemonic, "https://rpc-mumbai.matic.today"),
+      provider: () => new HDWalletProvider(mnemonic, "wss://ws-mumbai.matic.today"),
       network_id: 80001,
       gas: 8500000,
       confirmations: 1,

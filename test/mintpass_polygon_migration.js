@@ -7,6 +7,8 @@ const AmeegosNFT = artifacts.require("AmeegosNFT");
 const AmeegosMintPassv2 = artifacts.require("AmeegosMintPassv2");
 const AmeegosNFTv2 = artifacts.require("AmeegosNFTv2");
 
+const HOLDERS = require('../ameegos/holders.json');
+
 // This is hard. We have extracted list of old holders for AmeegosNFT and AmeegosMintPassv2.
 // We need to test:
 // - we can mint AmeegosNFTv2 to old holders
@@ -17,80 +19,7 @@ const AmeegosNFTv2 = artifacts.require("AmeegosNFTv2");
 // - we can start the sale on AmeegosNFT and change the price
 // - if we are on mainnet fork, we can check if the NFTs have same owners
 
-const HOLDERS_DEMO = [
-  {
-    "tokenId": 1,
-    "holder": "0x943590A42C27D08e3744202c4Ae5eD55c2dE240D"
-  },
-  {
-    "tokenId": 2,
-    "holder": "0x027865Ac80501fd655F054aA4823f9149f72DA64"
-  },
-  {
-    "tokenId": 3,
-    "holder": "0x6407f9db532b53ff46418F0318Cf4e707Fb9046C"
-  },
-  {
-    "tokenId": 4,
-    "holder": "0x3f8ADbe12456188433d0CF09E0472084c4F29671"
-  },
-  {
-    "tokenId": 5,
-    "holder": "0x0E692aDBDE792b5d1b0a79912cBE9c394Cb5aEe1"
-  },
-  {
-    "tokenId": 6,
-    "holder": "0xA5F158e596D0e4051e70631D5d72a8Ee9d5A3B8A"
-  },
-  {
-    "tokenId": 7,
-    "holder": "0xc2c2E23dd7d2511cEa79B41310697A87dC8d7a3c"
-  },
-  {
-    "tokenId": 8,
-    "holder": "0x42C88F19edBd56d7F2b9014163491fDA7B25051d"
-  },
-  {
-    "tokenId": 9,
-    "holder": "0x0fe60E55a8C0700b47d4a2663079c445Fc4A5893"
-  },
-  {
-    "tokenId": 10,
-    "holder": "0x44244acaCD0B008004F308216f791F2EBE4C4C50"
-  },
-  {
-    "tokenId": 11,
-    "holder": "0xf16b6502F917B786c2720bd0d003c87bF4A4c522"
-  },
-  {
-    "tokenId": 12,
-    "holder": "0x19d6629EA138Bbd85a2b7F8C865F4e38B05bcE75"
-  },
-  {
-    "tokenId": 13,
-    "holder": "0x260Df8D20e81fd29A4aAe1B9058c4De8851E5b18"
-  },
-  {
-    "tokenId": 14,
-    "holder": "0xFD892902cE58C4fe0e5289d19E639F21C9c886Ab"
-  },
-  {
-    "tokenId": 15,
-    "holder": "0x15220D07F62F35578c215F03b0d02a7302A11dCF"
-  },
-  {
-    "tokenId": 16,
-    "holder": "0x1A5B5a2FF1F70989E186aC6109705CF2cA327158"
-  },
-  {
-    "tokenId": 17,
-    "holder": "0x9B86F08e7Cd1Cc305fAc01b2dC69b18a09b3b13b"
-  },
-  {
-    "tokenId": 18,
-    "holder": "0xCa49Cc398fd82904986487BB11DDD451c2f17B48"
-  }
-]
+const HOLDERS_DEMO = HOLDERS.slice(0,20)
 
 const MINTPASS_HOLDERS_DEMO = [
 
@@ -165,11 +94,37 @@ contract("Ameegos NFT – Polygon migration and NFT sale", function (accounts) {
         assert.equal(await nft.saleStarted(), false, "nft saleStarted should be false");
     });
 
+    // it should be able to run claimBatch until 1356 are reserved
+    it("should be able to run claimBatch a lot", async function () {
+        HOLDERS.splice(0, 20); // already added
+
+        for (let i = 0; i < HOLDERS.length; i += 50) {
+            const batch = HOLDERS.slice(i, i + 50);
+            const tokenIds = batch.map(h => h.tokenId);
+            const holders = batch.map(h => h.holder);
+            console.log("Minting batch", i, "of", HOLDERS.length, "with", tokenIds.length, "tokenIds\n", tokenIds);
+
+            const tx = await nft.claimBatch(tokenIds, holders);
+            console.log('tx', tx.receipt.gasUsed, tx.receipt.hash);
+        }
+
+        // check getReservedLeft() is zero
+        assert.equal(await nft.getReservedLeft(), 0, "getReservedLeft() should be 0");
+
+        // select random tokenID from HOLDERS and check it's holder is the same as nft.ownerOf(tokenId)
+        const { tokenId, holder } = HOLDERS[Math.floor(Math.random() * HOLDERS.length)];
+        const owner = await nft.ownerOf(tokenId);
+
+        console.log('tokenId', tokenId, 'holder', holder, 'owner', owner);
+
+        assert.equal(owner, holder, "owner should be the same as holder");
+    });
+
     // it should mint correct tokenURI, check for tokenID = 7
     it("should mint correct tokenURI, check for tokenID = 7", async function () {
         // from https://etherscan.io/address/0xf522b448dbf8884038c684b5c3de95654007fd2b#readContract
         const tokenId = 7;
-        const tokenURI = 'ipfs://QmcXei9Mo46XijLncQuPAmbRAC5QXfREqkb4RisKprUX4Y/7.json';
+        const tokenURI = 'ipfs://QmXE9FZkbaXSKcigDdx5d6uZu84xKQwamdjh8mxZLzKpp6/7.json';
 
         const uri = await nft.tokenURI(tokenId);
 
@@ -184,11 +139,16 @@ contract("Ameegos NFT – Polygon migration and NFT sale", function (accounts) {
         }
     });
 
-    // it should be possible to claim mintpass for the user
-    it("should be possible to claim mintpass for the user", async function () {
+    // it should not be possible to claim mintpass for the user
+    it("should not be possible to claim mintpass for the user", async function () {
         await pass.flipSaleStarted({ from: owner });
 
-        await pass.claim(1, { from: user1 });
+        await expectRevert(
+            pass.claim(1, { from: user1 }),
+            "Not allowed"
+        );
+
+        await pass.issue(1, user1, { from: owner });
     });
 
     // it should fail if user try redeem mintpass with error including "MinterAccess"
@@ -289,11 +249,11 @@ contract("Ameegos NFT – Polygon migration and NFT sale", function (accounts) {
       const tokenId = await nft.tokenOfOwnerByIndex(user1, 0);
 
       // approve nft for transfer to pass.address
-      await nft.setApprovedForAll(pass.address, { from: user1 });
+      await nft.setApprovalForAll(pass.address, { from: user1 });
 
       await expectRevert(
         nft.safeTransferFrom(user1, pass.address, tokenId, { from: user1 }),
-        "ERC721: not receive ERC712"
+        "ERC721: transfer to non ERC721Receiver implementer"
       );
     });
 });

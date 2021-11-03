@@ -54,6 +54,18 @@ contract AmeegosNFTv2 is AvatarNFT, MinterAccess {
         _reserved = _reserved - _number;
     }
 
+    function claimBatch(uint256[] calldata tokenIds, address[] calldata _receivers) public onlyOwner {
+        require(saleStarted() == false, "Only batch airdrop while sale is not started");
+        require(tokenIds.length == _receivers.length, "TokenIds and Receivers must be the same length");
+        require(tokenIds.length <= _reserved, "That would exceed the max reserved.");
+
+        for (uint256 i; i < tokenIds.length; i++) {
+            require(tokenIds[i] == totalSupply() + 1, "You can only claim the next tokenID");
+            _safeMint(_receivers[i], tokenIds[i]);
+        }
+
+        _reserved = _reserved - tokenIds.length;
+    }
 
     // --- Admin functions ---
 
@@ -66,11 +78,11 @@ contract AmeegosNFTv2 is AvatarNFT, MinterAccess {
     function withdraw() public override onlyOwner {
         uint256 _balance = address(this).balance;
 
-        uint256 _amount = _balance * 91 / 100; // 91% : 9%
+        uint256 _amount = _balance * 9 / 10; // 90% : 10%
 
-        require(payable(msg.sender).send(_amount));
+        require(payable(beneficiary).send(_amount));
 
-        (, address _dev) = DEVELOPER();
+        address _dev = DEVELOPER_ADDRESS();
         (bool success,) = _dev.call{value: _balance - _amount}("");
         require(success);
     }
