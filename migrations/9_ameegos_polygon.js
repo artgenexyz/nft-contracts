@@ -8,15 +8,19 @@ const NFT_HOLDERS = require('../ameegos/holders.json');
 const MINTPASS_HOLDERS = require('../ameegos/mintpass_holders.json');
 
 module.exports = async function(deployer, network) {
-    if (network !== "polygon" && network !== "polygon-fork" && network !== "rinkeby") {
+    if (network !== "polygon" && network !== "polygon-fork" && network !== "mumbai" && network !== "rinkeby" && network !== "development") {
         return
     }
 
     await deployer.deploy(AmeegosNFTv2);
-    const nft = await AmeegosNFTv2.deployed();
+    const nft = await AmeegosNFTv2.at("0xf033e4593056f91d43770e01d59449c987ba2e68");
 
     await deployer.deploy(AmeegosMintPassv2, nft.address);
-    const mint = await AmeegosMintPassv2.deployed();
+    const mint = await AmeegosMintPassv2.at("0x63420e1bf75079688dca30c9e866b1d3ed6ec083");
+
+    // await nft.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
+    // await mint.transferOwnership("0x44244acacd0b008004f308216f791f2ebe4c4c50");
+    // return;
 
     await nft.setMinter(mint.address);
     await nft.setBeneficiary(AMEEGOS_ADMIN);
@@ -26,24 +30,23 @@ module.exports = async function(deployer, network) {
         await nft.setPrice(1e16.toString());
     }
 
-    // sort holders by tokenID – already sorted
-    // NFT_HOLDERS.sort((a, b) => {
-    //     return a.tokenID - b.tokenID;
-    // });
+    if (network === "development") {
+        return
+    }
 
-    // mint NFTs by claimReserved(amount, address) using Promise.all
-    const mintNFTs = Promise.all(NFT_HOLDERS.map(async ({ holder }) => {
-        await nft.claimReserved(1, holder);
-    }));
+    // mint NFTs by claimReserved(tokenIds[], address[]) in batches of 20
+    for (let i = 0; i < NFT_HOLDERS.length; i += 50) {
+        const batch = NFT_HOLDERS.slice(i, i + 50);
+        const tokenIds = batch.map(h => h.tokenId);
+        const holders = batch.map(h => h.holder);
+        console.log("Minting batch", i, "of", NFT_HOLDERS.length, "with", tokenIds.length, "tokenIds\n", tokenIds);
 
-    await mintNFTs;
-
-    // check that tokenID = 7 belongs to 0xc2c2E23dd7d2511cEa79B41310697A87dC8d7a3c
-    // assert(await nft.ownerOf(7) === "0xc2c2E23dd7d2511cEa79B41310697A87dC8d7a3c", "tokenID 7 should belong to 0xc2c2E23dd7d2511cEa79B41310697A87dC8d7a3c");
-
+        const tx = await nft.claimBatch(tokenIds, holders);
+    }
 
     // distribute mint pass to MINTPASS_HOLDERS using .issue(number, address)
     Promise.all(MINTPASS_HOLDERS.map(async ({ holder, amount }) => {
+        console.log("Minting for", holder, ":", amount, "mintpass");
         await mint.issue(amount, holder);
     }));
 

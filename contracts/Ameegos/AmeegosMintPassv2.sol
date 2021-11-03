@@ -22,6 +22,10 @@ contract AmeegosMintPassv2 is MintPass {
         originalContract = original;
     }
 
+    function claim(uint256) public pure override {
+        revert("Not allowed");
+    }
+
     // Free issue to airdrop mint passes to old holders
     function issue(uint256 amount, address to) public onlyOwner {
         require(amount > 0, "Too few tokens");
