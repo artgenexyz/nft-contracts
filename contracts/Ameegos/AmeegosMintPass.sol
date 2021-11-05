@@ -28,7 +28,7 @@ import "./AmeegosNFT.sol";
 contract AmeegosMintPass is MintPass, ERC721Holder {
     AmeegosNFT immutable public originalContract;
 
-    constructor (AmeegosNFT original) MintPass(6000, 10, "https://metadata.buildship.dev/api/token/ameegos-mint-pass/{id}") {
+    constructor (AmeegosNFT original) MintPass(6000, 10, 0 wei, "https://metadata.buildship.dev/api/token/ameegos-mint-pass/{id}") {
         originalContract = original;
     }
 
