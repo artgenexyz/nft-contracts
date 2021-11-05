@@ -41,6 +41,16 @@ truffle migrate --network rinkeby
 truffle run verify MoonNFT --network rinkeby
 ```
 
+### Upload for Frontend Deploy
+
+```bash
+truffle exec ./scripts/upload.mjs [contract name] --compile
+```
+
+Unfortunately, it still needs network, but it doesn't matter which you use. You can run with ganache enabled.
+
+In the end, you get IPFS hash to the uploaded bytecode. Use in on https://deploy.buildship.dev?ipfs=
+
 ### Bonus
 
 How to interact with contracts from deployed truffle?
