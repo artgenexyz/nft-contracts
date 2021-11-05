@@ -27,6 +27,7 @@ contract ERC1155Sale is ERC1155, Ownable {
         ItemType itemType;
         string name;
         string imageUrl;
+        string animationUrl;
     }
 
     mapping(uint256 => GameItem) public items;
@@ -55,6 +56,7 @@ contract ERC1155Sale is ERC1155, Ownable {
             '{',
             '"name": "', item.name, '",',
             '"description": "The Fight for Meegosa is an NFT community MMORPG. Join the community and learn more in our Discord. https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+            '"animation_url": "', item.animationUrl, '",',
             '"image": "', item.imageUrl, '"',
             '}'
         ))));
@@ -141,13 +143,13 @@ contract ERC1155Sale is ERC1155, Ownable {
 
     // Add new item to the marketplace
     // @notice Dont forget to add tokenId metadata to backend
-    function addItem(string memory name, string memory imageUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public onlyOwner {
+    function addItem(string memory name, string memory imageUrl, string calldata animationUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public onlyOwner {
         require(maxSupply > 0, "Invalid maxSupply");
 
         uint256 newItemId = totalItems;
 
         // create new item
-        GameItem memory item = GameItem(price, maxSupply, 0, itemType, name, imageUrl);
+        GameItem memory item = GameItem(price, maxSupply, 0, itemType, name, imageUrl, animationUrl);
 
         // add item to the array
         items[newItemId] = item;
