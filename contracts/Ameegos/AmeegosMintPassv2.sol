@@ -18,11 +18,11 @@ import "./AmeegosNFTv2.sol";
 contract AmeegosMintPassv2 is MintPass {
     AmeegosNFTv2 immutable public originalContract;
 
-    constructor (AmeegosNFTv2 original) MintPass(6000, 10, "https://metadata.buildship.dev/api/token/ameegos-mint-pass/{id}") {
+    constructor (AmeegosNFTv2 original) MintPass(6000, 10, 0 wei, "https://metadata.buildship.dev/api/token/ameegos-mint-pass/{id}") {
         originalContract = original;
     }
 
-    function claim(uint256) public pure override {
+    function claim(uint256) public payable override {
         revert("Not allowed");
     }
 
