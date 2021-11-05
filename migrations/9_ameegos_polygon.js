@@ -12,6 +12,8 @@ module.exports = async function(deployer, network) {
         return
     }
 
+    return;
+
     await deployer.deploy(AmeegosNFTv2);
     const nft = await AmeegosNFTv2.at("0xf033e4593056f91d43770e01d59449c987ba2e68");
 
