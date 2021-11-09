@@ -37,12 +37,14 @@ contract MoonNFT is ReferralNFT, TierNFT {
         _reservedByTier[TierId.wrap(uint8(Tier.President))] = 3;
         _reservedByTier[TierId.wrap(uint8(Tier.Genesis))] = 1;
 
-        _priceByTier[TierId.wrap(uint8(Tier.Standard))] = 0.08 ether;
-        _priceByTier[TierId.wrap(uint8(Tier.Elite))] = 0.2 ether;
-        _priceByTier[TierId.wrap(uint8(Tier.VIP))] = 0.3 ether;
-        _priceByTier[TierId.wrap(uint8(Tier.Prestige))] = 0.7 ether;
-        _priceByTier[TierId.wrap(uint8(Tier.President))] = 1.2 ether;
-        _priceByTier[TierId.wrap(uint8(Tier.Genesis))] = 100 ether; // isn't used, because only 1 and it's reserved
+        // This is in MATIC
+
+        _priceByTier[TierId.wrap(uint8(Tier.Standard))] = 200 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Elite))] = 500 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.VIP))] = 770 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Prestige))] = 1800 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.President))] = 3100 ether;
+        _priceByTier[TierId.wrap(uint8(Tier.Genesis))] = 10000 ether; // isn't used, because only 1 and it's reserved
 
         // inverted!
         _tierRanges[TierId.wrap(uint8(Tier.Genesis))] = Range(0, 0);
