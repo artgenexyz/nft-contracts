@@ -10,7 +10,7 @@ contract NonChimpzNFT is AvatarNFT {
         17777,
         0,
         17777,
-        "https://metadata.buildship.dev/api/token/nonchimpz/",
+        "https://meta.nonchimpz.com/api/token/nonchimpz/",
         "Non-Chimpz Headz", "NONCHH"
     ) {}
 
