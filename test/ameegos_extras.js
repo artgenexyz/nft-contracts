@@ -73,7 +73,15 @@ contract("AmeegosMarketplace", function (accounts) {
 
     assert(totalItems, 0, "there should be no items until we create");
 
-    await extras.addItem("Test Item", "https://uri", 1e18.toString(), 1000, 0, false);
+    await extras.addItem(
+      "Test Item",
+      "https://uri",
+      "https://uri",
+      (1e18).toString(),
+      1000,
+      0,
+      false
+    );
 
     const totalItems2 = await extras.totalItems();
 
@@ -106,9 +114,33 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const totalItems = await extras.totalItems();
 
-    await extras.addItem("Lizard Skin", "https://uri", (10 * 1e16).toString(), 100, 0, true);
-    await extras.addItem("Stone Armour", "https://uri", (5 * 1e16).toString(), 200, 0, true);
-    await extras.addItem("Golden Sword", "https://uri", (20 * 1e16).toString(), 50, 0, true);
+    await extras.addItem(
+      "Lizard Skin",
+      "https://uri",
+      "https://uri",
+      (10 * 1e16).toString(),
+      100,
+      0,
+      true
+    );
+    await extras.addItem(
+      "Stone Armour",
+      "https://uri",
+      "https://uri",
+      (5 * 1e16).toString(),
+      200,
+      0,
+      true
+    );
+    await extras.addItem(
+      "Golden Sword",
+      "https://uri",
+      "https://uri",
+      (20 * 1e16).toString(),
+      50,
+      0,
+      true
+    );
 
     const totalItems2 = await extras.totalItems();
 
@@ -141,7 +173,15 @@ contract("AmeegosMarketplace", function (accounts) {
     const totalItems = await extras.totalItems();
 
     try {
-      await extras.addItem("Test Item", "https://uri", 1e18.toString(), 0, 0, true);
+      await extras.addItem(
+        "Test Item",
+        "https://uri",
+        "https://uri",
+        (1e18).toString(),
+        0,
+        0,
+        true
+      );
     } catch (error) {
       // Error message should include "Invalid maxSupply"
       assert.include(error.message, "Invalid maxSupply");
@@ -188,7 +228,15 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const itemId = 4; // Incredible Capricorn
 
-    await extras.addItem("Incredible Capricorn", "https://uri", (2 * 1e16).toString(), 200, 0, true);
+    await extras.addItem(
+      "Incredible Capricorn",
+      "https://uri",
+      "https://uri",
+      (2 * 1e16).toString(),
+      200,
+      0,
+      true
+    );
 
     await extras.buyItem(4, 200, { from: user1, value: 200 * 2 * 1e16 });
 
@@ -350,7 +398,16 @@ contract("AmeegosMarketplace", function (accounts) {
     const amount = 100;
 
     // addItem Bankless Banker with 100 supply
-    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), amount, 1, true, { from: owner });
+    const tx = await extras.addItem(
+      "Bankless Banker",
+      "https://mock",
+      "https://uri",
+      (100 * 1e16).toString(),
+      amount,
+      1,
+      true,
+      { from: owner }
+    );
 
     const { itemId } = tx.logs[0].args;
 
@@ -366,7 +423,16 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const extras = await AmeegosMarketplace.deployed();
 
-    const tx = await extras.addItem("Bankless Banker", "https://mock", (100 * 1e16).toString(), 100, 1, true, { from: owner });
+    const tx = await extras.addItem(
+      "Bankless Banker",
+      "https://mock",
+      "https://uri",
+      (100 * 1e16).toString(),
+      100,
+      1,
+      true,
+      { from: owner }
+    );
 
     const { itemId } = tx.logs[0].args;
 
@@ -384,5 +450,5 @@ contract("AmeegosMarketplace", function (accounts) {
 
   });
 
-  
+
 })
