@@ -9,9 +9,8 @@ const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 
 module.exports = async function(deployer, network) {
     // Second stage of Ameegos deployment
-    return;
 
-    await deployer.deploy(ERC1155Sale);
+    // await deployer.deploy(ERC1155Sale);
 
     let agos, shiba;
 
