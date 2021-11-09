@@ -121,7 +121,7 @@ contract AvatarNFT is ERC721, ERC721Enumerable, Ownable {
         PROVENANCE_HASH = provenanceHash;
     }
 
-    // Helper to list all the Tigers of a wallet
+    // Helper to list all the tokens of a wallet
     function walletOfOwner(address _owner) public view returns(uint256[] memory) {
         uint256 tokenCount = balanceOf(_owner);
 

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "./AvatarNFT.sol";
+// import "https://github.com/buildship-dev/nft-contracts/blob/main/contracts/AvatarNFT.sol";
 
 contract TemplateNFT is AvatarNFT {
 
