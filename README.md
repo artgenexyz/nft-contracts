@@ -100,6 +100,14 @@ nft = await TemplateNFT.at("0xDeployedAddress")
 nft.transferOwnership("0xyourMetamaskAccount")
 ```
 
+Or simply:
+
+```bash
+truffle exec scripts/transfer.mjs TemplateNFT 0xYourMetamaskAccount --network rinkeby
+```
+
+(mind the argument order, be sure to have network last)
+
 ### Upload for Frontend Deploy
 
 Instead of deploying from your local machine, you can compile and send it for deployment from  the Buildship web app.
