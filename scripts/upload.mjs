@@ -35,20 +35,19 @@ module.exports = async function(callback) {
       name: contractName,
       abi: contract.abi,
       bytecode: contract.bytecode,
+      // ? constructor arguments, compiler version, source code, optimizer enabled, runs, license
+      extra: contract,
     };
-
-    // console.log("contract info", contractInfo);
 
     const cid = await client.storeBlob([JSON.stringify(contractInfo)]);
 
-    // https://cloudflare-ipfs.com/ipfs/bafkreieigfk556awti66ju6a2ebmtrdhxbobavbpi3rx2mj2hnsmcg2llq
-
     console.log(
-      `Metadata uploaded to https://cloudflare-ipfs.com/ipfs/${cid}\n\n`
+      `Metadata uploaded to https://cloudflare-ipfs.com/ipfs/${cid}\n`
     );
 
-    return callback(`Deploy at https://deploy.buildship.dev?ipfs=${cid}`);
-    // return callback(`https://cloudflare-ipfs.com/ipfs/${cid}`);
+    console.log(`Deploy here:`);
+
+    return callback(`https://app.buildship.dev/deploy?ipfs=${cid}`);
   } catch (err) {
     return callback(err);
   }
