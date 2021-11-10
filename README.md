@@ -38,7 +38,7 @@ Features include:
 - burn NFT to mint NFT
 - mint pass
 - on-chain metadata
-- 0% marketplace for your tokens (please help fix issues)
+- 0% marketplace for your tokens (please help fix issue [#8](https://github.com/buildship-dev/nft-contracts/issues/8))
 
 ## How to use:
 
