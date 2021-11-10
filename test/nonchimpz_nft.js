@@ -242,6 +242,32 @@ contract("NonChimpzNFT", accounts => {
         )
     });
 
+    // it should revert if you try to withdraw 2% more than balance
+    it("should revert if you try to withdraw 2% more than balance", async () => {
+
+        const saleBalance = await web3.eth.getBalance(nft.address);
+
+        // print saleBalance, amount, and amount * 95% with labels
+
+        const amount = new BN(saleBalance).muln(102).divn(100);
+
+        // we try to withdraw amount, so that amount * 95% < saleBalance, but amount > saleBalance
+        // this checks whether buildship gets his share FOR SURE
+
+        console.log("saleBalance:", saleBalance);
+        console.log("amount:", amount.toString());
+        console.log("amount * 95%:", amount.muln(95).divn(100).toString());
+
+        // withdraw
+        await expectRevert(
+          nft.withdrawAmount(amount, { from: owner }),
+          "Failed to send funds to developer"
+        );
+
+    });
+
+
+
     // it should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner
     it("should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner", async () => {
         // const nft = await AvatarNFT.deployed();
@@ -271,20 +297,19 @@ contract("NonChimpzNFT", accounts => {
 
     });
 
+    xit("should not be able to mint all 17777 tokens, when 17777 tokens are minted, it should fail", async () => {
+        // set price to 0.00001 ether
+        await nft.setPrice(0.00001 * ether);
 
-    xit("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-        // const nft = await AvatarNFT.new("1000000000000000", 200, 40, 20, "https://metadata.buildship.dev/", "Avatar Collection NFT", "NFT");
+        // try minting 3 * 3000 tokens, which is allowed (10_000)
+        await Promise.all(Array(3).fill().map(() =>
+            nft.mint(3000, { from: user2, value: 0.00001 * 3000 * ether })
+        ));
 
-        await nft.setBeneficiary(beneficiary); // set beneficiary so sale can start
-        await nft.flipSaleStarted();
-
-        // set price to 0.0001 ether
-        await nft.setPrice(0.0001 * ether);
-
-        // try minting 20 * 20 tokens, which is more than the max allowed (200)
+        // try minting again 3 * 3000 tokens, which is more than the max allowed (9_000 + 9_000 > 17_777)
         try {
-            await Promise.all(Array(20).fill().map(() =>
-                nft.mint(20, { from: owner, value: 0.0001 * 20 * ether })
+            await Promise.all(Array(3).fill().map(() =>
+                nft.mint(3000, { from: user2, value: 0.00001 * 3000 * ether })
             ));
         } catch (error) {
             // check that error message has expected substring 'You cannot mint more than'

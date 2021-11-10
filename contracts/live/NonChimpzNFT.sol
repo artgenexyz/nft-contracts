@@ -26,23 +26,23 @@ contract NonChimpzNFT is AvatarNFT {
 
         uint256 amount = balance * 95 / 100; // 95% : 5%
 
-        require(payable(beneficiary).send(amount));
+        require(payable(beneficiary).send(amount), "Failed to send funds to beneficiary");
 
         address dev = DEVELOPER_ADDRESS();
         (bool success,) = dev.call{value: balance - amount}("");
-        require(success);
+        require(success, "Failed to send funds to developer");
     }
 
     function withdrawAmount(uint256 _amount) public onlyOwner {
 
         uint256 amount = _amount * 95 / 100; // 95% : 5%
 
-        require(payable(beneficiary).send(amount));
+        require(payable(beneficiary).send(amount), "Failed to send funds to beneficiary");
 
         // this is needed to forward remaining gas
         address _dev = DEVELOPER_ADDRESS();
         (bool success,) = _dev.call{value: _amount - amount}("");
-        require(success);
+        require(success, "Failed to send funds to developer");
     }
 
 }
