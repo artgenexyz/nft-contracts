@@ -2,33 +2,43 @@
 
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
 
-Features include:
-- ERC721 (AvatarNFT.sol)
-    - Limited supply
-    - Mint N tokens in one transaction
-    - Generative art
-    - Lazy Mint – buyes pays for mint
-    - Manually start/stop sale
-    - Reserve X tokens for team or community
-    - Random token index shift on sale start
-- ERC1155 (ERC1155Sale.sol)
-    - Limited supply for each tokenId
-    - Lazy Mint – buyer pays for mint
-    - Admin can add new tokenId
-    - On-chain metadata storage
-    - Manual start/stop sale for each tokenId
-- Tier-based Pricing (TierNFT.sol)
-    - Set different prices for different tokenId
-- Mint with Referral info (ReferralNFT.sol)
-    - Save referral and accrue his rewards at each mint
-- Experimental features
-    - refund gas for minting
-    - burn NFT to mint NFT
-    - mint pass
-    - on-chain metadata
-    - 0% marketplace for your tokens (please help fix issues)
-
 USE AT YOUR OWN RISK. Most of the features are in production already, however this doesn't guarantee any security. Unreleased and speculative code is located in `contracts/experiments` directory.
+
+Features include:
+
+## ERC721 Sale (AvatarNFT.sol)
+- Limited supply
+- Mint N tokens in one transaction
+- Generative art
+- Lazy Mint – buyes pays for mint
+- Manually start/stop sale
+- Reserve X tokens for team or community
+- Random token index shift on sale start
+
+## ERC1155 Sale (ERC1155Sale.sol)
+- Limited supply for each tokenId
+- Lazy Mint – buyer pays for mint
+- Admin can add new tokenId
+- On-chain metadata storage
+- Manual start/stop sale for each tokenId
+
+## Mint Pass
+- ERC1155 "Ticket" for limited NFT sale access
+- Not ready to use as plug-n-play, check out the example (AmeegosMintPass) to integrate it into your project
+- Has two modes: mintWithMintPass from NFT Sale contract, or redeem() from MintPass contract. Choose appropriate one for your project.
+
+## Tier-based Pricing (TierNFT.sol)
+- Set different prices for different tokenId
+
+## Mint with Referral info (ReferralNFT.sol)
+- Save referral and accrue his rewards at each mint
+
+## Experimental features
+- refund gas for minting
+- burn NFT to mint NFT
+- mint pass
+- on-chain metadata
+- 0% marketplace for your tokens (please help fix issues)
 
 ## How to use:
 
