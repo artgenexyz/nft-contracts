@@ -9,6 +9,8 @@ const ReferralOnchainNFT = artifacts.require("ReferralOnchainNFT");
 
 module.exports = function (deployer, network) {
   if (network !== "development" && network !== "soliditycoverage") {
+    await deployer.deploy(TemplateNFT);
+
     console.log("Skipping deploying test NFTs on production network");
     return Promise.resolve()
   }
