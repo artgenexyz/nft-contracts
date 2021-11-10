@@ -63,6 +63,17 @@ contract("NonChimpzNFT", accounts => {
         assert.equal(isSaleStarted, true);
     });
 
+    // it can change beneficiary
+    it("can change beneficiary", async () => {
+
+        // change back
+        await nft.setBeneficiary(user2, { from: owner });
+
+        // change back
+        await nft.setBeneficiary(beneficiary, { from: owner });
+
+    });
+
     // it should mint successfully
     it("should mint successfully when sale is started", async () => {
         // const nft = await AvatarNFT.deployed();
