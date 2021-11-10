@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./AvatarNFT.sol";
+import "../AvatarNFT.sol";
 
 contract TextApesNFT is AvatarNFT {
 

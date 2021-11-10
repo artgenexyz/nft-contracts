@@ -3,6 +3,9 @@ const MoonNFT = artifacts.require("MoonNFT");
 const owner = "0x197727Ad2EC7326952843Fbd83A0d57B907afbdF";
 
 module.exports = async function(deployer, network) {
+  // Skip deployment MoonNFT
+  return;
+
   await deployer.deploy(MoonNFT);
 
   // not tested yet
