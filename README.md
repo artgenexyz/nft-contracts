@@ -1,6 +1,8 @@
-# nft-contracts
+# NFT Contracts by buildship.dev
 
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
+
+Made by https://buildship.dev. If you can't code, use our simple web-app to deploy!
 
 USE AT YOUR OWN RISK. Most of the features are in production already, however this doesn't guarantee any security. Unreleased and speculative code is located in `contracts/experiments` directory.
 
