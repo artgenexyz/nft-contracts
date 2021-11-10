@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "../ERC1155Sale.sol";
+import "../../ERC1155Sale.sol";
 
 /// @custom:security-contact aleks@buildship.dev
 contract AmeegosMarketplace is ERC1155Sale {

@@ -8,6 +8,9 @@ const DemoShiba = artifacts.require("DemoShiba");
 const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 
 module.exports = async function(deployer, network) {
+    // Skip deployment on dev
+    return;
+
     // Second stage of Ameegos deployment
 
     // await deployer.deploy(ERC1155Sale);

@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
-import "../MintPass.sol";
+import "../../MintPass.sol";
 
 import "./AmeegosNFTv2.sol";
 

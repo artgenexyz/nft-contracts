@@ -10,6 +10,9 @@ const AMEEGOS_CONTRACT = "0xF522B448DbF8884038c684B5c3De95654007Fd2B";
 const owner = "0x2195601e1EA42363C85AC7868143b80d20Db978f";
 
 module.exports = async function(deployer, network) {
+  // Skip deployment
+  return;
+
   let nft;
 
   if (network === "development" || network === "soliditycoverage" || network === "rinkeby") {
