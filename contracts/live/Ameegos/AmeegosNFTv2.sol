@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-import "../AvatarNFT.sol";
-import "../utils/MinterAccess.sol";
+import "../../AvatarNFT.sol";
+import "../../utils/MinterAccess.sol";
 
 contract AmeegosNFTv2 is AvatarNFT, MinterAccess {
 

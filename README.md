@@ -1,5 +1,45 @@
 # nft-contracts
 
+This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
+
+USE AT YOUR OWN RISK. Most of the features are in production already, however this doesn't guarantee any security. Unreleased and speculative code is located in `contracts/experiments` directory.
+
+Features include:
+
+## ERC721 Sale (AvatarNFT.sol)
+- Limited supply
+- Mint N tokens in one transaction
+- Generative art
+- Lazy Mint – buyes pays for mint
+- Manually start/stop sale
+- Reserve X tokens for team or community
+- Random token index shift on sale start
+
+## ERC1155 Sale (ERC1155Sale.sol)
+- Limited supply for each tokenId
+- Lazy Mint – buyer pays for mint
+- Admin can add new tokenId
+- On-chain metadata storage
+- Manual start/stop sale for each tokenId
+
+## Mint Pass
+- ERC1155 "Ticket" for limited NFT sale access
+- Not ready to use as plug-n-play, check out the example (AmeegosMintPass) to integrate it into your project
+- Has two modes: mintWithMintPass from NFT Sale contract, or redeem() from MintPass contract. Choose appropriate one for your project.
+
+## Tier-based Pricing (TierNFT.sol)
+- Set different prices for different tokenId
+
+## Mint with Referral info (ReferralNFT.sol)
+- Save referral and accrue his rewards at each mint
+
+## Experimental features
+- refund gas for minting
+- burn NFT to mint NFT
+- mint pass
+- on-chain metadata
+- 0% marketplace for your tokens (please help fix issues)
+
 ## How to use:
 
 ### Init
@@ -29,27 +69,46 @@ npx ganache-cli
 
 Finally, to test your code:
 
-```
+```bash
 truffle migrate
 truffle test
 ```
 
-### Deploy
+### Deploy to production
+
+By default, it deploys `TemplateNFT`. The deployment is specified in `2_deploy_nft.js`.
+
+Edit the file `contracts/TemplateNFT.sol` to use your metadata, and run:
 
 ```bash
-truffle migrate --network rinkeby
-truffle run verify MoonNFT --network rinkeby
+truffle migrate --network rinkeby -f 2 --to 2
+
+truffle run verify TemplateNFT --network rinkeby
+```
+
+Most probably, you want to transfer contract ownership from your deployment keys to your Metamask account. You can use this piece of code:
+
+```bash
+truffle console --network rinkeby
+```
+
+And then:
+```
+nft = await TemplateNFT.at("0xDeployedAddress")
+nft.transferOwnership("0xyourMetamaskAccount")
 ```
 
 ### Upload for Frontend Deploy
+
+Instead of deploying from your local machine, you can compile and send it for deployment from  the Buildship web app.
 
 ```bash
 truffle exec ./scripts/upload.mjs [contract name] --compile
 ```
 
-Unfortunately, it still needs network, but it doesn't matter which you use. You can run with ganache enabled.
+It needs network selection to run, but it doesn't matter which you use. You can run with development network.
 
-In the end, you get IPFS hash to the uploaded bytecode. Use in on https://deploy.buildship.dev?ipfs=
+In the end, you get IPFS hash to the uploaded bytecode. Use in on https://app.buildship.dev/deploy?ipfs=QmExampleHash
 
 ### Bonus
 

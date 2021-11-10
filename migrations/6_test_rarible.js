@@ -6,7 +6,11 @@ const ExchangeStateV1 = artifacts.require('ExchangeStateV1');
 const ExchangeOrdersHolderV1 = artifacts.require('ExchangeOrdersHolderV1');
 
 
-module.exports = async function(deployer, network, accounts) {
+module.exports = async function (deployer, network, accounts) {
+
+    // Skip deployment
+    return;
+
     // deploy TransferProxy, TransferProxyForDeprecated, ERC20TransferProxy, ExchangeStateV1, ExchangeOrdersHolderV1
     await deployer.deploy(TransferProxy);
     await deployer.deploy(TransferProxyForDeprecated);
