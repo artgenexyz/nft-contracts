@@ -31,18 +31,21 @@ contract Market is ERC1155Holder, Ownable {
     // ERC1155 contract
     IERC1155 public immutable tokenContract;
 
-    mapping (uint256 => Offer) public offers;
-    // mapping (address => Offer) public offerByOwner;
+    uint256 public lastOfferId;
 
-    // mapping (uint256 => mapping (address => Offer) userOffers;
+    mapping (uint256 => mapping(uint256 => Offer)) public offers;
+    mapping (uint256 => uint256[]) public offerIds;
+
+    // mapping (address => Offer) public offerByOwner;    
     // mapping (address => Offer) pendingOffers;
-
+    
     struct Offer {
         uint256 price;
         // uint256 itemId;
         uint256 amount;
         address payable owner;
     }
+
 
     // users can purchase item if minter didn't run out of supply and if saleStarted = true
     // users can list item for sale
@@ -59,6 +62,23 @@ contract Market is ERC1155Holder, Ownable {
         tokenContract = _tokenContract;
     }
 
+    function _deleteOffer(uint256 offerId, uint256 tokenId) internal {
+        uint256 index;
+        bool exists = false;
+
+        for (uint256 i = 0; i < offerIds[tokenId].length; i++) {
+            if (offerIds[tokenId][i] == offerId) {
+                index = i;
+                exists = true;
+                break;
+            }
+        }
+        
+        require(exists, "Offer doesn't exist");
+        offerIds[tokenId][index] = offerIds[tokenId][offerIds[tokenId].length - 1];
+        offerIds[tokenId].pop();
+    }
+
     // list for sale, receives tokenId, amount of tokens, price
     function list(uint256 tokenId, uint256 amount, uint256 price) public {
         // transfer token from user
@@ -70,11 +90,13 @@ contract Market is ERC1155Holder, Ownable {
 
         // create selling offer
         Offer memory offer = Offer(price, amount, payable(msg.sender));
-        offers[tokenId] = offer;
+        offers[tokenId][lastOfferId + 1] = offer;
+        offerIds[tokenId].push(lastOfferId + 1);
+        lastOfferId++;
     }
  
-    function unlist(uint256 tokenId, uint256 amount) public {
-        Offer storage offer = offers[tokenId];
+    function unlist(uint256 offerId, uint256 tokenId, uint256 amount) public {
+        Offer storage offer = offers[tokenId][offerId];
 
         require(offer.owner == msg.sender, "Only owner can unlist");
 
@@ -84,20 +106,20 @@ contract Market is ERC1155Holder, Ownable {
 
         // if no more tokens, remove offer
         if (offer.amount == 0) {
-            delete offers[tokenId];
+            _deleteOffer(offerId, tokenId);
         }
     }
 
-    function buy(uint256 tokenId, uint256 amount) payable public {
+    function buy(uint256 offerId, uint256 tokenId, uint256 amount) payable public {
         // find offer
-        Offer storage offer = offers[tokenId];
+        Offer storage offer = offers[tokenId][offerId];
         require(offer.amount >= amount, "Not enough tokens");
 
         // check user passed enough ETH
         require(msg.value >= offer.price * amount, "Not enough ETH");
 
         if(!tokenContract.isApprovedForAll(offer.owner, address(this))) {
-            delete offers[tokenId];
+            _deleteOffer(offerId, tokenId);
             require(false, "Cant buy, offer is not valid");
         }
 
@@ -115,7 +137,7 @@ contract Market is ERC1155Holder, Ownable {
 
         // if no more tokens, remove offer
         if (offer.amount == 0) {
-            delete offers[tokenId];
+            _deleteOffer(offerId, tokenId);
         }
     }
 
