@@ -4,8 +4,8 @@ const AmeegosMintPassv2 = artifacts.require("AmeegosMintPassv2");
 const AMEEGOS_ADMIN = "0x44244acaCD0B008004F308216f791F2EBE4C4C50";
 
 const { assert } = require('chai');
-const NFT_HOLDERS = require('../ameegos/holders.json');
-const MINTPASS_HOLDERS = require('../ameegos/mintpass_holders.json');
+const NFT_HOLDERS = require('../scripts/ameegos/holders.json');
+const MINTPASS_HOLDERS = require('../scripts/ameegos/mintpass_holders.json');
 
 module.exports = async function(deployer, network) {
     if (network !== "polygon" && network !== "polygon-fork" && network !== "mumbai" && network !== "rinkeby" && network !== "development") {
