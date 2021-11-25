@@ -36,9 +36,9 @@ contract Market is ERC1155Holder, Ownable {
     mapping (uint256 => mapping(uint256 => Offer)) public offers;
     mapping (uint256 => uint256[]) public offerIds;
 
-    // mapping (address => Offer) public offerByOwner;    
+    // mapping (address => Offer) public offerByOwner;
     // mapping (address => Offer) pendingOffers;
-    
+
     struct Offer {
         uint256 price;
         // uint256 itemId;
@@ -73,7 +73,7 @@ contract Market is ERC1155Holder, Ownable {
                 break;
             }
         }
-        
+
         require(exists, "Offer doesn't exist");
         offerIds[tokenId][index] = offerIds[tokenId][offerIds[tokenId].length - 1];
         offerIds[tokenId].pop();
@@ -94,7 +94,7 @@ contract Market is ERC1155Holder, Ownable {
         offerIds[tokenId].push(lastOfferId + 1);
         lastOfferId++;
     }
- 
+
     function unlist(uint256 offerId, uint256 tokenId, uint256 amount) public {
         Offer storage offer = offers[tokenId][offerId];
 
