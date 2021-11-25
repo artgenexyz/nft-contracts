@@ -7,7 +7,7 @@ const TextApesNFT = artifacts.require("TextApesNFT");
 const ReferralNFT = artifacts.require("ReferralNFT");
 const ReferralOnchainNFT = artifacts.require("ReferralOnchainNFT");
 
-module.exports = function (deployer, network) {
+module.exports = async function (deployer, network) {
   if (network !== "development" && network !== "soliditycoverage") {
     await deployer.deploy(TemplateNFT);
 
