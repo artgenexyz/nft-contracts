@@ -4,7 +4,7 @@ const { BN } = web3.utils;
 
 const Market = artifacts.require("Market");
 
-const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
+const ERC1155Sale = artifacts.require("ERC1155Sale");
 
 /*
  Simple ERC1155 marketplace. It represents in-game items, so each option corresponds to an game item, like: Skin, Weapon, Armor.
@@ -105,7 +105,7 @@ contract("Market", function (accounts) {
 
   // it should be possible to deploy marketplace
   it("should be possible to deploy marketplace", async function () {
-    extras = await AmeegosMarketplace.deployed();
+    extras = await ERC1155Sale.new();
 
     marketplace = await Market.new(extras.address, { from: admin });
 
@@ -122,9 +122,9 @@ contract("Market", function (accounts) {
   });
 
   // prepare users: buy tokens from extras for each user
-  xit("should be possible to buy tokens from extras", async function () {
-    await extras.addItem("Skin", "https://uri", ether.muln(0.05), 100, { from: admin });
-    await extras.addItem("Weapon", "https://uri", ether.muln(0.01), 200, { from: admin });
+  it("should be possible to buy tokens from extras", async function () {
+    await extras.addItem("Skin", "https://uri", "", ether.muln(0.05), 100, 0, false, { from: admin });
+    await extras.addItem("Weapon", "https://uri", "", ether.muln(0.01), 200, 0, false, { from: admin });
 
     await extras.startSaleAll({ from: admin });
 
@@ -133,7 +133,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to list token for sale
-  xit("should be possible to list token for sale", async function () {
+  it("should be possible to list token for sale", async function () {
 
     await extras.setApprovalForAll(marketplace.address, true, { from: user1 });
 
@@ -141,7 +141,9 @@ contract("Market", function (accounts) {
 
     await marketplace.list(0, 2, ether, { from: user1 });
 
-    const offer = await marketplace.offers(0);
+    const lastOfferID = await marketplace.lastOfferId();
+
+    const offer = await marketplace.offers(0, lastOfferID);
 
     assert.equal(offer.price.toString(), ether.toString());
     assert.equal(offer.amount, 2);
@@ -149,10 +151,12 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy listed token
-  xit("should be possible to buy 1 of 2 listed token", async function () {
-    await marketplace.buy(0, 1, { from: user2, value: ether });
+  it("should be possible to buy 1 of 2 listed token", async function () {
+    const offerId = await marketplace.offerIds(0, 0); // for tokenId = 0
 
-    const offer = await marketplace.offers(0);
+    await marketplace.buy(offerId, 0, 1, { from: user2, value: ether });
+
+    const offer = await marketplace.offers(0, offerId);
 
     assert.equal(offer.price.toString(), ether.toString());
     assert.equal(offer.amount, 1);
@@ -164,12 +168,14 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy full offer, and offer is removed
-  xit("should be possible to buy full offer, and offer is removed", async function () {
-    await marketplace.buy(0, 1, { from: user3, value: ether });
+  it("should be possible to buy full offer, and offer is removed", async function () {
+    const offerId = await marketplace.offerIds(0, 0); // for tokenId = 0
 
-    const offer = await marketplace.offers(0);
+    await marketplace.buy(offerId, 0, 1, { from: user3, value: ether });
 
-    assert.equal(offer.price.toNumber(), 0);
+    const offer = await marketplace.offers(0, offerId);
+
+    assert.equal(offer.price.toString(), 0);
     assert.equal(offer.amount, 0);
     assert.equal(offer.owner, "0x0000000000000000000000000000000000000000");
 
@@ -177,5 +183,31 @@ contract("Market", function (accounts) {
     const user3balance = await extras.balanceOf(user3, 0);
     assert.equal(user3balance, 1);
   });
+
+  // it should be possible for two users to sell the same tokenid
+  it("should be possible for two users to sell the same tokenid", async function () {
+
+    await extras.setApprovalForAll(marketplace.address, true, { from: user1 });
+    await extras.setApprovalForAll(marketplace.address, true, { from: user2 });
+
+    await marketplace.list(0, 1, ether, { from: user1 });
+    await marketplace.list(0, 1, ether, { from: user2 });
+
+    const lastOfferID = await marketplace.lastOfferId();
+
+    // TODO: this is bad. We need to know offerId some other way
+    const offer1 = await marketplace.offers(0, lastOfferID - 1);
+    const offer2 = await marketplace.offers(0, lastOfferID);
+
+    assert.equal(offer1.price.toString(), ether.toString());
+    assert.equal(offer1.amount, 1);
+    assert.equal(offer1.owner, user1);
+
+    assert.equal(offer2.price.toString(), ether.toString());
+    assert.equal(offer2.amount, 1);
+    assert.equal(offer2.owner, user2);
+  });
+
+  // TODO: add test so that it can't list 2 + 2 tokens if user only has 3 tokens
 
 });

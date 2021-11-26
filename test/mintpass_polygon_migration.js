@@ -7,7 +7,7 @@ const AmeegosNFT = artifacts.require("AmeegosNFT");
 const AmeegosMintPassv2 = artifacts.require("AmeegosMintPassv2");
 const AmeegosNFTv2 = artifacts.require("AmeegosNFTv2");
 
-const HOLDERS = require('../ameegos/holders.json');
+const HOLDERS = require('../scripts/ameegos/holders.json');
 
 // This is hard. We have extracted list of old holders for AmeegosNFT and AmeegosMintPassv2.
 // We need to test:
