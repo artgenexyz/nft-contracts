@@ -18,7 +18,7 @@ enum ItemType {
 contract ERC1155Sale is ERC1155, Ownable {
     using Strings for uint256;
 
-    constructor() ERC1155("override") {}
+    constructor() ERC1155("on-chain-storage") {}
 
     struct GameItem {
         uint256 price;
@@ -35,6 +35,7 @@ contract ERC1155Sale is ERC1155, Ownable {
     uint256 public totalItems;
 
     mapping (uint256 => bool) private _saleStarted;
+    string public description;
 
     modifier whenSaleStarted(uint256 itemId) {
         require(_saleStarted[itemId], "Sale not started");
@@ -55,7 +56,7 @@ contract ERC1155Sale is ERC1155, Ownable {
         string memory json = Base64.encode(bytes(string(abi.encodePacked(
             '{',
             '"name": "', item.name, '",',
-            '"description": "The Fight for Meegosa is an NFT community MMORPG. Join the community and learn more in our Discord. https://discord.gg/c7NRVvvVZt https://twitter.com/AmeegosOfficial https://ameegos.io/",',
+            '"description": "', description, '",',
             '"animation_url": "', item.animationUrl, '",',
             '"image": "', item.imageUrl, '"',
             '}'
@@ -111,6 +112,10 @@ contract ERC1155Sale is ERC1155, Ownable {
 
     // ----- Admin functions -----
 
+    function setDescription(string memory _description) public onlyOwner {
+        description = _description;
+    }
+
     // reserveItem onlyOwner, allows admin to claim any amount of any token,
     function reserveItem(uint256 itemId, uint256 amount) public onlyOwner {
         // require(_saleStarted[itemId] == false, "Only claim when sale is not active");
@@ -142,7 +147,6 @@ contract ERC1155Sale is ERC1155, Ownable {
     }
 
     // Add new item to the marketplace
-    // @notice Dont forget to add tokenId metadata to backend
     function addItem(string memory name, string memory imageUrl, string calldata animationUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public onlyOwner {
         require(maxSupply > 0, "Invalid maxSupply");
 
