@@ -47,7 +47,7 @@ module.exports = async function(callback) {
 
     console.log(`Deploy here:`);
 
-    return callback(`https://app.buildship.dev/deploy?ipfs=${cid}`);
+    return callback(`https://gate.buildship.dev/deploy/${cid}`);
   } catch (err) {
     return callback(err);
   }
