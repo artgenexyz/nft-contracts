@@ -98,10 +98,12 @@ module.exports = {
   // Set default mocha options here, use special reporters etc.
   mocha: {
     timeout: 100000,
-    reporter: "mocha-junit-reporter",
-    reporterOptions: {
-      mochaFile: "./test_results/mocha/results.xml",
-    },
+    ...(process.env.CIRCLE_BRANCH && {
+      reporter: "mocha-junit-reporter",
+      reporterOptions: {
+        mochaFile: "./test_results/mocha/results.xml",
+      },
+    }),
   },
 
   // Configure your compilers
