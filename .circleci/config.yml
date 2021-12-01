@@ -29,6 +29,9 @@ jobs:
       - run:
           name: Run tests
           command: npx ganache-cli & yarn test
+      - store_test_results:
+          path: test_results
+
   coverage:
     docker:
       - image: cimg/node:16.10
@@ -39,6 +42,8 @@ jobs:
       - coverage:
           name: Code coverage report
           command: npx ganache-cli & yarn truffle run coverage
+      - store_artifacts:
+          path: coverage
 
 workflows:
   # Below is the definition of your workflow.
