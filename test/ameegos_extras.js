@@ -16,16 +16,17 @@ const DemoAGOS = artifacts.require("DemoAGOS");
 contract("AmeegosMarketplace", function (accounts) {
   const [ owner, user1, user2, user3 ] = accounts;
 
-  // const marketplace = await AmeegosMarketplace.new();
+  let extras, agos
 
   it("should assert true", async function () {
-    await AmeegosMarketplace.deployed();
+    agos = await DemoAGOS.new();
+    extras = await AmeegosMarketplace.new(agos.address);
     return assert.isTrue(true);
   });
 
   // it should not allow to buyItem when sale is not started
   it("should not allow to buyItem when sale is not started", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
     const saleStarted = await extras.saleStarted(0);
 
     assert.equal(saleStarted, false, "sale should not be started");
@@ -45,7 +46,7 @@ contract("AmeegosMarketplace", function (accounts) {
   // TODO: rewrite so it makes sense
   // // it should fail if you try to buy item when there are no items (totalItems == 0)
   // it("should fail if you try to buy item when there are no items (totalItems == 0)", async function () {
-  //   const extras = await AmeegosMarketplace.deployed();
+  //   // const extras = await AmeegosMarketplace.deployed();
 
   //   const itemId = 0;
   //   const nItems = 1;
@@ -64,7 +65,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to add item
   it("should be able to add item", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 0;
     const nItems = 1;
@@ -96,7 +97,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to flipSaleStarted if you're an owner
   it("should be able to flipSaleStarted if you're an owner", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
     const saleStarted = await extras.saleStarted(0);
 
     assert.equal(saleStarted, false, "sale should not be started");
@@ -110,7 +111,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to add multiple items: Lizard Skin with price 0.1 ether, Stone Armour with price 0.05 ether, Golden Sword with price 0.2 ether
   it("should be able to add multiple items: Lizard Skin with price 0.1 ether, Stone Armour with price 0.05 ether, Golden Sword with price 0.2 ether", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const totalItems = await extras.totalItems();
 
@@ -168,7 +169,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should not be able to add item with invalid maxSupply = 0
   it("should not be able to add item with invalid maxSupply = 0", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const totalItems = await extras.totalItems();
 
@@ -194,7 +195,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to buy items if sale is started and there are items
   it("should be able to buy items if sale is started and there are items", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
     const saleStarted = await extras.saleStarted(0);
 
     assert.equal(saleStarted, true, "sale should be started");
@@ -209,7 +210,7 @@ contract("AmeegosMarketplace", function (accounts) {
   // it should be able to buy 5 items of Lizard Skin
   it("should be able to buy 5 items", async function () {
 
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 1; // Lizard Skin
     const nItems = 5;
@@ -224,7 +225,7 @@ contract("AmeegosMarketplace", function (accounts) {
   // it should be able to buy all 200 tokens of Stone Armour
   it("should be able to buy all 200 tokens of Stone Armour, but no more than that", async function () {
 
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 4; // Incredible Capricorn
 
@@ -259,7 +260,7 @@ contract("AmeegosMarketplace", function (accounts) {
   // it should be able to lower the price for Golden Sword and buy 10 pieces at the new price
   it("should be able to lower the price for Golden Sword and buy at the new price", async function () {
 
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 3; // Golden Sword
 
@@ -276,7 +277,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587
   it("should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
 
@@ -309,7 +310,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
 
   it("should be able to call URI", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 2; // Stone Armour
 
@@ -321,7 +322,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to call and parse contractURI as base64 json
   xit("should be able to call and parse contractURI as base64 json", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const uriData = await extras.contractURI();
 
@@ -344,7 +345,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should not be able to buy if supply less ETH than price
   it("should not be able to buy if supply less ETH than price", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemId = 1; // Lizard Skin
 
@@ -358,7 +359,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should be able to buyItemBatch
   xit("should be able to buyItemBatch", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemIds = [1, 2]; // Lizard Skin, Stone Armour
 
@@ -377,7 +378,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should allow owner to claim items for free
   xit("should allow owner to claim items for free", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const itemIds = [1, 2]; // Lizard Skin, Stone Armour
 
@@ -393,7 +394,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
   // it should allow owner to create new item and claim it all before sale started
   it("should allow owner to create new item and claim it all before sale started", async function () {
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const amount = 100;
 
@@ -421,7 +422,7 @@ contract("AmeegosMarketplace", function (accounts) {
   // it should be able to create item with priceAGOS = 1 and buy with DemoAGOS
   it("should be able to create item with priceAGOS = 1 and buy with DemoAGOS", async function () {
 
-    const extras = await AmeegosMarketplace.deployed();
+    // const extras = await AmeegosMarketplace.deployed();
 
     const tx = await extras.addItem(
       "Bankless Banker",
@@ -437,7 +438,7 @@ contract("AmeegosMarketplace", function (accounts) {
     const { itemId } = tx.logs[0].args;
 
     // mint DemoAGOS to user1
-    const agos = await DemoAGOS.deployed();
+    // const agos = await DemoAGOS.deployed();
     await agos.mint(user1, (1 * 1e18).toString());
 
     await agos.approve(extras.address, (100 * 1e18).toString(), { from: user1 })
