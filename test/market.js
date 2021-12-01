@@ -4,7 +4,7 @@ const { BN } = web3.utils;
 
 const Market = artifacts.require("Market");
 
-const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
+const ERC1155Sale = artifacts.require("ERC1155Sale");
 
 /*
  Simple ERC1155 marketplace. It represents in-game items, so each option corresponds to an game item, like: Skin, Weapon, Armor.
@@ -24,77 +24,6 @@ const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
  In ERC1155, tokens have id, which represents itemId.
  */
 
-// FULL CONTRACT CODE FOR REFERENCE:
-
-// contract AmeegosMarket is ERC1155Holder, Ownable {
-
-//     // ERC1155 contract
-//     IERC1155 public immutable tokenContract;
-
-//     mapping (uint256 => Offer) offers;
-
-//     struct Offer {
-//         uint256 price;
-//         uint256 amount;
-//         uint256 owner;
-//     }
-
-//     // users can purchase item if minter didn't run out of supply and if saleStarted = true
-//     // users can list item for sale
-//     // users can buy items from other users
-
-//     // admin can change price for each item
-//     // users can purchase item if minter didn't run out of supply and if saleStarted = true
-//     // users can list item for sale
-//     // users can buy items from other users
-//     // admin can withdraw funds from sale, but 10% goes to the developer address "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587"
-
-//     constructor (IERC1155 _tokenContract) {
-//         require(_tokenContract.supportsInterface(type(IERC1155).interfaceId), "Token is not supported");
-//         tokenContract = _tokenContract;
-//     }
-
-//     // list for sale, receives tokenId, amount of tokens, price
-//     function list(uint256 tokenId, uint256 amount, uint256 price) {
-//         // transfer token from user
-//         require(tokenContract.balanceOf(msg.sender) >= amount, "Not enough tokens");
-//         tokenContract.safeTransferFrom(msg.sender, address(this), tokenId, amount);
-
-//         // create selling offer
-//         Offer memory offer = Offer(price, amount, msg.sender);
-//         offers[tokenId] = offer;
-//     }
-
-//     function buy(uint256 tokenId, uint256 amount) payable {
-//         // find offer
-//         Offer memory offer = offers[tokenId];
-//         require(offer.amount >= amount, "Not enough tokens");
-
-//         // check user passed enough ETH
-//         require(msg.value >= offer.price * amount, "Not enough ETH");
-
-//         // transfer tokens to user
-//         tokenContract.safeTransferFrom(address(this), msg.sender, tokenId, amount);
-//         offer.amount -= amount;
-
-//         // payout to buyer
-//         send(offer.owner, offer.price * amount);
-
-//         // if no more tokens, remove offer
-//         if (offer.amount == 0) {
-//             delete offers[tokenId];
-//         }
-//     }
-
-// }
-
-
-/*
-TODO:
-- test list token for sale
-- test buy token
-- test unlist token from sale, buy doesn't work
-*/
 
 contract("Market", function (accounts) {
   const [admin, user1, user2, user3] = accounts;
@@ -105,7 +34,7 @@ contract("Market", function (accounts) {
 
   // it should be possible to deploy marketplace
   it("should be possible to deploy marketplace", async function () {
-    extras = await AmeegosMarketplace.deployed();
+    extras = await ERC1155Sale.new();
 
     marketplace = await Market.new(extras.address, { from: admin });
 
