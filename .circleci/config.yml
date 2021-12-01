@@ -39,7 +39,7 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
-      - coverage:
+      - run:
           name: Code coverage report
           command: npx ganache-cli & yarn truffle run coverage
       - store_artifacts:
