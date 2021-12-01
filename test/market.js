@@ -1,5 +1,5 @@
 const { assert } = require("chai");
-
+const { expectRevert } = require("@openzeppelin/test-helpers");
 const { BN } = web3.utils;
 
 const Market = artifacts.require("Market");
@@ -175,8 +175,10 @@ contract("Market", function (accounts) {
 
     const offer = await marketplace.offers(0, offerId);
 
-    assert.equal(offer.price.toString(), 0);
+    console.log('offer', offer)
+
     assert.equal(offer.amount, 0);
+    assert.equal(offer.price.toString(), 0);
     assert.equal(offer.owner, "0x0000000000000000000000000000000000000000");
 
     // check that user3 got the token id = 0
@@ -208,6 +210,19 @@ contract("Market", function (accounts) {
     assert.equal(offer2.owner, user2);
   });
 
-  // TODO: add test so that it can't list 2 + 2 tokens if user only has 3 tokens
+  // This doesn't fail, we allow over-listing in this implementation
+  // it should be possible to list more tokens than user has
+  it("should be possible to list more tokens than user has", async function () {
+    await extras.setApprovalForAll(marketplace.address, true, { from: user2 });
 
+    await extras.buyItem(1, 3, { from: user2, value: 3 * ether });
+
+    await marketplace.list(1, 2, ether, { from: user2 });
+
+    // await expectRevert(
+    await marketplace.list(1, 2, ether, { from: user2 });
+      // "Not enough tokens"
+    // );
+
+  });
 });

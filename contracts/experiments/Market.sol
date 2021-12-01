@@ -120,7 +120,7 @@ contract Market is ERC1155Holder, Ownable {
 
         if(!tokenContract.isApprovedForAll(offer.owner, address(this))) {
             _deleteOffer(offerId, tokenId);
-            require(false, "Cant buy, offer is not valid");
+            revert("Cant buy, offer is not valid");
         }
 
         // transfer tokens to user
