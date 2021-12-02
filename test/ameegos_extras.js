@@ -276,7 +276,7 @@ contract("AmeegosMarketplace", function (accounts) {
   });
 
   // it should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587
-  it("should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587", async function () {
+  it("should be able to withdraw sales money, and 15% should go to 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587 [ @skip-on-coverage ]", async function () {
     // const extras = await AmeegosMarketplace.deployed();
 
     const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
@@ -287,25 +287,39 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const tx = await extras.withdraw({ from: owner });
 
-    const gasCost = new BN(tx.receipt.gasUsed).mul(new BN(await web3.eth.getGasPrice()));
+    const gasCost = new BN(tx.receipt.gasUsed).mul(
+      new BN(await web3.eth.getGasPrice())
+    );
 
     const buildshipBalanceAfter = await web3.eth.getBalance(buildship);
     const ownerBalanceAfter = await web3.eth.getBalance(owner);
     const salesBalanceAfter = await web3.eth.getBalance(extras.address);
 
-    assert(buildshipBalanceAfter - buildshipBalanceBefore > 0, "buildship should have more money after withdraw");
-    assert(ownerBalanceAfter - ownerBalanceBefore > 0, "owner should have more money after withdraw");
+    assert(
+      buildshipBalanceAfter - buildshipBalanceBefore > 0,
+      "buildship should have more money after withdraw"
+    );
+    assert(
+      ownerBalanceAfter - ownerBalanceBefore > 0,
+      "owner should have more money after withdraw"
+    );
     assert(salesBalanceAfter == 0, "contract should withdraw all money");
 
     // check that 15% of salesBalanceBefore goes to buildship, and 90% goes to owner
-    assert.equal(buildshipBalanceAfter - buildshipBalanceBefore, salesBalanceBefore * 15 / 100, "15% of salesBalanceBefore should go to buildship");
+    assert.equal(
+      buildshipBalanceAfter - buildshipBalanceBefore,
+      (salesBalanceBefore * 15) / 100,
+      "15% of salesBalanceBefore should go to buildship"
+    );
 
     assert.equal(
-      new BN(ownerBalanceAfter).sub(new BN(ownerBalanceBefore)).add(gasCost).toString(),
+      new BN(ownerBalanceAfter)
+        .sub(new BN(ownerBalanceBefore))
+        .add(gasCost)
+        .toString(),
       new BN(salesBalanceBefore).muln(85).divn(100).toString(),
       "85% of salesBalanceBefore should go to owner"
     );
-
   });
 
 
