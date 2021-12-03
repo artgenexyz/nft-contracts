@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 // Hey! Want to launch your own collection ? Check out https://buildship.dev. Tell us the promo code SHARED IMPLEMENTATION NFT for a 10% discount!
 
@@ -14,10 +15,12 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // 2. https://github.com/OpenZeppelin/workshops/tree/master/02-contracts-clone/contracts/2-uniswap
 // 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
 contract SharedImplementationNFT is ERC721Upgradeable, ERC721EnumerableUpgradeable, OwnableUpgradeable {
+    using Address for address;
 
     uint256 internal _price; // = 0.03 ether;
     uint256 internal _reserved; // = 200;
 
+    uint256 public immutable DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 public MAX_SUPPLY; // = 10000;
     uint256 public MAX_TOKENS_PER_MINT; // = 20;
 
@@ -32,7 +35,7 @@ contract SharedImplementationNFT is ERC721Upgradeable, ERC721EnumerableUpgradeab
         uint256 _startPrice, uint256 _maxSupply,
         uint256 _nReserved,
         uint256 _maxTokensPerMint,
-        string memory _uri,
+        string memory _projectName,
         string memory _name, string memory _symbol
     ) public initializer {
         __ERC721_init(_name, _symbol);
@@ -43,8 +46,9 @@ contract SharedImplementationNFT is ERC721Upgradeable, ERC721EnumerableUpgradeab
         _reserved = _nReserved;
         MAX_SUPPLY = _maxSupply;
         MAX_TOKENS_PER_MINT = _maxTokensPerMint;
-        baseURI = _uri;
 
+        // Need help with uploading metadata? Try https://buildship.dev
+        baseURI = string(abi.encodePacked("https://metadata.buildship.dev/api/token/", _projectName));
     }
 
     // This constructor ensures that this contract can only be used as a master copy
@@ -63,6 +67,7 @@ contract SharedImplementationNFT is ERC721Upgradeable, ERC721EnumerableUpgradeab
         return baseURI;
     }
 
+    // Optionally, migrate to IPFS and freeze metadata later
     function setBaseURI(string calldata uri) public onlyOwner {
         baseURI = uri;
     }
@@ -175,10 +180,21 @@ contract SharedImplementationNFT is ERC721Upgradeable, ERC721EnumerableUpgradeab
     }
 
     function withdraw() public onlyOwner {
-        // TODO: make optional withdraw into beneficiary address
-        uint256 _balance = address(this).balance;
+        uint256 balance = address(this).balance;
+        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
-        require(payable(msg.sender).send(_balance));
+        address payable dev = DEVELOPER_ADDRESS();
+
+        Address.sendValue(payable(msg.sender), amount);
+        Address.sendValue(dev, balance - amount);
+    }
+
+    function DEVELOPER() public pure returns (string memory _url) {
+        _url = "https://buildship.dev";
+    }
+
+    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
+        _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
 }
