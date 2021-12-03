@@ -20,7 +20,7 @@ contract NFTFactory {
         uint256 _startPrice, uint256 _maxSupply,
         uint256 _nReserved,
         uint256 _maxTokensPerMint,
-        string memory _uri,
+        string memory _projectName,
         string memory _name, string memory _symbol
     ) external {
         address clone = Clones.clone(proxyImplementation);
@@ -29,7 +29,7 @@ contract NFTFactory {
             _startPrice, _maxSupply,
             _nReserved,
             _maxTokensPerMint,
-            _uri,
+            _projectName,
             _name, _symbol
         );
 
