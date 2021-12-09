@@ -222,7 +222,7 @@ contract("NFTFactory", (accounts) => {
         const balanceOwnerAfter = await web3.eth.getBalance(owner);
         const balanceDeveloperAfter = await web3.eth.getBalance(dev);
 
-        const gasCost = await getGasCost(tx);
+        const gasCost = getGasCost(tx);
 
         assert.equal(
             new BigNumber(balanceOwnerAfter).minus(balanceOwnerBefore).plus(gasCost).toString(),

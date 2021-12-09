@@ -1,6 +1,6 @@
 const BigNumber = require("bignumber.js");
 
-const getGasCost = async tx => {
+const getGasCost = tx => {
     return new BigNumber(tx.receipt.gasUsed).times(tx.receipt.effectiveGasPrice);
 }
 
