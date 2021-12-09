@@ -31,6 +31,37 @@ contract("NFTFactory", (accounts) => {
     // it should deploy successfully
     it("should deploy successfully", async () => {
         assert.ok(factory.address);
+
+        const original = await SharedImplementationNFT.at(await factory.proxyImplementation());
+
+        assert.equal(
+            await original.owner(),
+            "0x0000000000000000000000000000000000000000"
+        );
+
+        await expectRevert(
+            original.mint(1, { from: owner, value: ether.times(0.1) }),
+            "Sale not started"
+        );
+    });
+
+    // it should measure gas spent on deployment
+    it("should measure gas spent on deployment", async () => {
+        let nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            0,
+            20,
+            "factory-test-buy",
+            "Test",
+            "NFT",
+            { value: ether.times(0.1) },
+        );
+
+        const gasSpent = nft.receipt.gasUsed;
+
+        assert.isBelow(gasSpent, 500_000);
+
     });
 
     // it should test that NFT Factory can create NFTs
@@ -42,10 +73,11 @@ contract("NFTFactory", (accounts) => {
             20,
             "factory-test",
             "Test",
-            "NFT"
+            "NFT",
+            { value: ether.times(0.1) },
         );
 
-        assert.ok(nft.logs[0].args.deployedAddress);
+        assert.ok(nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress);
     });
 
     // it should test that deployed NFTs have correct owner and correct values
@@ -58,11 +90,11 @@ contract("NFTFactory", (accounts) => {
             "factory-test",
             "Test",
             "NFT",
-            { from: user1 }
+            { from: user1, value: ether.times(0.1) }
         );
 
         let deployedNFT = await SharedImplementationNFT.at(
-            nft.logs[0].args.deployedAddress
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
         assert.equal(await deployedNFT.owner(), user1);
@@ -83,7 +115,7 @@ contract("NFTFactory", (accounts) => {
             "factory-test",
             "Test",
             "NFT",
-            { from: user1 }
+            { from: user1, value: ether.times(0.1) }
         );
 
         let nft2 = await factory.createNFT(
@@ -94,14 +126,14 @@ contract("NFTFactory", (accounts) => {
             "factory-test",
             "Test",
             "NFT",
-            { from: user1 }
+            { from: user1, value: ether.times(0.1) }
         );
 
         let deployedNFT = await SharedImplementationNFT.at(
-            nft.logs[0].args.deployedAddress
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
         let deployedNFT2 = await SharedImplementationNFT.at(
-            nft2.logs[0].args.deployedAddress
+            nft2.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
         await deployedNFT.setPrice(ether.times(0.1), { from: user1 });
@@ -142,7 +174,8 @@ contract("NFTFactory", (accounts) => {
             20,
             "factory-test-buy",
             "Test",
-            "NFT"
+            "NFT",
+            { value: ether.times(0.1) },
         );
 
         const gasSpent = nft.receipt.gasUsed;
@@ -161,11 +194,12 @@ contract("NFTFactory", (accounts) => {
             20,
             "factory-test-buy",
             "Test",
-            "NFT"
+            "NFT",
+            { value: ether.times(0.1) },
         );
 
         let deployedNFT = await SharedImplementationNFT.at(
-            nft.logs[0].args.deployedAddress
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
         await deployedNFT.flipSaleStarted();

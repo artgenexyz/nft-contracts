@@ -4,11 +4,11 @@ module.exports = async function (deployer) {
 
   await deployer.deploy(NFTFactory);
 
-  // const factory = await NFTFactory.deployed();
+  const factory = await NFTFactory.deployed();
 
-  // const implementation = await factory.proxyImplementation();
+  const implementation = await factory.proxyImplementation();
 
-  // console.log('Implementation created at address', implementation)
+  console.log('Implementation created at address', implementation)
 
   // const [ nftCreated ] = factory.contract.getPastEvents('NFTCreated', { fromBlock: 0, toBlock: 'latest' });
 
