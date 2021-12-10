@@ -111,8 +111,8 @@ library Equation {
   }
 
   /// Calculate the Y position from the X position for this equation.
-  function calculateN(Node[] storage self, uint256[] memory values) external view returns (uint256) {
-    return solveMathMany(self, 0, values);
+  function calculateN(Node[] storage self, uint256[] memory xValues) external view returns (uint256) {
+    return solveMathMany(self, 0, xValues);
   }
 
   /// Return the number of children the given opcode node has.
@@ -202,22 +202,19 @@ library Equation {
     return (lastNodeIdx, exprType);
   }
 
-  function solveMathMany(Node[] storage self, uint8 nodeIdx, uint256[] memory values) private view returns (uint256) {
+  function solveMathMany(Node[] storage self, uint8 nodeIdx, uint256[] memory xValues) private view returns (uint256) {
 
     Node storage node = self[nodeIdx];
     uint8 opcode = node.opcode;
     if (opcode == OPCODE_CONST) {
       return node.value;
     } else if (opcode == OPCODE_VAR) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
+      // WE USE X ONLY HERE
+      uint256 xValue = xValues[xValues.length - 1];
+      delete xValues[xValues.length - 1];
       return xValue;
     } else if (opcode == OPCODE_SQRT) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      uint256 childValue = solveMath(self, node.child0, xValue);
+      uint256 childValue = solveMathMany(self, node.child0, xValues);
       uint256 temp = childValue.add(1).div(2);
       uint256 result = childValue;
       while (temp < result) {
@@ -226,11 +223,8 @@ library Equation {
       }
       return result;
     } else if (opcode >= OPCODE_ADD && opcode <= OPCODE_PCT) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      uint256 leftValue = solveMath(self, node.child0, xValue);
-      uint256 rightValue = solveMath(self, node.child1, xValue);
+      uint256 leftValue = solveMathMany(self, node.child0, xValues);
+      uint256 rightValue = solveMathMany(self, node.child1, xValues);
       if (opcode == OPCODE_ADD) {
         return leftValue.add(rightValue);
       } else if (opcode == OPCODE_SUB) {
@@ -250,12 +244,9 @@ library Equation {
         return leftValue.mul(rightValue).div(1e18);
       }
     } else if (opcode == OPCODE_IF) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      bool condValue = solveBool(self, node.child0, xValue);
-      if (condValue) return solveMath(self, node.child1, xValue);
-      else return solveMath(self, node.child2, xValue);
+      bool condValue = solveBoolMany(self, node.child0, xValues);
+      if (condValue) return solveMathMany(self, node.child1, xValues);
+      else return solveMathMany(self, node.child2, xValues);
     // } else if (opcode == OPCODE_BANCOR_LOG) {
     //   uint256 multiplier = solveMath(self, node.child0, xValue);
     //   uint256 baseN = solveMath(self, node.child1, xValue);
@@ -276,27 +267,24 @@ library Equation {
   function solveMath(Node[] storage self, uint8 nodeIdx, uint256 xValue)
     private view returns (uint256)
   {
-    uint256[] memory values = new uint256[](1);
-    values[0] = xValue;
-    return solveMathMany(self, nodeIdx, values);
+    uint256[] memory xValues = new uint256[](1);
+    xValues[0] = xValue;
+    return solveMathMany(self, nodeIdx, xValues);
   }
 
-  function solveBoolMany(Node[] storage self, uint8 nodeIdx, uint256[] memory values)
+  function solveBoolMany(Node[] storage self, uint8 nodeIdx, uint256[] memory xValues)
     private view returns (bool)
   {
     Node storage node = self[nodeIdx];
     uint8 opcode = node.opcode;
     if (opcode == OPCODE_NOT) {
       // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
+      uint256 xValue = xValues[xValues.length - 1];
+      delete xValues[xValues.length - 1];
       return !solveBool(self, node.child0, xValue);
     } else if (opcode >= OPCODE_EQ && opcode <= OPCODE_GE) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      uint256 leftValue = solveMath(self, node.child0, xValue);
-      uint256 rightValue = solveMath(self, node.child1, xValue);
+      uint256 leftValue = solveMathMany(self, node.child0, xValues);
+      uint256 rightValue = solveMathMany(self, node.child1, xValues);
       if (opcode == OPCODE_EQ) {
         return leftValue == rightValue;
       } else if (opcode == OPCODE_NE) {
@@ -311,24 +299,18 @@ library Equation {
         return leftValue >= rightValue;
       }
     } else if (opcode >= OPCODE_AND && opcode <= OPCODE_OR) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      bool leftBoolValue = solveBool(self, node.child0, xValue);
+      bool leftBoolValue = solveBoolMany(self, node.child0, xValues);
       if (opcode == OPCODE_AND) {
-        if (leftBoolValue) return solveBool(self, node.child1, xValue);
+        if (leftBoolValue) return solveBoolMany(self, node.child1, xValues);
         else return false;
       } else if (opcode == OPCODE_OR) {
         if (leftBoolValue) return true;
-        else return solveBool(self, node.child1, xValue);
+        else return solveBoolMany(self, node.child1, xValues);
       }
     } else if (opcode == OPCODE_IF) {
-      // WE USE X HERE
-      uint256 xValue = values[0];
-      delete values[0];
-      bool condValue = solveBool(self, node.child0, xValue);
-      if (condValue) return solveBool(self, node.child1, xValue);
-      else return solveBool(self, node.child2, xValue);
+      bool condValue = solveBoolMany(self, node.child0, xValues);
+      if (condValue) return solveBoolMany(self, node.child1, xValues);
+      else return solveBoolMany(self, node.child2, xValues);
     }
     revert();
   }
@@ -336,8 +318,8 @@ library Equation {
   function solveBool(Node[] storage self, uint8 nodeIdx, uint256 xValue)
     private view returns (bool)
   {
-    uint256[] memory values = new uint256[](1);
-    values[0] = xValue;
-    return solveBoolMany(self, nodeIdx, values);
+    uint256[] memory xValues = new uint256[](1);
+    xValues[0] = xValue;
+    return solveBoolMany(self, nodeIdx, xValues);
   }
 }
