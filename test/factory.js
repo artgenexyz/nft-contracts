@@ -101,7 +101,7 @@ contract("NFTFactory", (accounts) => {
         assert.include(await deployedNFT.baseURI(), "factory-test");
         assert.equal(
             await deployedNFT.baseURI(),
-            "https://metadata.buildship.dev/api/token/factory-test"
+            "factory-test"
         );
     });
 
