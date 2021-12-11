@@ -5141,6 +5141,13 @@ cli-table3@^0.5.0:
   optionalDependencies:
     colors "^1.1.2"
 
+cli-table@^0.3.1:
+  version "0.3.11"
+  resolved "https://registry.yarnpkg.com/cli-table/-/cli-table-0.3.11.tgz#ac69cdecbe81dccdba4889b9a18b7da312a9d3ee"
+  integrity sha512-IqLQi4lO0nIB4tcdTpN4LCB9FI3uqrJZK7RC515EnhZ6qBaglkIgICb1wjeAqpdoOabm1+SuQtkXIPdYC93jhQ==
+  dependencies:
+    colors "1.0.3"
+
 cli-util@~1.1.27:
   version "1.1.27"
   resolved "https://registry.npmjs.org/cli-util/-/cli-util-1.1.27.tgz"
@@ -5276,6 +5283,11 @@ color-name@~1.1.4:
   version "1.1.4"
   resolved "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
+
+colors@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/colors/-/colors-1.0.3.tgz#0433f44d809680fdeb60ed260f1b0c262e82a40b"
+  integrity sha1-BDP0TYCWgP3rYO0mDxsMJi6CpAs=
 
 colors@^1.1.2, colors@^1.4.0:
   version "1.4.0"
@@ -14877,6 +14889,14 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/trim-right/-/trim-right-1.0.1.tgz"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
+
+truffle-contract-size@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/truffle-contract-size/-/truffle-contract-size-2.0.1.tgz#9ec1b078b0b3221cc1612400bd6f5df83c7a3a09"
+  integrity sha512-AIKPwHPC/1pZwtVjgUcgcK23k6gWxKhn4ZnKLr339uieb94UgAUeIwGUkfc87T+0lqgC6ePY7YhsFeoZK2YEsA==
+  dependencies:
+    cli-table "^0.3.1"
+    yargs "^15.3.1"
 
 truffle-flattener@^1.5.0:
   version "1.5.0"
