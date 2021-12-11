@@ -22,6 +22,7 @@
     "nft.storage": "^3.3.0",
     "solidity-coverage": "^0.7.17",
     "truffle": "^5.4.8",
+    "truffle-contract-size": "^2.0.1",
     "truffle-flattener": "^1.5.0",
     "truffle-plugin-verify": "^0.5.12"
   },
