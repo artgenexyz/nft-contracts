@@ -47,10 +47,18 @@ module.exports = async function(callback) {
 
       // run the flattener
       console.log("\nRunning command:", sh);
-      const { stdout, stderr } = exec(sh);
 
-      stdout.on('data', data => console.log(data))
-      stderr.on('data', data => console.log(data))
+      await new Promise((resolve, reject) => {
+        exec(sh, (err, stdout) => {
+          if (err) {
+            console.log("Error flattening contract:", err);
+            return reject(err);
+          }
+
+          console.log("Flattened contract:", stdout);
+          resolve();
+        });
+      })
 
       flattened = fs.readFileSync("./tmp/Flattened.sol", "utf8");
 
@@ -80,7 +88,7 @@ module.exports = async function(callback) {
 
     console.log(`Deploy here:`);
 
-    return callback(`https://gate.buildship.dev/deploy/${cid}`);
+    return callback(`https://gate-rinkeby.buildship.dev/deploy/${cid}`);
   } catch (err) {
     return callback(err);
   }
