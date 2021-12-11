@@ -4,7 +4,7 @@ const { assert } = require("chai");
 const { getGasCost } = require("./utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const SharedImplementationNFT = artifacts.require("SharedImplementationNFT");
+const MetaverseNFT = artifacts.require("MetaverseNFT");
 
 const ether = new BigNumber(1e18);
 
@@ -32,7 +32,7 @@ contract("MetaverseNFTFactory", (accounts) => {
     it("should deploy successfully", async () => {
         assert.ok(factory.address);
 
-        const original = await SharedImplementationNFT.at(await factory.proxyImplementation());
+        const original = await MetaverseNFT.at(await factory.proxyImplementation());
 
         assert.equal(
             await original.owner(),
@@ -93,7 +93,7 @@ contract("MetaverseNFTFactory", (accounts) => {
             { from: user1, value: ether.times(0.1) }
         );
 
-        let deployedNFT = await SharedImplementationNFT.at(
+        let deployedNFT = await MetaverseNFT.at(
             nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
@@ -129,10 +129,10 @@ contract("MetaverseNFTFactory", (accounts) => {
             { from: user1, value: ether.times(0.1) }
         );
 
-        let deployedNFT = await SharedImplementationNFT.at(
+        let deployedNFT = await MetaverseNFT.at(
             nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
-        let deployedNFT2 = await SharedImplementationNFT.at(
+        let deployedNFT2 = await MetaverseNFT.at(
             nft2.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
@@ -152,7 +152,7 @@ contract("MetaverseNFTFactory", (accounts) => {
     // it should test that shared implementation fails on all transactions
     it("should test that shared implementation fails on all transactions", async () => {
         const proxyImplementation = await factory.proxyImplementation();
-        const original = await SharedImplementationNFT.at(proxyImplementation);
+        const original = await MetaverseNFT.at(proxyImplementation);
 
         assert.equal(
             await original.owner(),
@@ -198,7 +198,7 @@ contract("MetaverseNFTFactory", (accounts) => {
             { value: ether.times(0.1) },
         );
 
-        let deployedNFT = await SharedImplementationNFT.at(
+        let deployedNFT = await MetaverseNFT.at(
             nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
