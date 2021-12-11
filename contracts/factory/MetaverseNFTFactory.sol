@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./SharedImplementationNFT.sol";
+import "./MetaverseNFT.sol";
 
 contract MetaverseNFTFactory is Ownable {
 
@@ -14,7 +14,7 @@ contract MetaverseNFTFactory is Ownable {
     event NFTCreated(address deployedAddress);
 
     constructor() {
-        proxyImplementation = address(new SharedImplementationNFT());
+        proxyImplementation = address(new MetaverseNFT());
     }
 
     function createNFT(
@@ -28,7 +28,7 @@ contract MetaverseNFTFactory is Ownable {
 
         address clone = Clones.clone(proxyImplementation);
 
-        SharedImplementationNFT(clone).initialize(
+        MetaverseNFT(clone).initialize(
             // _startPrice,
             _maxSupply,
             _nReserved,
@@ -37,7 +37,7 @@ contract MetaverseNFTFactory is Ownable {
             _name, _symbol
         );
 
-        SharedImplementationNFT(clone).transferOwnership(msg.sender);
+        MetaverseNFT(clone).transferOwnership(msg.sender);
 
         emit NFTCreated(clone);
 

@@ -84,7 +84,7 @@ import "./extensions/INFTExtension.sol";
  */
 
 // TODO: add Opensea autoapprove?
-contract SharedImplementationNFT is
+contract MetaverseNFT is
     ERC721Upgradeable,
     ERC721BurnableUpgradeable,
     OwnableUpgradeable,
@@ -109,7 +109,7 @@ contract SharedImplementationNFT is
     uint256 public createdAt;
 
     address public royaltyReceiver;
-    bool public saleStarted;
+    // bool public saleStarted;
     bool public isFrozen;
 
     mapping (uint256 => bytes32) public tokenData;
