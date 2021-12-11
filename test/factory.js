@@ -3,7 +3,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { assert } = require("chai");
 const { getGasCost } = require("./utils");
 
-const NFTFactory = artifacts.require("NFTFactory");
+const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const SharedImplementationNFT = artifacts.require("SharedImplementationNFT");
 
 const ether = new BigNumber(1e18);
@@ -20,7 +20,7 @@ const ether = new BigNumber(1e18);
  * -
  */
 
-contract("NFTFactory", (accounts) => {
+contract("MetaverseNFTFactory", (accounts) => {
     let factory;
     const [owner, user1, user2] = accounts;
 
