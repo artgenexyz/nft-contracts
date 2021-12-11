@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./INFTExtension.sol";
+import "./extensions/INFTExtension.sol";
 
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
@@ -106,9 +106,9 @@ contract SharedImplementationNFT is
 
     uint256 public royaltyFee = 0; // of 10,000
     uint256 public startingIndex;
-    uint256 public createdAt = block.timestamp;
+    uint256 public createdAt;
 
-    address public royaltyReceiver = address(this);
+    address public royaltyReceiver;
     bool public saleStarted;
     bool public isFrozen;
 
@@ -137,6 +137,9 @@ contract SharedImplementationNFT is
         __ERC721Burnable_init();
         __Ownable_init();
         // __ReentrancyGuard_init();
+
+        createdAt = block.timestamp;
+        royaltyReceiver = address(this);
 
         // price = _startPrice;
         reserved = _nReserved;
