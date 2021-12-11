@@ -14854,7 +14854,7 @@ trim-right@^1.0.1:
 
 truffle-flattener@^1.5.0:
   version "1.5.0"
-  resolved "https://registry.npmjs.org/truffle-flattener/-/truffle-flattener-1.5.0.tgz"
+  resolved "https://registry.yarnpkg.com/truffle-flattener/-/truffle-flattener-1.5.0.tgz#c358fa3e5cb0a663429f7912a58c4f0879414e64"
   integrity sha512-vmzWG/L5OXoNruMV6u2l2IaheI091e+t+fFCOR9sl46EE3epkSRIwGCmIP/EYDtPsFBIG7e6exttC9/GlfmxEQ==
   dependencies:
     "@resolver-engine/imports-fs" "^0.2.2"
