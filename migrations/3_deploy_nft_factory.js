@@ -1,4 +1,4 @@
-const NFTFactory = artifacts.require("NFTFactory");
+const NFTFactory = artifacts.require("MetaverseNFTFactory");
 
 module.exports = async function (deployer) {
 
