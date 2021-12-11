@@ -11,3 +11,5 @@ coverage.json
 .coverage_*
 
 test_results
+
+tmp
