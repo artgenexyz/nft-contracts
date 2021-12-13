@@ -66,7 +66,7 @@ truffle compile
 Then, in another tab and leave running:
 
 ```bash
-npx ganache-cli
+npx ganache-cli --miner.legacyInstamine
 ```
 
 Finally, to test your code:
