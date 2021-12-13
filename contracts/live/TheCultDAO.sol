@@ -14,4 +14,11 @@ contract TheCultDAO is AvatarNFT {
         "The Cult DAO", "CULD"
     ) {}
 
+    // --- Admin functions ---
+
+    // Update beneficiary, override to make updateable
+    function setBeneficiary(address payable _beneficiary) public override onlyOwner {
+        beneficiary = _beneficiary;
+    }
+
 }
