@@ -1,4 +1,8 @@
+const fs = require("fs");
+const { exec } = require("child_process");
+
 const { NFTStorage } = require("nft.storage");
+
 const NFT_STORAGE_API_KEY = process.env.NFT_STORAGE_API_KEY;
 const client = new NFTStorage({ token: NFT_STORAGE_API_KEY });
 
@@ -28,15 +32,52 @@ module.exports = async function(callback) {
 
     const contract = artifacts.require(contractName);
 
-    console.log(`Deploying ${contractName}`);
-    // console.log(`Contract`, contract);
+    let flattened;
+
+    try {
+      // try flattening contract
+      const { sourcePath } = contract;
+
+      // create dir ./tmp
+      if (!fs.existsSync("./tmp")) {
+        fs.mkdirSync("./tmp");
+      }
+
+      const sh = `npx truffle-flattener ${sourcePath} | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' > ./tmp/Flattened.sol`;
+
+      // run the flattener
+      console.log("\nRunning command:", sh);
+
+      await new Promise((resolve, reject) => {
+        exec(sh, (err, stdout) => {
+          if (err) {
+            console.log("Error flattening contract:", err);
+            return reject(err);
+          }
+
+          console.log("Flattened contract:", stdout);
+          resolve();
+        });
+      })
+
+      flattened = fs.readFileSync("./tmp/Flattened.sol", "utf8");
+
+    } catch (err) {
+      console.log("Error flattening contract, sending empty source code", err);
+    } finally {
+      // rm flattened file
+      fs.rmSync("./tmp/Flattened.sol");
+      // fs.rmdirSync("./tmp");
+    }
+
+    console.log(`\nDeploying ${contractName}`);
 
     const contractInfo = {
       name: contractName,
       abi: contract.abi,
       bytecode: contract.bytecode,
-      // ? constructor arguments, compiler version, source code, optimizer enabled, runs, license
       extra: contract,
+      flattened: flattened,
     };
 
     const cid = await client.storeBlob([JSON.stringify(contractInfo)]);
@@ -47,7 +88,7 @@ module.exports = async function(callback) {
 
     console.log(`Deploy here:`);
 
-    return callback(`https://gate.buildship.dev/deploy/${cid}`);
+    return callback(`https://gate-rinkeby.buildship.dev/deploy/${cid}`);
   } catch (err) {
     return callback(err);
   }
