@@ -110,12 +110,12 @@ module.exports = {
   compilers: {
     solc: {
       version: "0.8.9",
-      settings: {
-        optimizer: {
-          enabled: true,
-          runs: 4_294_967_295, // 2**32 - 1
-        },
-      },
+      // settings: {
+      //   optimizer: {
+      //     enabled: true,
+      //     runs: 4_294_967_295, // 2**32 - 1
+      //   },
+      // },
     }
   },
 
