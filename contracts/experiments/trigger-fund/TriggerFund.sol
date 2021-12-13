@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./Equation.sol";
 
-interface BadgeNFT is IERC721 {
+interface IBadgeNFT is IERC721 {
     function getRawData(uint256 _tokenId) external view returns (bytes32); 
 }
 
@@ -21,16 +21,17 @@ contract TriggerFund is ERC721Holder {
         uint256 leftAmount;
     }
 
+    // TODO: use mapping too?
     Fund[] public funds;
 
-    mapping (uint => BadgeNFT[]) badges;
+    mapping (uint => IBadgeNFT[]) badges;
     mapping (uint => Equation.Node[]) condition;
 
     event FundCreated(address funder, uint256 baseAmount, uint256 leftAmount);
 
     constructor () ERC721Holder() {}
 
-    function createFund (uint256 _baseAmount, BadgeNFT[] memory _badges, uint256[] memory _expressions) public payable {
+    function createFund (uint256 _baseAmount, IBadgeNFT[] memory _badges, uint256[] memory _expressions) public payable {
         uint id = funds.length;
 
         // TODO: check if baseAmount % msg.value == 0
@@ -78,7 +79,7 @@ contract TriggerFund is ERC721Holder {
             return false;
         }
 
-        BadgeNFT[] memory fundBadges = badges[_fundId];
+        IBadgeNFT[] memory fundBadges = badges[_fundId];
 
         // uint256[] memory hasBadge;
         // TODO: maybe rawData can be 0 or 1 if you don't need any special value?
