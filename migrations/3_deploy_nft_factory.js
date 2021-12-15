@@ -2,6 +2,8 @@ const NFTFactory = artifacts.require("MetaverseNFTFactory");
 
 module.exports = async function (deployer) {
 
+  return;
+
   await deployer.deploy(NFTFactory);
 
   const factory = await NFTFactory.deployed();
