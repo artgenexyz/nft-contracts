@@ -1,49 +1,206 @@
 const BigNumber = require("bignumber.js");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { assert } = require("chai");
-const { getGasCost } = require("./utils");
+const { assert, expect } = require("chai");
+const keccak256 = require("keccak256");
+const delay = require("delay");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
+const { getGasCost, getAirdropTree, processAddress } = require("../utils");
+
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+const NFTExtension = artifacts.require("NFTExtension");
+const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
+const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
 
 const ether = new BigNumber(1e18);
 
-/**
- * Tests for the NFTFactory:
- * - Factory can deploy itself, and then create new NFTs successfully
- * - Deployed shared implementation has all the values set to zero
- * - Deployed NFTs have correct owner and correct values
- * - Updating value in one NFT doesn't change value in other, or in the shared implementation
- * - Shared implementation fails on all transactions
- * - Test simple sale for deployed NFTs
- * - Test that deployed NFTs have different owners
- * -
- */
-
-contract("MetaverseNFTFactory", (accounts) => {
-    let factory;
+contract("AvatarNFTv2 – Extensions", (accounts) => {
+    let nft;
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        factory = await NFTFactory.new();
+        nft = await TemplateNFTv2.new();
     });
 
     // it should deploy successfully
     it("should deploy successfully", async () => {
-        assert.ok(factory.address);
+        assert.ok(nft.address);
+    });
 
-        const original = await MetaverseNFT.at(await factory.proxyImplementation());
-
-        assert.equal(
-            await original.owner(),
-            "0x0000000000000000000000000000000000000000"
+    // it should deploy extension successfully
+    it("should deploy extension successfully", async () => {
+        const extension = await WhitelistMerkleTreeExtension.new(
+            nft.address,
+            "0x0", // mock merkle root
+            1e17.toString(), // price
+            1, // max per address
         );
 
+        assert.ok(extension.address);
+    });
+
+    // it should connect extension to NFT
+    it("should connect extension to NFT", async () => {
+        const extension = await WhitelistMerkleTreeExtension.new(
+            nft.address,
+            "0x0", // mock merkle root
+            1e17.toString(), // price
+            1, // max per address
+        );
+
+        await nft.addExtension(extension.address);
+
+        assert.equal(
+            await nft.isExtensionAllowed(extension.address),
+            true,
+        );
+    });
+
+    // it creates same tree independent on capital case or address order
+    it("creates same tree independent on capital case or address order", async () => {
+        const { tree: tree1 } = getAirdropTree([ user1, user2 ])
+        const { tree: tree2 } = getAirdropTree([ user2, user1 ])
+        const { tree: tree3 } = getAirdropTree([ user1.toUpperCase(), user2.toUpperCase() ])
+        const { tree: tree4 } = getAirdropTree([ user2.toUpperCase(), user1.toUpperCase() ])
+        const { tree: tree5 } = getAirdropTree([ user1.toLowerCase(), user2.toLowerCase() ])
+
+        // check tree roots are equal via tree.getHexRoot()
+
+        assert.equal(
+            tree1.getHexRoot(),
+            tree2.getHexRoot(),
+            "tree1 and tree2 (reverse order) should have same root"
+        );
+
+        assert.equal(
+            tree1.getHexRoot(),
+            tree3.getHexRoot(),
+            "tree1 and tree3 (uppercase) should have same root"
+        );
+
+        assert.equal(
+            tree1.getHexRoot(),
+            tree4.getHexRoot(),
+            "tree1 and tree4 (uppercase, reverse order) should have same root"
+        );
+
+        assert.equal(
+            tree1.getHexRoot(),
+            tree5.getHexRoot(),
+            "tree1 and tree5 (lowercase) should have same root"
+        );
+
+    });
+
+
+    // it should be able to be whitelisted
+    it("should be able to be whitelisted", async () => {
+        const addresses = [ user1, user2 ]
+
+        const { tree } = getAirdropTree(addresses)
+
+        const extension = await WhitelistMerkleTreeExtension.new(
+            nft.address,
+            tree.getHexRoot(), // mock merkle root
+            1e17.toString(), // price
+            1, // max per address
+        );
+
+        console.log('tree', tree.getHexRoot())
+
+        const leaf = keccak256(processAddress(user1)).toString('hex')
+        // const leaf = keccak256(Buffer.from(processAddress(user1), 'hex'))
+        const root = tree.getHexRoot()
+        const proof = tree.getHexProof(leaf)
+
+        assert(proof.length > 0, "Invalid proof");
+
+        // function isWhitelisted(bytes32 root, address receiver, uint256 amount, bytes32[] memory proof) public pure returns (bool) {
+        const isWhitelisted = await extension.isWhitelisted(root, user1, proof);
+
+        assert.equal(
+            isWhitelisted,
+            true,
+            "user1 should be whitelisted"
+        );
+    });
+
+    // it should be able to mint via whitelist
+    it("should be able to mint via whitelist", async () => {
+        const addresses = [ user1, user2 ]
+
+        const { tree } = getAirdropTree(addresses)
+
+        const extension = await WhitelistMerkleTreeExtension.new(
+            nft.address,
+            tree.getHexRoot(), // mock merkle root
+            1e17.toString(), // price
+            1, // max per address
+        );
+
+        await nft.addExtension(extension.address);
+        await extension.startSale();
+
+        assert(await nft.isExtensionAllowed(extension.address), "Extension should be allowed");
+
+        await delay(1000);
+
+        const leaf = keccak256(processAddress(user1)).toString('hex')
+
+        const proof = tree.getHexProof(leaf)
+
+        await extension.mint(1, proof, { from: user1, value: 1e17.toString() });
+
+        const balance = await nft.balanceOf(user1);
+
+        assert.equal(
+            balance.toString(),
+            "1",
+            "user1 should have 1 NFT"
+        );
+    });
+
+    // it should not allow to mint from original contract, reverts "Sale not started"
+    it("should not allow to mint from original contract, reverts 'Sale not started'", async () => {
         await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
+            nft.mint(1, { from: user1 }),
             "Sale not started"
         );
     });
+
+    // it should allow to mint from LimitAmountSaleExtension
+    it("should allow to mint from LimitAmountSaleExtension", async () => {
+        const extension = await LimitAmountSaleExtension.new(
+            nft.address,
+            1e16.toString(), // price
+            3,
+            500,
+        );
+
+        await nft.addExtension(extension.address);
+
+        await extension.startSale();
+        await delay(1000);
+
+        assert(
+            await nft.isExtensionAllowed(extension.address),
+            "Extension should be allowed"
+        );
+
+        await extension.mint(1, { from: user2, value: 1e16.toString() });
+
+        const balance = await nft.balanceOf(user2);
+
+        assert.equal(
+            balance.toString(),
+            "1",
+            "user2 should have 1 NFT"
+        );
+
+    });
+
+    return ;
 
     // it should measure gas spent on deployment
     it("should measure gas spent on deployment", async () => {

@@ -5,12 +5,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract SaleControl is Ownable {
 
-    uint256 public constant SALE_NOT_ACTIVE_FOREVER = 2**256 - 1;
+    uint256 public constant __SALE_NEVER_STARTS = 2**256 - 1;
 
-    uint256 public startTimestamp = SALE_NOT_ACTIVE_FOREVER;
+    uint256 public startTimestamp = __SALE_NEVER_STARTS;
 
     modifier whenSaleStarted {
-        require(saleStarted(), "Not started yet");
+        require(saleStarted(), "Sale not started yet");
         _;
     }
 
@@ -23,7 +23,7 @@ abstract contract SaleControl is Ownable {
     }
 
     function stopSale() public onlyOwner {
-        startTimestamp = SALE_NOT_ACTIVE_FOREVER;
+        startTimestamp = __SALE_NEVER_STARTS;
     }
 
     function saleStarted() public view returns (bool) {
