@@ -2,7 +2,7 @@ const NFTFactory = artifacts.require("MetaverseNFTFactory");
 
 module.exports = async function (deployer) {
 
-  return;
+  if (!process.env.FACTORY_NOT_SKIP) return;
 
   await deployer.deploy(NFTFactory);
 
@@ -10,7 +10,12 @@ module.exports = async function (deployer) {
 
   const implementation = await factory.proxyImplementation();
 
-  console.log('Implementation created at address', implementation)
+  console.log('   > implementation created at address:', implementation);
+
+  console.log('   -------------------------------------')
+  console.log('   Verify:\n\t', `truffle run verify MetaverseNFTFactory MetaverseNFT@${implementation} --network rinkeby`, '\n')
+
+  console.log('   -------------------------------------')
 
   // const [ nftCreated ] = factory.contract.getPastEvents('NFTCreated', { fromBlock: 0, toBlock: 'latest' });
 
