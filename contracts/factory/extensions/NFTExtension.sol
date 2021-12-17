@@ -4,11 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./INFTExtension.sol";
-
-interface IMetaverseNFT {
-    function isExtensionAllowed(address extension) external view returns (bool);
-    function mintExternal(uint256 nTokens, address to, bytes32 data) external payable;
-}
+import "./IMetaverseNFT.sol";
 
 contract NFTExtension is INFTExtension, ERC165 {
     IMetaverseNFT public immutable nft;

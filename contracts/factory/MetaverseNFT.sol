@@ -23,6 +23,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
 
+import "./OpenseaProxy.sol";
+
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
 //      Tell us the promo code ORIGINAL NFT for a 10% discount!
@@ -97,20 +99,19 @@ contract MetaverseNFT is
 
     Counters.Counter private _tokenIdCounter;
 
-    // uint256 public price; // = 0.01 ether;
     uint256 public reserved; // = 10;
 
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 public MAX_SUPPLY; // = 10000;
-    // uint256 public MAX_TOKENS_PER_MINT; // = 20;
 
     uint256 public royaltyFee = 0; // of 10,000
     uint256 public startingIndex;
     uint256 public createdAt;
 
     address public royaltyReceiver;
-    // bool public saleStarted;
+
     bool public isFrozen;
+    bool private isOpenSeaProxyActive;
 
     mapping (uint256 => bytes32) public tokenData;
     mapping (address => bool) public isExtensionAllowed;
@@ -126,10 +127,8 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        // uint256 _startPrice,
         uint256 _maxSupply,
         uint256 _nReserved,
-        // uint256 _maxTokensPerMint,
         string memory _uri,
         string memory _name, string memory _symbol
     ) public initializer {
@@ -141,10 +140,8 @@ contract MetaverseNFT is
         createdAt = block.timestamp;
         royaltyReceiver = address(this);
 
-        // price = _startPrice;
         reserved = _nReserved;
         MAX_SUPPLY = _maxSupply;
-        // MAX_TOKENS_PER_MINT = _maxTokensPerMint;
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
@@ -168,10 +165,14 @@ contract MetaverseNFT is
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (uriExtension != address(0)) {
-            return INFTURIExtension(uriExtension).tokenURI(tokenId);
-        } else {
-            return super.tokenURI(tokenId);
+            string memory uri = INFTURIExtension(uriExtension).tokenURI(tokenId);
+
+            if (bytes(uri).length > 0) {
+                return uri;
+            }
         }
+
+        return super.tokenURI(tokenId);
     }
 
     function setExtensionTokenURI(address extension) public onlyOwner whenNotFrozen {
@@ -217,6 +218,13 @@ contract MetaverseNFT is
         emit ExtensionRevoked(_extension);
     }
 
+    // function to disable gasless listings for security in case
+    // opensea ever shuts down or is compromised
+    // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
+    function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive) public onlyOwner {
+        isOpenSeaProxyActive = _isOpenSeaProxyActive;
+    }
+
     // ---- Minting ----
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 data) internal {
@@ -254,14 +262,14 @@ contract MetaverseNFT is
     // ---- Mint public ----
 
     // Contract can sell tokens
-    // function mint(uint256 nTokens) external payable whenSaleStarted {
+    // function mint(uint256 nTokens) external payable {
     //     // uint256 supply = totalSupply();
-    //     require(nTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
+    //     require(nTokens <= 10000, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
 
     //     // TODO: dont check MAX_SUPPLY if collection is unfrozen
     //     // require(supply + nTokens <= MAX_SUPPLY - reserved, "Not enough Tokens left.");
 
-    //     require(nTokens * price <= msg.value, "Inconsistent amount sent!");
+    //     require(nTokens * 1 ether <= msg.value, "Inconsistent amount sent!");
 
     //     _mintConsecutive(nTokens, msg.sender, 0x0);
     // }
@@ -381,6 +389,28 @@ contract MetaverseNFT is
         returns (bool)
     {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+
+    /**
+     * @dev Override isApprovedForAll to allowlist user's OpenSea proxy accounts to enable gas-less listings.
+     * Taken from CryptoCoven: https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
+     */
+    function isApprovedForAll(address owner, address operator)
+        public
+        view
+        override
+        returns (bool)
+    {
+        // Get a reference to OpenSea's proxy registry contract by instantiating
+        // the contract using the already existing address.
+        ProxyRegistry proxyRegistry = ProxyRegistry(0xa5409ec958C83C3f309868babACA7c86DCB077c1);
+
+        if (isOpenSeaProxyActive && address(proxyRegistry.proxies(owner)) == operator) {
+            return true;
+        }
+
+        return super.isApprovedForAll(owner, operator);
     }
 
 }
