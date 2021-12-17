@@ -22,7 +22,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
-import "./extensions/IMetaverseNFT.sol";
+import "./IMetaverseNFT.sol";
 
 import "./OpenseaProxy.sol";
 
@@ -90,9 +90,9 @@ import "./OpenseaProxy.sol";
 contract MetaverseNFT is
     ERC721Upgradeable,
     ERC721BurnableUpgradeable,
+    ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    // ReentrancyGuardUpgradeable,
-    IERC2981
+    IMetaverseNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -100,28 +100,38 @@ contract MetaverseNFT is
 
     Counters.Counter private _tokenIdCounter;
 
-    uint256 public reserved; // = 10;
-
+    uint256 public constant SALE_NEVER_STARTS = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
-    uint256 public MAX_SUPPLY; // = 10000;
 
-    uint256 public royaltyFee = 0; // of 10,000
-    uint256 public startingIndex;
+    uint256 public startTimestamp = SALE_NEVER_STARTS;
     uint256 public createdAt;
 
+    uint256 public reserved;
+    uint256 public maxSupply;
+    uint256 public maxPerMint;
+    uint256 public price;
+
+    uint256 public royaltyFee;
+
     address public royaltyReceiver;
+    address public uriExtension = address(0x0);
 
     bool public isFrozen;
     bool private isOpenSeaProxyActive;
 
-    mapping (uint256 => bytes32) public tokenData;
-    mapping (address => bool) public isExtensionAllowed;
+    /** 
+    * @dev Additional data for each token that needs to be stored and accessed on-chain
+    */
+    mapping (uint256 => bytes32) public data;
 
-    address public uriExtension = address(0x0);
+    /**
+    * @dev List of connected extensions
+    */
+    INFTExtension[] public extensions;
 
     string public PROVENANCE_HASH = "";
-    string public CONTRACT_URI = "";
-    string public BASE_URI;
+    string private CONTRACT_URI = "";
+    string private BASE_URI;
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -130,19 +140,26 @@ contract MetaverseNFT is
     function initialize(
         uint256 _maxSupply,
         uint256 _nReserved,
+        uint256 _price,
+        uint256 _maxPerMint,
+        uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __ERC721Burnable_init();
+        __ReentrancyGuard_init();
         __Ownable_init();
-        // __ReentrancyGuard_init();
 
         createdAt = block.timestamp;
-        royaltyReceiver = address(this);
 
+        price = _price;
         reserved = _nReserved;
-        MAX_SUPPLY = _maxSupply;
+        maxPerMint = _maxPerMint;
+        maxSupply = _maxSupply;
+
+        royaltyFee = _royaltyFee;
+        royaltyReceiver = address(this);
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
@@ -176,47 +193,70 @@ contract MetaverseNFT is
         return super.tokenURI(tokenId);
     }
 
-    function setExtensionTokenURI(address extension) public onlyOwner whenNotFrozen {
-        require(extension != address(this), "Cannot add self as extension");
-
-        require(ERC165Checker.supportsInterface(extension, type(INFTURIExtension).interfaceId), "Not conforms to extension");
-
-        // isExtensionAllowed[extension] = true;
-
-        uriExtension = extension;
-
-        emit ExtensionURIAdded(extension);
-    }
+    // ----- Admin functions -----
 
     // Optionally, migrate to IPFS and freeze metadata later
-    function setBaseURI(string calldata uri) public onlyOwner whenNotFrozen {
+    function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
     }
 
-    // // Contract-level metadata for Opensea
-    // function setContractURI(string calldata uri) public onlyOwner whenNotFrozen {
-    //     CONTRACT_URI = uri;
-    // }
+    // Contract-level metadata for Opensea
+    function setContractURI(string calldata uri) public onlyOwner {
+        CONTRACT_URI = uri;
+    }
 
     // Freeze forever, unreversible
     function freeze() public onlyOwner {
         isFrozen = true;
     }
 
-    function addExtension(address _extension) public onlyOwner whenNotFrozen {
+    function isExtensionAllowed(address _extension) public view returns (bool) {
+        if (!ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId)) {
+            return false;
+        }
+
+        for (uint index = 0; index < extensions.length; index++) {
+            if (extensions[index] == INFTExtension(_extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
 
-        require(ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId), "Not conforms to extension");
+        require(!isExtensionAllowed(_extension), "Extension already added");
 
-        isExtensionAllowed[_extension] = true;
+        extensions.push(INFTExtension(_extension));
 
         emit ExtensionAdded(_extension);
     }
 
     function revokeExtension(address _extension) public onlyOwner {
-        isExtensionAllowed[_extension] = false;
+        uint256 index = 0;
+
+        for (; index < extensions.length; index++) {
+            if (extensions[index] == INFTExtension(_extension)) {
+                break;
+            }
+        }
+
+        extensions[index] = extensions[extensions.length - 1];
+        extensions.pop();
 
         emit ExtensionRevoked(_extension);
+    }
+
+    function setExtensionTokenURI(address extension) public onlyOwner whenNotFrozen {
+        require(extension != address(this), "Cannot add self as extension");
+
+        require(extension == address(0x0) || ERC165Checker.supportsInterface(extension, type(INFTURIExtension).interfaceId), "Not conforms to extension");
+
+        uriExtension = extension;
+
+        emit ExtensionURIAdded(extension);
     }
 
     // function to disable gasless listings for security in case
@@ -228,27 +268,24 @@ contract MetaverseNFT is
 
     // ---- Minting ----
 
-    function _mintConsecutive(uint256 nTokens, address to, bytes32 data) internal {
-        // uint256 supply = totalSupply();
-        // require(_nbTokens <= MAX_TOKENS_PER_MINT, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
-
-        require(_tokenIdCounter.current() + nTokens + reserved <= MAX_SUPPLY, "Not enough Tokens left.");
+    function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
+        require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
 
         for (uint256 i; i < nTokens; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
 
             _safeMint(to, tokenId);
-            tokenData[tokenId] = data;
+            data[tokenId] = extraData;
         }
     }
 
     // ---- Mint control ----
 
-    // modifier whenSaleStarted() {
-    //     require(saleStarted, "Sale not started");
-    //     _;
-    // }
+    modifier whenSaleStarted() {
+        require(saleStarted(), "Sale not started");
+        _;
+    }
 
     modifier whenNotFrozen() {
         require(!isFrozen, "Minting is frozen");
@@ -256,58 +293,57 @@ contract MetaverseNFT is
     }
 
     modifier onlyExtension() {
-        require(isExtensionAllowed[msg.sender], "Extension should be added to contract before minting");
+        require(isExtensionAllowed(msg.sender), "Extension should be added to contract before minting");
         _;
     }
 
     // ---- Mint public ----
 
     // Contract can sell tokens
-    // function mint(uint256 nTokens) external payable {
-    //     // uint256 supply = totalSupply();
-    //     require(nTokens <= 10000, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
+    function mint(uint256 nTokens) external payable whenSaleStarted {
+        require(nTokens <= maxPerMint, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
 
-    //     // TODO: dont check MAX_SUPPLY if collection is unfrozen
-    //     // require(supply + nTokens <= MAX_SUPPLY - reserved, "Not enough Tokens left.");
+        require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-    //     require(nTokens * 1 ether <= msg.value, "Inconsistent amount sent!");
+        _mintConsecutive(nTokens, msg.sender, 0x0);
+    }
 
-    //     _mintConsecutive(nTokens, msg.sender, 0x0);
-    // }
+    // Owner can claim free tokens
+    function claim(uint256 nTokens, address to) external onlyOwner {
+        require(nTokens <= reserved, "That would exceed the max reserved.");
 
-    // // Owner can claim free tokens
-    // function claim(uint256 nTokens, address to) external onlyOwner {
-    //     require(nTokens <= reserved, "That would exceed the max reserved.");
+        reserved = reserved - nTokens;
 
-    //     _mintConsecutive(nTokens, to, 0x0);
-
-    //     reserved = reserved - nTokens;
-    // }
+        _mintConsecutive(nTokens, to, 0x0);
+    }
 
     // ---- Mint via extension
 
-    function mintExternal(uint256 nTokens, address to, bytes32 data) external payable onlyExtension whenNotFrozen {
-        // uint256 supply = totalSupply();
+    function mintExternal(uint256 nTokens, address to, bytes32 extraData) external payable onlyExtension nonReentrant whenNotFrozen {
 
-        // DONT CHECK HERE, extensions are allowed to do anything
-        // require(supply + nTokens <= MAX_SUPPLY - reserved, "Not enough Tokens left.");
+        _mintConsecutive(nTokens, to, extraData);
 
-        _mintConsecutive(nTokens, to, data);
     }
 
-    // // ---- Sale control ----
-    // function flipSaleStarted() external onlyOwner whenNotFrozen {
-    //     saleStarted = !saleStarted;
+    // ---- Sale control ----
 
-    //     if (saleStarted && startingIndex == 0) {
-    //         setStartingIndex();
-    //     }
-    // }
+    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner whenNotFrozen {
+        startTimestamp = _startTimestamp;
+    }
 
-    // Make it possible to change the price: just in case
-    // function setPrice(uint256 _price) external onlyOwner {
-    //     price = _price;
-    // }
+    function startSale() public onlyOwner whenNotFrozen {
+        startTimestamp = block.timestamp;
+    }
+
+    function stopSale() public onlyOwner {
+        startTimestamp = SALE_NEVER_STARTS;
+    }
+
+    function saleStarted() public view returns (bool) {
+        return block.timestamp > startTimestamp;
+    }
+
+    // ---- Offchain Info ----
 
     // This should be set before sales open.
     function setProvenanceHash(string memory provenanceHash) public onlyOwner {
@@ -329,30 +365,7 @@ contract MetaverseNFT is
         royaltyAmount = salePrice * royaltyFee / 10000;
     }
 
-    // NOTICE: This function is not meant to be called by the user.
-    // Contrary to AvatarNFT, where it is public
-    // function setStartingIndex() internal onlyOwner {
-    //     // moved to extension
-
-    //     // require(startingIndex == 0, "Starting index is already set");
-
-    //     // // BlockHash only works for the most 256 recent blocks.
-    //     // uint256 _block_shift = uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp)));
-    //     // _block_shift =  1 + (_block_shift % 255);
-
-    //     // // This shouldn't happen, but just in case the blockchain gets a reboot?
-    //     // if (block.number < _block_shift) {
-    //     //     _block_shift = 1;
-    //     // }
-
-    //     // uint256 _block_ref = block.number - _block_shift;
-    //     // startingIndex = uint(blockhash(_block_ref)) % MAX_SUPPLY;
-
-    //     // // Prevent default sequence
-    //     // if (startingIndex == 0) {
-    //     //     startingIndex = startingIndex + 1;
-    //     // }
-    // }
+    // ---- Withdraw -----
 
     function withdraw() public onlyOwner {
         uint256 balance = address(this).balance;
@@ -364,16 +377,16 @@ contract MetaverseNFT is
         Address.sendValue(dev, balance - amount);
     }
 
-    // function withdrawToken(IERC20 token) public onlyOwner {
-    //     uint256 balance = token.balanceOf(address(this));
+    function withdrawToken(IERC20 token) public onlyOwner {
+        uint256 balance = token.balanceOf(address(this));
 
-    //     uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
-    //     address payable dev = DEVELOPER_ADDRESS();
+        address payable dev = DEVELOPER_ADDRESS();
 
-    //     token.safeTransfer(payable(msg.sender), amount);
-    //     token.safeTransfer(dev, balance - amount);
-    // }
+        token.safeTransfer(payable(msg.sender), amount);
+        token.safeTransfer(dev, balance - amount);
+    }
 
     function DEVELOPER() public pure returns (string memory _url) {
         _url = "https://buildship.dev";
@@ -383,13 +396,17 @@ contract MetaverseNFT is
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
+    // -------- ERC721 overrides --------
+
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(IERC165, ERC721Upgradeable)
+        override
         returns (bool)
     {
-        return interfaceId == type(IERC2981).interfaceId || interfaceId == type(IMetaverseNFT).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC2981).interfaceId
+            || interfaceId == type(IMetaverseNFT).interfaceId
+            || super.supportsInterface(interfaceId);
     }
 
 

@@ -18,10 +18,11 @@ contract MetaverseNFTFactory is Ownable {
     }
 
     function createNFT(
-        // uint256 _startPrice,
+        uint256 _startPrice,
         uint256 _maxSupply,
         uint256 _nReserved,
-        // uint256 _maxTokensPerMint,
+        uint256 _maxTokensPerMint,
+        uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
     ) external {
@@ -29,10 +30,11 @@ contract MetaverseNFTFactory is Ownable {
         address clone = Clones.clone(proxyImplementation);
 
         MetaverseNFT(clone).initialize(
-            // _startPrice,
+            _startPrice,
             _maxSupply,
             _nReserved,
-            // _maxTokensPerMint,
+            _maxTokensPerMint,
+            _royaltyFee,
             _uri,
             _name, _symbol
         );
