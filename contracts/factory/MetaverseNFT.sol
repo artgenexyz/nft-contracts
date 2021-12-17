@@ -22,6 +22,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
+import "./extensions/IMetaverseNFT.sol";
 
 import "./OpenseaProxy.sol";
 
@@ -85,7 +86,7 @@ import "./OpenseaProxy.sol";
     * 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
  */
 
-// TODO: add Opensea autoapprove?
+
 contract MetaverseNFT is
     ERC721Upgradeable,
     ERC721BurnableUpgradeable,
@@ -275,13 +276,13 @@ contract MetaverseNFT is
     // }
 
     // // Owner can claim free tokens
-    function claim(uint256 nTokens, address to) external onlyOwner {
-        require(nTokens <= reserved, "That would exceed the max reserved.");
+    // function claim(uint256 nTokens, address to) external onlyOwner {
+    //     require(nTokens <= reserved, "That would exceed the max reserved.");
 
-        _mintConsecutive(nTokens, to, 0x0);
+    //     _mintConsecutive(nTokens, to, 0x0);
 
-        reserved = reserved - nTokens;
-    }
+    //     reserved = reserved - nTokens;
+    // }
 
     // ---- Mint via extension
 
@@ -388,7 +389,7 @@ contract MetaverseNFT is
         override(IERC165, ERC721Upgradeable)
         returns (bool)
     {
-        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC2981).interfaceId || interfaceId == type(IMetaverseNFT).interfaceId || super.supportsInterface(interfaceId);
     }
 
 
