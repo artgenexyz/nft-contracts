@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./factory/extensions/INFTExtension.sol";
-import "./factory/extensions/IMetaverseNFT.sol";
+import "./factory/IMetaverseNFT.sol";
 
 // Want to launch your own collection ? Check out https://buildship.dev
 
@@ -17,7 +17,7 @@ import "./factory/extensions/IMetaverseNFT.sol";
     * @dev Upgrade for AvatarNFT, featuring extensions
     * @dev Other features include: optional freeze, royalty on-chain, setBeneficiary
  */
-contract AvatarNFTv2 is ERC721, ERC721Enumerable, IMetaverseNFT, Ownable {
+contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
 
     uint256 public price;
     uint256 public reserved;
@@ -111,6 +111,10 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IMetaverseNFT, Ownable {
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    function data(uint256) public pure returns (bytes32) {
+        return 0x0;
     }
 
     modifier whenSaleStarted() {
