@@ -22,7 +22,7 @@ import "./IMetaverseNFT.sol";
 import "./OpenseaProxy.sol";
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
-//      Tell us the promo code ORIGINAL NFT for a 10% discount!
+//
 //                                   zAAAAA#QQQQQ=                                     
 //                                   yN8NNN@@@@@@L                                     
 //                                   jgggggQ@@@@@|                                     
@@ -175,7 +175,6 @@ contract MetaverseNFT is
 
     // ----- Admin functions -----
 
-    // Optionally, migrate to IPFS and freeze metadata later
     function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
     }
@@ -189,7 +188,7 @@ contract MetaverseNFT is
         price = _price;
     }
 
-    // Freeze forever, unreversible
+    // Freeze forever, irreversible
     function freeze() public onlyOwner {
         isFrozen = true;
     }
@@ -208,6 +207,7 @@ contract MetaverseNFT is
         return false;
     }
 
+    // Extensions are allowed to mint
     function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
 
