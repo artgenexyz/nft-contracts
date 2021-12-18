@@ -27,6 +27,6 @@ abstract contract SaleControl is Ownable {
     }
 
     function saleStarted() public view returns (bool) {
-        return block.timestamp > startTimestamp;
+        return block.timestamp >= startTimestamp;
     }
 }

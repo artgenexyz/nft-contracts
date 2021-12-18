@@ -1,13 +1,23 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./MetaverseNFT.sol";
 
-contract MetaverseNFTFactory is Ownable {
+
+/**
+* MetaverseNFT is a cloneable contract for your NFT collection.
+* It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
+* This is needed to make it possible to create clones that work via delegatecall
+* ! The constructor is replaced with initializer, too
+* This way, deployment costs about 350k gas instead of 4.5M.
+* 1. https://forum.openzeppelin.com/t/how-to-set-implementation-contracts-for-clones/6085/4
+* 2. https://github.com/OpenZeppelin/workshops/tree/master/02-contracts-clone/contracts/2-uniswap
+* 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
+*/
+
+contract MetaverseNFTFactory {
 
     address public immutable proxyImplementation;
 
@@ -15,6 +25,8 @@ contract MetaverseNFTFactory is Ownable {
 
     constructor() {
         proxyImplementation = address(new MetaverseNFT());
+
+        emit NFTCreated(proxyImplementation);
     }
 
     function createNFT(
