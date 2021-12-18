@@ -8,14 +8,10 @@ pragma solidity ^0.8.7;
 */
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -23,9 +19,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
 import "./IMetaverseNFT.sol";
-
 import "./OpenseaProxy.sol";
-
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
 //      Tell us the promo code ORIGINAL NFT for a 10% discount!
@@ -74,22 +68,8 @@ import "./OpenseaProxy.sol";
 //         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
 //          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
 //           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
-
-
-/**
-    * This is the main contract for the NFT collection.
-    * This is a copy of AvatarNFT.sol, but all the OpenZeppelin code is replaced with the upgradeable versions.
-    * ! The constructor is replaced with initializer, too
-    * This way, deployment costs about 350k gas instead of 4.5M.
-    * 1. https://forum.openzeppelin.com/t/how-to-set-implementation-contracts-for-clones/6085/4
-    * 2. https://github.com/OpenZeppelin/workshops/tree/master/02-contracts-clone/contracts/2-uniswap
-    * 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
- */
-
-
 contract MetaverseNFT is
     ERC721Upgradeable,
-    ERC721BurnableUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     IMetaverseNFT // implements IERC2981
@@ -147,7 +127,6 @@ contract MetaverseNFT is
         string memory _name, string memory _symbol
     ) public initializer {
         __ERC721_init(_name, _symbol);
-        __ERC721Burnable_init();
         __ReentrancyGuard_init();
         __Ownable_init();
 
@@ -179,7 +158,7 @@ contract MetaverseNFT is
     }
 
     function contractURI() public view returns (string memory uri) {
-        uri = bytes(CONTRACT_URI).length == 0 ? CONTRACT_URI : _baseURI();
+        uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : _baseURI();
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -254,7 +233,7 @@ contract MetaverseNFT is
         emit ExtensionRevoked(_extension);
     }
 
-    function setExtensionTokenURI(address extension) public onlyOwner whenNotFrozen {
+    function setExtensionTokenURI(address extension) public onlyOwner {
         require(extension != address(this), "Cannot add self as extension");
 
         require(extension == address(0x0) || ERC165Checker.supportsInterface(extension, type(INFTURIExtension).interfaceId), "Not conforms to extension");
@@ -305,7 +284,7 @@ contract MetaverseNFT is
     // ---- Mint public ----
 
     // Contract can sell tokens
-    function mint(uint256 nTokens) external payable whenSaleStarted {
+    function mint(uint256 nTokens) external payable nonReentrant whenSaleStarted {
         require(nTokens <= maxPerMint, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
@@ -314,7 +293,7 @@ contract MetaverseNFT is
     }
 
     // Owner can claim free tokens
-    function claim(uint256 nTokens, address to) external onlyOwner {
+    function claim(uint256 nTokens, address to) external nonReentrant onlyOwner {
         require(nTokens <= reserved, "That would exceed the max reserved.");
 
         reserved = reserved - nTokens;
@@ -324,10 +303,8 @@ contract MetaverseNFT is
 
     // ---- Mint via extension
 
-    function mintExternal(uint256 nTokens, address to, bytes32 extraData) external payable onlyExtension nonReentrant whenNotFrozen {
-
+    function mintExternal(uint256 nTokens, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
-
     }
 
     // ---- Sale control ----

@@ -9,7 +9,8 @@ const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
-// const LimitSaleExtension = artifacts.require("LimitSaleExtension");
+const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
+const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const ether = new BigNumber(1e18);
 
@@ -27,7 +28,7 @@ contract("MetaverseNFT – Implementation", accounts => {
             3, // reserved
             20, // per tx
             500, // 5%
-            "ipfs://factory-test",
+            "ipfs://factory-test/",
             "Test",
             "NFT",
         );
@@ -186,6 +187,75 @@ contract("MetaverseNFT – Implementation", accounts => {
         // check tokenURI
         const tokenURI = await nft.tokenURI(0);
         assert.equal(tokenURI, baseURI + "0");
+
+        // check contractURI equals to baseURI
+        const contractURI = await nft.contractURI();
+        assert.equal(contractURI, baseURI);
+    });
+
+    // it is possible to use extension to change tokenURI
+    it("is possible to use extension to change tokenURI", async () => {
+        const extension = await MockTokenURIExtension.new(nft.address);
+
+        await nft.setExtensionTokenURI(extension.address, { from: owner });
+
+        // mint token
+        await nft.startSale();
+        await nft.mint(1, { from: owner, value: ether.times(0.03) });
+
+        // check tokenURI
+        const tokenURI = await nft.tokenURI(0);
+
+        assert.equal(tokenURI, "<svg></svg>");
+
+    });
+
+    // it should be able to mint via LimitSaleExtension
+    it("should be able to mint via LimitAmountSaleExtension", async () => {
+        const extension = await LimitAmountSaleExtension.new(
+            nft.address,
+            ether.times(0.001),
+            10,
+            1000,
+            { from: owner }
+        );
+
+        await nft.addExtension(extension.address, { from: owner });
+
+        // mint token
+        await extension.startSale();
+        await extension.mint(2, { from: owner, value: ether.times(0.03) });
+
+        // check tokenURI
+        const tokenURI = await nft.tokenURI(0);
+        assert.equal(tokenURI, "ipfs://factory-test/0");
+
+    });
+
+    // it should output royaltyInfo
+    it("should output royaltyInfo", async () => {
+
+        const info = await nft.royaltyInfo(0, 10000);
+
+        // info.royaltyReceiver is nft address
+        // info.royaltyFee is 5%
+
+        assert.equal(info.receiver, nft.address);
+        assert.equal(info.royaltyAmount, 500);
+
+        // it can change 
+
+        await nft.setRoyaltyFee(100);
+
+        const { royaltyAmount } = await nft.royaltyInfo(0, 10000);
+
+        assert.equal(royaltyAmount, 100);
+
+        // it can't change royaltyReceiver
+        await expectRevert(
+            nft.setRoyaltyReceiver(owner),
+            "Only after 6 months of contract creation can the royalty receiver be changed."
+        );
     });
 
     // it should be able to mint reserved from owner account
