@@ -38,5 +38,21 @@ const getAirdropTree = (addresses) => {
 }
 
 
+async function mineBlock() {
+    return rpc({ method: 'evm_mine' });
+}
 
-module.exports = { getGasCost, getAirdropTree, processAddress }
+async function minerStart() {
+    return rpc({ method: 'miner_start' });
+}
+
+async function minerStop() {
+    return rpc({ method: 'miner_stop' });
+}
+
+async function rpc(request) {
+    return new Promise((okay, fail) => web3.currentProvider.send(request, (err, res) => err ? fail(err) : okay(res)));
+}
+
+
+module.exports = { getGasCost, getAirdropTree, processAddress, mineBlock, rpc }
