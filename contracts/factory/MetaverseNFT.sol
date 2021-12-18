@@ -100,10 +100,10 @@ contract MetaverseNFT is
 
     Counters.Counter private _tokenIdCounter;
 
-    uint256 public constant SALE_NEVER_STARTS = 2**256 - 1;
+    uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
-    uint256 public startTimestamp = SALE_NEVER_STARTS;
+    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
     uint256 public createdAt;
 
     uint256 public reserved;
@@ -138,9 +138,9 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
+        uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
-        uint256 _price,
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
@@ -152,6 +152,7 @@ contract MetaverseNFT is
         __Ownable_init();
 
         createdAt = block.timestamp;
+        startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
         reserved = _nReserved;
@@ -203,6 +204,10 @@ contract MetaverseNFT is
     // Contract-level metadata for Opensea
     function setContractURI(string calldata uri) public onlyOwner {
         CONTRACT_URI = uri;
+    }
+
+    function setPrice(uint256 _price) public onlyOwner {
+        price = _price;
     }
 
     // Freeze forever, unreversible
@@ -336,11 +341,11 @@ contract MetaverseNFT is
     }
 
     function stopSale() public onlyOwner {
-        startTimestamp = SALE_NEVER_STARTS;
+        startTimestamp = SALE_STARTS_AT_INFINITY;
     }
 
     function saleStarted() public view returns (bool) {
-        return block.timestamp > startTimestamp;
+        return block.timestamp >= startTimestamp;
     }
 
     // ---- Offchain Info ----
