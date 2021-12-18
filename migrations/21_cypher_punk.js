@@ -5,8 +5,10 @@ const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const admin = "0xffE06cb4807917bd79382981f23d16A70C102c3B";
 
 module.exports = async function(deployer) {
-  // await deployer.deploy(CypherPunkNFT);
 
+  return;
+
+  await deployer.deploy(CypherPunkNFT);
   const punk = { address: "0xe7Fdaa4f319D4b1de23cD1b8eA0d6E8e69bf68c9" };
 
   await deployer.deploy(
