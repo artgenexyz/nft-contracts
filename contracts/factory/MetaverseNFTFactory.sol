@@ -41,7 +41,7 @@ contract MetaverseNFTFactory {
 
         address clone = Clones.clone(proxyImplementation);
 
-        MetaverseNFT(clone).initialize(
+        MetaverseNFT(payable(clone)).initialize(
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -51,7 +51,7 @@ contract MetaverseNFTFactory {
             _name, _symbol
         );
 
-        MetaverseNFT(clone).transferOwnership(msg.sender);
+        MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
 
         emit NFTCreated(clone);
 
