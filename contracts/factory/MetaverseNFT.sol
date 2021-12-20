@@ -173,6 +173,11 @@ contract MetaverseNFT is
         return super.tokenURI(tokenId);
     }
 
+    function totalSupply() public view returns (uint256) {
+        // Only works like this for sequential mint tokens
+        return _tokenIdCounter.current();
+    }
+
     // ----- Admin functions -----
 
     function setBaseURI(string calldata uri) public onlyOwner {
