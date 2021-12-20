@@ -347,6 +347,10 @@ contract MetaverseNFT is
         royaltyAmount = salePrice * royaltyFee / 10000;
     }
 
+    // ---- Allow royalty deposits from Opensea ----- 
+
+    receive() external payable {}
+
     // ---- Withdraw -----
 
     function withdraw() public onlyOwner {
