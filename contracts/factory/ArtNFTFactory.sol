@@ -9,41 +9,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-// TODO: support Foundation format
-contract ArtNFT is ERC721Upgradeable, OwnableUpgradeable {
-
-    string private baseURI;
-
-    function initialize(
-        string memory _uri,
-        string memory _name, string memory _symbol
-    ) public initializer {
-        __ERC721_init(_name, _symbol);
-        // __ERC721Burnable_init();
-        // __ReentrancyGuard_init();
-        __Ownable_init();
-
-        baseURI = _uri;
-    }
-
-    // This constructor ensures that this contract can only be used as a master copy
-    // Marking constructor as initializer makes sure that real initializer cannot be called
-    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
-    // on the other hand, it's impossible to call this function in proxy,
-    // so the real initializer is the only initializer
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
-
-    function _baseURI() internal view override returns (string memory) {
-        return baseURI;
-    }
-
-    function mint(address _to, uint256 _tokenId) public onlyOwner {
-        _mint(_to, _tokenId);
-    }
-
-    // TODO: mint via extension, add extension etc
-}
+import "./ArtNFT.sol";
 
 contract ArtNFTFactory is Ownable {
 
@@ -60,6 +26,8 @@ contract ArtNFTFactory is Ownable {
         // uint256 _maxSupply,
         // uint256 _nReserved,
         // uint256 _maxTokensPerMint,
+        uint256 _maxSupply,
+        uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
     ) external payable {
@@ -67,16 +35,18 @@ contract ArtNFTFactory is Ownable {
 
         address clone = Clones.clone(proxyImplementation);
 
-        ArtNFT(clone).initialize(
+        ArtNFT(payable(clone)).initialize(
             // _startPrice,
-            // _maxSupply,
+            _maxSupply,
+            _royaltyFee,
             // _nReserved,
             // _maxTokensPerMint,
             _uri,
-            _name, _symbol
+            _name, 
+            _symbol
         );
 
-        ArtNFT(clone).transferOwnership(msg.sender);
+        ArtNFT(payable(clone)).transferOwnership(msg.sender);
 
         emit NFTCreated(clone);
 
