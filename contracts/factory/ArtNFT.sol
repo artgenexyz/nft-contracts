@@ -68,7 +68,7 @@ import "./OpenseaProxy.sol";
 //         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
 //          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
 //           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
-contract MetaverseNFT is
+contract ArtNFT is
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
@@ -124,10 +124,7 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        uint256 _price,
         uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
@@ -138,10 +135,7 @@ contract MetaverseNFT is
 
         createdAt = block.timestamp;
         startTimestamp = SALE_STARTS_AT_INFINITY;
-
-        price = _price;
-        reserved = _nReserved;
-        maxPerMint = _maxPerMint;
+        
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
@@ -268,10 +262,10 @@ contract MetaverseNFT is
     // ---- Minting ----
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(amountOfAllTokens + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+        require(amountOfAllTokens + nTokens <= maxSupply, "Not enough Tokens left.");
         uint256 tokenId = 0;
         for (uint256 i; i < nTokens; i++) {
-            while (_exists[tokenId]) {
+            while (_exists(tokenId)) {
                 tokenId += 1;
             }
             _safeMint(to, tokenId);
@@ -282,10 +276,10 @@ contract MetaverseNFT is
 
     function _mintSpecific(uint256 tokenId, address to, bytes32 extraData) internal {
         require(amountOfAllTokens + 1 + reserved <= maxSupply, "Not enough Tokens left");
-        require(_exists[tokenId], "This token is already in use");
+        require(!_exists(tokenId), "This token is already in use");
         _safeMint(to, tokenId);
         data[tokenId] = extraData;
-        amountOfAllTokens = amountOfAllTokens += 1;
+        amountOfAllTokens = amountOfAllTokens + 1;
     }
 
 
@@ -319,7 +313,7 @@ contract MetaverseNFT is
         _mintConsecutive(nTokens, msg.sender, 0x0);
     }
 
-    function mintSpecific(uint256 tokenId) extetrnal payable nonReentrat whenSalteStarted {
+    function mintSpecific(uint256 tokenId) external payable nonReentrant whenSaleStarted {
         require(tokenPrices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
         _mintSpecific(tokenId, msg.sender, 0x0);
@@ -343,8 +337,6 @@ contract MetaverseNFT is
 
     // Owner can take special token from 0 to maxSupply
     function claimSpecific(uint256 tokenId, address to) external nonReentrant onlyOwner {
-        require(reserved, "That would exceed the max reserved");
-        require(_exist[tokenId]);
         reserved = reserved - 1;
         _mintSpecific(tokenId, to, 0x0);
     }
