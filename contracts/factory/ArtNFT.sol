@@ -86,10 +86,7 @@ contract ArtNFT is
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
     uint256 public createdAt;
 
-    uint256 public reserved;
     uint256 public maxSupply;
-    uint256 public maxPerMint;
-    uint256 public price;
     uint256 public amountOfAllTokens;
 
     uint256 public royaltyFee;
@@ -189,12 +186,7 @@ contract ArtNFT is
         CONTRACT_URI = uri;
     }
 
-    function setPrice(uint256 _price) public onlyOwner {
-        price = _price;
-    }
-
-
-    function batchSell(uint256[] tokenIds, uint256[] newPrices) public onlyOwner {
+    function batchSell(uint256[] calldata tokenIds, uint256[] calldata newPrices) public onlyOwner {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             prices[tokenIds[i]] = newPrices[i];
         }
@@ -283,8 +275,8 @@ contract ArtNFT is
     }
 
     function _mintSpecific(uint256 tokenId, address to, bytes32 extraData) internal {
-        require(amountOfAllTokens + 1 + reserved <= maxSupply, "Not enough Tokens left");
-        require(!_exists(tokenId), "This token is already in use");
+        require(amountOfAllTokens + 1 <= maxSupply, "Not enough Tokens left");
+
         _safeMint(to, tokenId);
         data[tokenId] = extraData;
         amountOfAllTokens = amountOfAllTokens + 1;
@@ -313,15 +305,8 @@ contract ArtNFT is
     // ---- Mint public ----
 
     // Contract can sell tokens
-    function mint(uint256 nTokens) external payable nonReentrant whenSaleStarted {
-        require(nTokens <= maxPerMint, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
-
-        require(nTokens * price <= msg.value, "Inconsistent amount sent!");
-
-        _mintConsecutive(nTokens, msg.sender, 0x0);
-    }
-
-    function mintSpecific(uint256 tokenId) external payable nonReentrant whenSaleStarted {
+ 
+    function mint(uint256 tokenId) external payable nonReentrant whenSaleStarted {
         require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
         _mintSpecific(tokenId, msg.sender, 0x0);
@@ -338,14 +323,11 @@ contract ArtNFT is
 
     // Owner can claim free tokens
     function claim(uint256 nTokens, address to) external nonReentrant onlyOwner {
-        require(nTokens <= reserved, "That would exceed the max reserved.");
-        reserved = reserved - nTokens;
         _mintConsecutive(nTokens, to, 0x0);
     }
 
     // Owner can take special token from 0 to maxSupply
     function claimSpecific(uint256 tokenId, address to) external nonReentrant onlyOwner {
-        reserved = reserved - 1;
         _mintSpecific(tokenId, to, 0x0);
     }
     // ---- Mint via extension
