@@ -135,7 +135,7 @@ contract ArtNFT is
 
         createdAt = block.timestamp;
         startTimestamp = SALE_STARTS_AT_INFINITY;
-        
+
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
@@ -263,13 +263,12 @@ contract ArtNFT is
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
         require(amountOfAllTokens + nTokens <= maxSupply, "Not enough Tokens left.");
-        uint256 tokenId = 0;
         for (uint256 i; i < nTokens; i++) {
-            while (_exists(tokenId)) {
-                tokenId += 1;
-            }
-            _safeMint(to, tokenId);
-            data[tokenId] = extraData;
+            if (_exists(i)) continue;
+
+            _safeMint(to, i);
+            
+            data[i] = extraData;
         }
         amountOfAllTokens = amountOfAllTokens + nTokens;
     }
