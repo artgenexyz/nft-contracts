@@ -21,7 +21,7 @@ interface IAvatarNFT {
     /**
         Mint from NFTExtension contract. Optionally provide data parameter.
      */
-    function mintExternal(uint256 nTokens, address to, bytes32 data) external payable;
+    function mintExternal(uint256 tokenId, address to, bytes32 data) external payable;
 
     // ------ Admin functions ------
     function addExtension(address extension) external;
