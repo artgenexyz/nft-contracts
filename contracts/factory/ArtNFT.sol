@@ -87,7 +87,7 @@ contract ArtNFT is
     uint256 public createdAt;
 
     uint256 public maxSupply;
-    uint256 public amountOfAllTokens;
+    uint256 public supply;
 
     uint256 public royaltyFee;
 
@@ -171,8 +171,7 @@ contract ArtNFT is
     }
 
     function totalSupply() public view returns (uint256) {
-        // Only works like this for sequential mint tokens
-        return _tokenIdCounter.current();
+        return supply;
     }
 
     // ----- Admin functions -----
@@ -262,24 +261,12 @@ contract ArtNFT is
 
     // ---- Minting ----
 
-    function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(amountOfAllTokens + nTokens <= maxSupply, "Not enough Tokens left.");
-        for (uint256 i; i < nTokens; i++) {
-            if (_exists(i)) continue;
-
-            _safeMint(to, i);
-            
-            data[i] = extraData;
-        }
-        amountOfAllTokens = amountOfAllTokens + nTokens;
-    }
-
-    function _mintSpecific(uint256 tokenId, address to, bytes32 extraData) internal {
-        require(amountOfAllTokens + 1 <= maxSupply, "Not enough Tokens left");
+    function _mint(uint256 tokenId, address to, bytes32 extraData) internal {
+        require(supply + 1 <= maxSupply, "Not enough Tokens left");
 
         _safeMint(to, tokenId);
         data[tokenId] = extraData;
-        amountOfAllTokens = amountOfAllTokens + 1;
+        supply = supply + 1;
     }
 
 
@@ -309,7 +296,8 @@ contract ArtNFT is
     function mint(uint256 tokenId) external payable nonReentrant whenSaleStarted {
         require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
-        _mintSpecific(tokenId, msg.sender, 0x0);
+        
+        _mint(tokenId, msg.sender, 0x0);
     }   
     
      //Conract 
@@ -322,18 +310,21 @@ contract ArtNFT is
 
 
     // Owner can claim free tokens
-    function claim(uint256 nTokens, address to) external nonReentrant onlyOwner {
-        _mintConsecutive(nTokens, to, 0x0);
-    }
 
     // Owner can take special token from 0 to maxSupply
     function claimSpecific(uint256 tokenId, address to) external nonReentrant onlyOwner {
-        _mintSpecific(tokenId, to, 0x0);
+        _mint(tokenId, to, 0x0);
+    }
+    
+    function claimBatch(uint256[] calldata tokenIds, address to) external nonReentrant onlyOwner {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _mint(tokenIds[i], to, 0x0);
+        }
     }
     // ---- Mint via extension
 
-    function mintExternal(uint256 nTokens, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
-        _mintConsecutive(nTokens, to, extraData);
+    function mintExternal(uint256 tokenId, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
+        _mint(tokenId, to, extraData);
     }
 
 
