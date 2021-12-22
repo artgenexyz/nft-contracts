@@ -113,7 +113,7 @@ contract ArtNFT is
     /**
     * @dev Prices for each token
     */
-    mapping (uint256 => uint256) public tokenPrices;
+    mapping (uint256 => uint256) public prices;
 
     string public PROVENANCE_HASH = "";
     string private CONTRACT_URI = "";
@@ -193,8 +193,17 @@ contract ArtNFT is
         price = _price;
     }
 
-    function updatePriceForToken(uint256 tokenId, uint256 newPrice) public onlyOwner {
-        tokenPrices[tokenId] = newPrice;
+
+    function batchSell(uint256[] tokenIds, uint256[] newPrices) public onlyOwner {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            prices[tokenIds[i]] = newPrices[i];
+        }
+        // TODO emit event    
+    }
+
+    function sell(uint256 tokenId, uint256 newPrice) public onlyOwner {
+        prices[tokenId] = newPrice;
+        // TODO emit event
     }
 
     // Freeze forever, irreversible
@@ -313,7 +322,7 @@ contract ArtNFT is
     }
 
     function mintSpecific(uint256 tokenId) external payable nonReentrant whenSaleStarted {
-        require(tokenPrices[tokenId] <= msg.value, "Inconsistend amount sent!");
+        require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
         _mintSpecific(tokenId, msg.sender, 0x0);
     }   
