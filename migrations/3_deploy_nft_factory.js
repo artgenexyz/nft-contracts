@@ -7,20 +7,26 @@ module.exports = async function (deployer, network, accounts) {
 
   await deployer.deploy(NFTFactory);
   await deployer.deploy(ArtNFTFactory);
-    
-    const factory = await NFTFactory.deployed();
-    const artFactory = await ArtNFTFactory.deployed(); 
-    const implementation = await factory.proxyImplementation();
 
-    console.log('   > implementation created at address:', implementation);
+  const factory = await NFTFactory.deployed();
+  const artFactory = await ArtNFTFactory.deployed(); 
+  const implementation = await factory.proxyImplementation();
+  const artImplementation = await artFactory.proxyImplementation();
 
-    console.log('   -------------------------------------')
-    console.log('   Verify:\n\t', `truffle run verify MetaverseNFTFactory MetaverseNFT@${implementation} --network ${network}`, '\n')
+  console.log('   > implementation created at address:', implementation);
+  console.log('   > implementation created at address:', artImplementation);
+  console.log('')
+  console.log('   -------------------------------------')
+  console.log('   Verify:', `
 
-    console.log('   -------------------------------------')
+      truffle run verify MetaverseNFTFactory ArtNFTFactory MetaverseNFT@${implementation} ArtNFT@${artImplementation} --network ${network}
 
-    // const [ nftCreated ] = factory.contract.getPastEvents('NFTCreated', { fromBlock: 0, toBlock: 'latest' });
+  `)
 
-    // console.log('nft created:', nftCreated?.returnValues?.deployedAddress);
+  console.log('   -------------------------------------')
 
-  };
+  // const [ nftCreated ] = factory.contract.getPastEvents('NFTCreated', { fromBlock: 0, toBlock: 'latest' });
+
+  // console.log('nft created:', nftCreated?.returnValues?.deployedAddress);
+
+};
