@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
-import "./IMetaverseNFT.sol";
+import "./IArtNFT.sol";
 import "./OpenseaProxy.sol";
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
@@ -72,7 +72,7 @@ contract ArtNFT is
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    IMetaverseNFT // implements IERC2981
+    IArtNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -189,7 +189,7 @@ contract ArtNFT is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             prices[tokenIds[i]] = newPrices[i];
         }
-        // TODO emit event    
+        // TODO emit event
     }
 
     function sell(uint256 tokenId, uint256 newPrice) public onlyOwner {
@@ -269,9 +269,6 @@ contract ArtNFT is
         supply = supply + 1;
     }
 
-
-    
-
     // ---- Mint control ----
 
     modifier whenSaleStarted() {
@@ -291,16 +288,14 @@ contract ArtNFT is
 
     // ---- Mint public ----
 
-    // Contract can sell tokens
- 
+    // Contract can sell token
+
+    // TODO: rename buy()
     function mint(uint256 tokenId) external payable nonReentrant whenSaleStarted {
         require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
-        
         _mint(tokenId, msg.sender, 0x0);
-    }   
-    
-     //Conract 
+    }
 
     // Owner can increase maxSupply
 
@@ -326,7 +321,6 @@ contract ArtNFT is
     function mintExternal(uint256 tokenId, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
         _mint(tokenId, to, extraData);
     }
-
 
     // ---- Sale control ----
 
@@ -368,7 +362,7 @@ contract ArtNFT is
         royaltyAmount = salePrice * royaltyFee / 10000;
     }
 
-    // ---- Allow royalty deposits from Opensea ----- 
+    // ---- Allow royalty deposits from Opensea -----
 
     receive() external payable {}
 
@@ -412,7 +406,7 @@ contract ArtNFT is
         returns (bool)
     {
         return interfaceId == type(IERC2981).interfaceId
-            || interfaceId == type(IMetaverseNFT).interfaceId
+            || interfaceId == type(IArtNFT).interfaceId
             || super.supportsInterface(interfaceId);
     }
 
