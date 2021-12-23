@@ -109,6 +109,7 @@ contract ArtNFT is
 
     /**
     * @dev Prices for each token
+    * @dev If the price is zero, the token is not for sale
     */
     mapping (uint256 => uint256) public prices;
 
@@ -189,11 +190,13 @@ contract ArtNFT is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             prices[tokenIds[i]] = newPrices[i];
         }
+
         // TODO emit event
     }
 
     function sell(uint256 tokenId, uint256 newPrice) public onlyOwner {
         prices[tokenId] = newPrice;
+
         // TODO emit event
     }
 
@@ -261,7 +264,7 @@ contract ArtNFT is
 
     // ---- Minting ----
 
-    function _mint(uint256 tokenId, address to, bytes32 extraData) internal {
+    function _mintSpecific(uint256 tokenId, address to, bytes32 extraData) internal {
         require(supply + 1 <= maxSupply, "Not enough Tokens left");
 
         _safeMint(to, tokenId);
@@ -286,40 +289,40 @@ contract ArtNFT is
         _;
     }
 
+    modifier isForSale(uint256 tokenId) {
+        require(prices[tokenId] > 0, "Token is not for sale");
+        _;
+    }
+
     // ---- Mint public ----
 
-    // Contract can sell token
-
-    // TODO: rename buy()
-    function mint(uint256 tokenId) external payable nonReentrant whenSaleStarted {
+    function mint(uint256 tokenId) external payable isForSale(tokenId) nonReentrant whenSaleStarted {
         require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
-        _mint(tokenId, msg.sender, 0x0);
+        _mintSpecific(tokenId, msg.sender, 0x0);
     }
 
     // Owner can increase maxSupply
-
-    function upgradeMaxSupply(uint256 countToAdd) external whenNotFrozen onlyOwner{
+    function issueTokens(uint256 countToAdd) external whenNotFrozen onlyOwner {
         maxSupply += countToAdd;
     }
 
-
     // Owner can claim free tokens
 
-    // Owner can take special token from 0 to maxSupply
-    function claim(uint256 tokenId, address to, bytes32 extraData) external nonReentrant onlyOwner {
-        _mint(tokenId, to, extraData);
+    // Owner can mint specific token for free
+    function claim(uint256 tokenId, address to, bytes32 extraData) external nonReentrant whenNotFrozen onlyOwner {
+        _mintSpecific(tokenId, to, extraData);
     }
 
-    function claimBatch(uint256[] calldata tokenIds, address to, bytes32 extraData) external nonReentrant onlyOwner {
+    function claimBatch(uint256[] calldata tokenIds, address to, bytes32 extraData) external nonReentrant whenNotFrozen onlyOwner {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(tokenIds[i], to, extraData);
+            _mintSpecific(tokenIds[i], to, extraData);
         }
     }
-    // ---- Mint via extension
 
+    // ---- Mint via extension
     function mintExternal(uint256 tokenId, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
-        _mint(tokenId, to, extraData);
+        _mintSpecific(tokenId, to, extraData);
     }
 
     // ---- Sale control ----
