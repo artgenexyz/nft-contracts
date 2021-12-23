@@ -307,13 +307,13 @@ contract ArtNFT is
     // Owner can claim free tokens
 
     // Owner can take special token from 0 to maxSupply
-    function claimSpecific(uint256 tokenId, address to) external nonReentrant onlyOwner {
-        _mint(tokenId, to, 0x0);
+    function claim(uint256 tokenId, address to, bytes32 extraData) external nonReentrant onlyOwner {
+        _mint(tokenId, to, extraData);
     }
-    
-    function claimBatch(uint256[] calldata tokenIds, address to) external nonReentrant onlyOwner {
+
+    function claimBatch(uint256[] calldata tokenIds, address to, bytes32 extraData) external nonReentrant onlyOwner {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(tokenIds[i], to, 0x0);
+            _mint(tokenIds[i], to, extraData);
         }
     }
     // ---- Mint via extension
