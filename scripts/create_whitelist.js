@@ -77,7 +77,7 @@ console.log("");
 
     // print JSON to console
     console.log('')
-    console.log(whitelistInfo)
+    console.log({ 1: whitelistInfo })
 
     // TODO: save to IPFS using nft.storage
 
