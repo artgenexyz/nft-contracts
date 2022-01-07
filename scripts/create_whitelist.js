@@ -2,6 +2,7 @@ const { isAddress, toChecksumAddress } = require('web3-utils')
 const fs = require('fs')
 const path = require('path')
 const fetch = require('node-fetch')
+// const { NFTStorage } = require('nft.storage')
 
 const processAddress = (address) => {
     address = toChecksumAddress(address)
@@ -74,10 +75,11 @@ console.log("");
     // create JSON for whitelist with structure { wallets, price, contract }
     const whitelistInfo = { wallets: whitelist, contract: contractAddress, price: 0 }
 
-    // save to IPFS using nft.storage
     // print JSON to console
+    console.log('')
+    console.log(whitelistInfo)
 
-    console.log('whitelist json', whitelistInfo)
+    // TODO: save to IPFS using nft.storage
 
 })();
 
