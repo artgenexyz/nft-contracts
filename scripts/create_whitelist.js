@@ -27,9 +27,13 @@ console.log("");
     // parse filename and contract_address from process.argv
     // read csv file from filename, removing first row
 
-    const addresses = fs.readFileSync(path.join(__dirname, filename), "utf8").split("\n").slice(1)
+    const addresses = fs.readFileSync(filename, "utf8").split("\n").slice(1)
+
+    console.log('First 5 addresses parsed:', addresses.slice(0, 5))
 
     const whitelist = addresses.filter(x => !!x).map((address) => processAddress(address)).filter(x => !!x)
+
+    // fs.writeFileSync(path.join(__dirname, 'whitelist.json'), JSON.stringify(whitelist, null, 2))
 
     // save the list to db by pushing to API
     // POST https://metadata.buildship.dev/api/extensions/merkle-tree/create
@@ -43,17 +47,20 @@ console.log("");
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
+            // whitelist_address is empty, we probably didn't deploy yet
+            token_address: contractAddress,
             _creator: contractAddress,
             addresses: whitelist
         })
     };
 
+    console.log('Saving airdrop');
     const response = await fetch(url, options);
 
     const json = await response.json();
 
     // print response
-    console.log('saved', json);
+    console.log(json);
 
     const { id } = json
 
@@ -62,12 +69,14 @@ console.log("");
 
     const url2 = `https://metadata.buildship.dev/api/extensions/merkle-tree/by-id/${id}`;
 
+    console.log('Checking airdrop at id', id);
+
     const response2 = await fetch(url2);
 
     const json2 = await response2.json();
 
     // print response
-    console.log('loaded', json2);
+    console.log(json2);
 
     // get price from whitelist extensions getPrice
     // const price = await WhitelistMerkleTreeExtension.at(contractAddress).price().call()
@@ -75,9 +84,9 @@ console.log("");
     // create JSON for whitelist with structure { wallets, price, contract }
     const whitelistInfo = { wallets: whitelist, contract: contractAddress, price: 0 }
 
-    // print JSON to console
-    console.log('')
-    console.log({ 1: whitelistInfo })
+    // // print JSON to console
+    // console.log('')
+    // console.log({ 1: whitelistInfo })
 
     // TODO: save to IPFS using nft.storage
 
