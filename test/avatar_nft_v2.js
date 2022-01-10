@@ -9,24 +9,34 @@ const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
 const ether = 1e18;
 
 contract("AvatarNFTv2", accounts => {
+    let nft;
     const [ owner, beneficiary, user2 ] = accounts;
 
     // it should deploy successfully
     it("should deploy successfully", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        nft = await AvatarNFTv2.new(
+            3e16.toString(),
+            10000,
+            50,
+            20,
+            "ipfs://metadata",
+            "TEST", "TEST",
+            { from: owner },
+        );
+        // // const nft = await AvatarNFTv2.deployed();
         assert.ok(nft.address);
     });
 
     // price should equal 0.03 ether
     it("should have a price of 0.03 ether", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // // const nft = await AvatarNFTv2.deployed();
         const price = await nft.getPrice();
         assert.equal(price, (0.03 * ether).toString());
     });
 
     // it should fail to mint when sale is not started
     it("should fail to mint when sale is not started", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
         // mint
         try {
             await nft.mint(1, { from: accounts[1], value: 0.03 * ether });
@@ -37,7 +47,7 @@ contract("AvatarNFTv2", accounts => {
     });
     // it should not be able to start sale when beneficiary is not set
     it("should fail to start sale when beneficiary is not set", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
         // start sale
         try {
             await nft.flipSaleStarted({ from: owner });
@@ -49,7 +59,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to start sale when beneficiary is set
     it("should be able to start sale when beneficiary is set", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
         // set beneficiary
         await nft.setBeneficiary(beneficiary, { from: owner });
         // start sale
@@ -61,7 +71,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should mint successfully
     it("should mint successfully when sale is started", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // mint
         const tx = await nft.mint(1, { from: owner, value: 0.03 * ether });
@@ -70,7 +80,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should withdraw to beneficiary after contract balance is not zero
     it("should withdraw to beneficiary after contract balance is not zero", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         const saleBalance = await web3.eth.getBalance(nft.address);
 
@@ -95,7 +105,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to mint 10 tokens in one transaction
     it("should be able to mint 10 tokens in one transaction", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
         // flipSaleStarted
         // await nft.flipSaleStarted();
         // mint
@@ -106,7 +116,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should fail trying to mint more than 20 tokens
     it("should fail trying to mint more than 20 tokens", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // mint
         try {
@@ -119,7 +129,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to mint when you send more ether than needed
     it("should be able to mint when you send more ether than needed", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // mint
         const tx = await nft.mint(1, { from: owner, value: 0.5 * ether });
@@ -128,7 +138,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to change baseURI from owner account, and _baseURI() value would change
     it("should be able to change baseURI from owner account, and _baseURI() value would change", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         const baseURI = "https://avatar.com/";
         await nft.setBaseURI(baseURI, { from: owner });
@@ -139,7 +149,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to mint reserved from owner account
     it("should be able to mint reserved from owner account", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // mint
         const tx = await nft.claimReserved(3, accounts[1], { from: owner });
@@ -148,7 +158,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should not be able to mint reserved from accounts other that owner
     it("should not be able to mint reserved from accounts other that owner", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // mint
         try {
@@ -161,7 +171,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should not be able to call withdraw from beneficiary
     it("should not be able to call withdraw from beneficiary", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         await expectRevert(
             nft.withdraw({ from: beneficiary }),
@@ -171,7 +181,7 @@ contract("AvatarNFTv2", accounts => {
 
     // it should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner
     it("should be able to withdraw when setBeneficiary is called, but money will go to beneficiary instead of owner", async () => {
-        const nft = await AvatarNFTv2.deployed();
+        // // const nft = await AvatarNFTv2.deployed();
 
         // save owner's balance and beneficiary's balance before withdraw
         const ownerBalance = await web3.eth.getBalance(owner);
