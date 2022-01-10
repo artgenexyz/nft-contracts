@@ -97,7 +97,7 @@ contract MetaverseNFT is
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
-    bool private isOpenSeaProxyActive;
+    bool private isOpenSeaProxyActive = true;
 
     /** 
     * @dev Additional data for each token that needs to be stored and accessed on-chain
