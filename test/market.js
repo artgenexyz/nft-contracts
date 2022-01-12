@@ -51,18 +51,29 @@ contract("Market", function (accounts) {
   });
 
   // prepare users: buy tokens from extras for each user
-  xit("should be possible to buy tokens from extras", async function () {
-    await extras.addItem("Skin", "https://uri", ether.muln(0.05), 100, { from: admin });
-    await extras.addItem("Weapon", "https://uri", ether.muln(0.01), 200, { from: admin });
+  it("should be possible to buy tokens from extras", async function () {
+    await extras.addItem("Skin", "https://uri", "https://animationuri", ether.muln(0.05), 100, 0, false, { from: admin });
+    await extras.addItem("Weapon", "https://uri", "https://animationuri", ether.muln(0.01), 200, 0, false, { from: admin });
 
+    let items = await extras.listItems()
+    assert.equal(items.length, 2);
+
+    
     await extras.startSaleAll({ from: admin });
 
+    assert.equal(await extras.saleStarted(0), true);
+    assert.equal(await extras.saleStarted(1), true);
+    
     await extras.buyItem(0, 5, { from: user1, value: ether.muln(0.05).muln(5) });
     await extras.buyItem(1, 10, { from: user2, value: ether.muln(0.01).muln(10) });
+
+    assert.equal(await extras.balanceOf(user1, 0), 5);
+    assert.equal(await extras.balanceOf(user2, 1), 10);
+
   });
 
   // it should be possible to list token for sale
-  xit("should be possible to list token for sale", async function () {
+  it("should be possible to list token for sale", async function () {
 
     await extras.setApprovalForAll(marketplace.address, true, { from: user1 });
 
@@ -78,7 +89,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy listed token
-  xit("should be possible to buy 1 of 2 listed token", async function () {
+  it("should be possible to buy 1 of 2 listed token", async function () {
     await marketplace.buy(0, 1, { from: user2, value: ether });
 
     const offer = await marketplace.offers(0);
@@ -93,7 +104,7 @@ contract("Market", function (accounts) {
   });
 
   // it should be possible to buy full offer, and offer is removed
-  xit("should be possible to buy full offer, and offer is removed", async function () {
+  it("should be possible to buy full offer, and offer is removed", async function () {
     await marketplace.buy(0, 1, { from: user3, value: ether });
 
     const offer = await marketplace.offers(0);
