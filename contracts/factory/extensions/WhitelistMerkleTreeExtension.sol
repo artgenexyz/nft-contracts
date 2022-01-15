@@ -25,6 +25,10 @@ contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
         whitelistRoot = _whitelistRoot;
     }
 
+    function updatePrice(uint256 _price) public onlyOwner {
+        price = _price;
+    }
+
     function updateMaxPerAddress(uint256 _maxPerAddress) public onlyOwner {
         maxPerAddress = _maxPerAddress;
     }
