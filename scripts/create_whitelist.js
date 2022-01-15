@@ -96,4 +96,6 @@ console.log("");
 
     console.log('\n\tDeploy contract at', deploy_url, '\n');
 
+    console.log('\n\tAFTER DEPLOYMENT, DONT FORGET TO UPDATE whitelist_address in DB! https://app.supabase.io/project/kajjntikyfbnawsvyvao/editor/16886\n')
+
 })();
