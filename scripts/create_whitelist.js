@@ -29,37 +29,36 @@ console.log("");
 
     const addresses = fs.readFileSync(filename, "utf8").split("\n").slice(1)
 
-    console.log('First 5 addresses parsed:', addresses.slice(0, 5))
+    const whitelist = addresses.filter(x => !!x).map(x => x.replace(/[\s\r]+/ig, ''))
 
-    const whitelist = addresses.filter(x => !!x).map((address) => processAddress(address)).filter(x => !!x)
-
-    // fs.writeFileSync(path.join(__dirname, 'whitelist.json'), JSON.stringify(whitelist, null, 2))
-
-    // save the list to db by pushing to API
-    // POST https://metadata.buildship.dev/api/extensions/merkle-tree/create
-    // JSON = { creator, addresses }
+    console.log('First 5 addresses parsed:', whitelist.slice(0, 5))
 
     const url = `https://metadata.buildship.dev/api/extensions/merkle-tree/create`;
+
+    const body = JSON.stringify({
+        // whitelist_address is empty, we probably didn't deploy yet
+        token_address: contractAddress,
+        creator: contractAddress,
+        addresses: whitelist
+    })
 
     const options = {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            // whitelist_address is empty, we probably didn't deploy yet
-            token_address: contractAddress,
-            _creator: contractAddress,
-            addresses: whitelist
-        })
+        body: body
     };
 
-    console.log('Saving airdrop');
+    console.log('Pushing create merkle-tree', JSON.stringify({
+        token_address: contractAddress,
+        creator: contractAddress,
+        addresses: whitelist }, null, 2).split('\n').slice(0,10).join('\n'), '\n...');
+
     const response = await fetch(url, options);
 
     const json = await response.json();
 
-    // print response
     console.log(json);
 
     const { id } = json
@@ -78,125 +77,23 @@ console.log("");
     // print response
     console.log(json2);
 
-    // get price from whitelist extensions getPrice
-    // const price = await WhitelistMerkleTreeExtension.at(contractAddress).price().call()
+    const { error, token, root } = json2;
 
-    // create JSON for whitelist with structure { wallets, price, contract }
-    const whitelistInfo = { wallets: whitelist, contract: contractAddress, price: 0 }
+    if (error) {
+        console.log('Error:', error);
+        return;
+    }
 
-    // // print JSON to console
-    // console.log('')
-    // console.log({ 1: whitelistInfo })
+    const price = 0;
+    const limitPerAddress = 1;
+    const args = encodeURI(JSON.stringify([ token, root, price.toString(), limitPerAddress ]));
 
-    // TODO: save to IPFS using nft.storage
+    // result of running:
+    // truffle exec scripts/upload.mjs WhitelistMerkleTreeExtension --network rinkeby
+    const whitelistHash = 'bafkreihhu4z7b7jzku7ahi4f64yshejaz67upnz7mv6fgpdj2s65hxhtry'
+
+    const deploy_url = `https://gate.buildship.dev/deploy/${whitelistHash}?args=${args}`
+
+    console.log('\n\tDeploy contract at', deploy_url, '\n');
 
 })();
-
-
-
-// const { isAddress, toChecksumAddress } = require('web3-utils')
-
-// const processAddress = (address) => {
-//     address = toChecksumAddress(address)
-
-//     if (isAddress(address)) {
-//         return address
-//     }
-//     // TODO: parse ens domains
-
-//     return null
-// }
-
-// module.exports = async function (callback) {
-//     try {
-//         // if process.argv elements contain "help"
-//         if (process.argv.find((elem) => elem.includes("help"))) {
-//             console.log(`Usage: truffle exec scripts/create_whitelist.mjs [contract] [address.csv]`);
-//             return callback();
-//         }
-
-//         // extract contract name from config arguments
-//         const [, , , , contractName, filename ] = process.argv;
-
-//         console.log("Using contract", contractName);
-//         console.log("With list of addresses from", filename);
-//         console.log("");
-
-//         if (!contractName) {
-//             console.log(`Usage: truffle exec scripts/create_whitelist.mjs [contract] [address.csv]`);
-//             return callback();
-//         }
-
-//         const contract = artifacts.require(contractName);
-
-//         console.log(`Loading ${contractName}`);
-
-//         const contractInstance = await contract.deployed();
-
-//         // const contractAddress = contractInstance.address
-//         const contractAddress = contract.address
-
-//         // parse filename and contract_address from process.argv
-//         // read csv file from filename, removing first row
-
-//         const addresses = await fs.readFileSync(filename, "utf8").split("\n").slice(1)
-
-//         const whitelist = addresses.map((address) => processAddress(address))
-
-//         // save the list to db by pushing to API
-//         // POST https://metadata.buildship.dev/api/extensions/merkle-tree/create
-//         // JSON = { creator, addresses }
-
-//         const url = `https://metadata.buildship.dev/api/extensions/merkle-tree/create`;
-
-//         const options = {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/json"
-//             },
-//             body: JSON.stringify({
-//                 creator: contractAddress,
-//                 addresses: whitelist
-//             })
-//         };
-
-//         const response = await fetch(url, options);
-
-//         const json = await response.json();
-
-//         // print response
-//         console.log('saved', json);
-
-//         const { id } = json
-
-//         // check airdrop info by id
-//         // GET https://metadata.buildship.dev/api/extensions/merkle-tree/by-id/:id
-
-//         const url2 = `https://metadata.buildship.dev/api/extensions/merkle-tree/by-id/${id}`;
-
-//         const response2 = await fetch(url2);
-
-//         const json2 = await response2.json();
-
-//         // print response
-//         console.log('loaded', json2);
-
-//         // get price from whitelist extensions getPrice
-//         const price = await contractInstance.price().call()
-
-//         // create JSON for whitelist with structure { wallets, price, contract }
-//         const whitelistInfo = { wallets: whitelist, contract: contractAddress, price }
-
-//         // save to IPFS using nft.storage
-//         // print JSON to console
-
-//         console.log('whitelist json', whitelistInfo)
-
-//     } catch (err) {
-//         console.log('Error', err.message);
-//     } finally {
-//         callback();
-//     }
-
-// };
-
