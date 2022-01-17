@@ -17,6 +17,9 @@ contract MintPass is NFTExtension, Ownable, SaleControl {
   // The address of ERC721 contract that is used for mint pass
   address public mintPassAddress;
 
+  // For used tokenIds in the mint pass
+  mapping(uint256 => bool) usedTokenIds;
+
   mapping(address => uint256) public claimedByAddress;
 
   constructor(address _nft, address _mintPassAddress, uint256 _price, uint256 _maxPerAddress) NFTExtension(_nft) SaleControl() {
@@ -38,18 +41,22 @@ contract MintPass is NFTExtension, Ownable, SaleControl {
     mintPassAddress = _mintPassAddress;
   }
 
-  function mint(uint256 nTokens) external whenSaleStarted payable {
+  function mint(uint256 nTokens, uint256 mintPassTokenId) external whenSaleStarted payable {
     super.beforeMint();
 
-    require(IERC721(mintPassAddress).balanceOf(msg.sender) > 0, "Does not have mint pass");
+    require(usedTokenIds[mintPassTokenId] == false, "This tokenId has already been used");
+
+    require(IERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender, "Does not have mint pass");
 
     require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
     require(claimedByAddress[msg.sender] + nTokens <= maxPerAddress, "Cannot claim more per address");
 
-    nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
-
+    usedTokenIds[mintPassTokenId] = true;
+    
     claimedByAddress[msg.sender] += nTokens;
+
+    nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
   }
 
 }
