@@ -11,7 +11,7 @@ import "./SaleControl.sol";
 
 contract MintPass is NFTExtension, Ownable, SaleControl {
   uint256 public price;
-  
+
   uint256 public maxPerAddress;
 
   // The address of ERC721 contract that is used for mint pass
