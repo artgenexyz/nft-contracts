@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IAvatarNFT {
+interface IArtNFT {
     function DEVELOPER() external pure returns (string memory _url);
     function DEVELOPER_ADDRESS() external pure returns (address payable _dev);
 
@@ -27,10 +27,7 @@ interface IAvatarNFT {
     function addExtension(address extension) external;
     function revokeExtension(address extension) external;
     function withdraw() external;
-}
 
-
-interface IMetaverseNFT is IAvatarNFT {
     // ------ View functions ------
     /**
         Recommended royalty for tokenId sale.
