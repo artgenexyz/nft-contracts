@@ -45,12 +45,12 @@ import "../AvatarNFTv2.sol";
 contract Metascapes is AvatarNFTv2 {
 
     constructor() AvatarNFTv2(
-        0.3 ether,
-        3333, // total supply
-        0, // reserved supply
+        0.33 ether,
+        3300, // total supply
+        33, // reserved supply
         1, // max mint per transaction
         "https://metadata.buildship.dev/api/token/metascapes/",
-        "Metascapes NFT", "META"
+        "Metascapes AI", "MTSCPS"
     ) {}
 
     function withdraw() public override onlyOwner {
