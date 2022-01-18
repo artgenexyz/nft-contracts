@@ -15,7 +15,7 @@ contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
 
     bytes32 public whitelistRoot;
 
-    mapping (address => uint256) claimedByAddress;
+    mapping (address => uint256) public claimedByAddress;
 
     constructor(address _nft, bytes32 _whitelistRoot, uint256 _price, uint256 _maxPerAddress) NFTExtension(_nft) SaleControl() {
         stopSale();
@@ -23,6 +23,10 @@ contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
         price = _price;
         maxPerAddress = _maxPerAddress;
         whitelistRoot = _whitelistRoot;
+    }
+
+    function updatePrice(uint256 _price) public onlyOwner {
+        price = _price;
     }
 
     function updateMaxPerAddress(uint256 _maxPerAddress) public onlyOwner {

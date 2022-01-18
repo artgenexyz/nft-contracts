@@ -136,7 +136,8 @@ Run ganache to fork from mainnet:
 
 ```bash
 source .env
-npx ganache-cli --fork https://mainnet.infura.io/v3/$INFURA_KEY\
+npx ganache-cli --miner.legacyInstamine \
+                --fork https://mainnet.infura.io/v3/$INFURA_KEY\
                 --unlock 0x44244acacd0b008004f308216f791f2ebe4c4c50
 ```
 

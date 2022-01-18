@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./factory/extensions/INFTExtension.sol";
 import "./factory/IMetaverseNFT.sol";
+import "./factory/OpenseaProxy.sol";
 
 // Want to launch your own collection ? Check out https://buildship.dev
 
@@ -27,11 +28,15 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
 
     uint256 public startingIndex;
 
+    uint256 public royaltyFee;
+    address public royaltyReceiver;
+
     // ** Address for withdrawing money, separate from owner
     address payable beneficiary;
 
     bool public saleStarted;
     bool public isFrozen;
+    bool public isOpenSeaProxyActive = true; // Active by default, disable in case of compromised proxy
 
     string public PROVENANCE_HASH = "";
     string public baseURI;
@@ -225,6 +230,47 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
         uint256 _balance = address(this).balance;
 
         require(payable(beneficiary).send(_balance));
+    }
+
+    function setRoyaltyFee(uint256 _royaltyFee) public onlyOwner {
+        royaltyFee = _royaltyFee;
+    }
+
+    function setRoyaltyReceiver(address _receiver) public onlyOwner {
+        royaltyReceiver = _receiver;
+    }
+
+    function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
+        receiver = royaltyReceiver;
+        royaltyAmount = salePrice * royaltyFee / 10000;
+    }
+
+    // function to disable gasless listings for security in case
+    // opensea ever shuts down or is compromised
+    // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
+    function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive) public onlyOwner {
+        isOpenSeaProxyActive = _isOpenSeaProxyActive;
+    }
+
+    /**
+     * @dev Override isApprovedForAll to allowlist user's OpenSea proxy accounts to enable gas-less listings.
+     * Taken from CryptoCoven: https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
+     */
+    function isApprovedForAll(address owner, address operator)
+        public
+        view
+        override
+        returns (bool)
+    {
+        // Get a reference to OpenSea's proxy registry contract by instantiating
+        // the contract using the already existing address.
+        ProxyRegistry proxyRegistry = ProxyRegistry(0xa5409ec958C83C3f309868babACA7c86DCB077c1);
+
+        if (isOpenSeaProxyActive && address(proxyRegistry.proxies(owner)) == operator) {
+            return true;
+        }
+
+        return super.isApprovedForAll(owner, operator);
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
