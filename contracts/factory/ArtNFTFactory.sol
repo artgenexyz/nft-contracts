@@ -18,14 +18,10 @@ contract ArtNFTFactory is Ownable {
     event NFTCreated(address deployedAddress);
 
     constructor() {
-        proxyImplementation = address(new ERC721Upgradeable());
+        proxyImplementation = address(new ArtNFT());
     }
 
     function createNFT(
-        // uint256 _startPrice,
-        // uint256 _maxSupply,
-        // uint256 _nReserved,
-        // uint256 _maxTokensPerMint,
         uint256 _maxSupply,
         uint256 _royaltyFee,
         string memory _uri,
@@ -36,11 +32,8 @@ contract ArtNFTFactory is Ownable {
         address clone = Clones.clone(proxyImplementation);
 
         ArtNFT(payable(clone)).initialize(
-            // _startPrice,
             _maxSupply,
             _royaltyFee,
-            // _nReserved,
-            // _maxTokensPerMint,
             _uri,
             _name, 
             _symbol
