@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./extensions/INFTExtension.sol";
-import "./IMetaverseNFT.sol";
+import "./IArtNFT.sol";
 import "./OpenseaProxy.sol";
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
@@ -72,7 +72,7 @@ contract ArtNFT is
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    IMetaverseNFT // implements IERC2981
+    IArtNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -109,6 +109,7 @@ contract ArtNFT is
 
     /**
     * @dev Prices for each token
+    * @dev If the price is zero, the token is not for sale
     */
     mapping (uint256 => uint256) public prices;
 
@@ -189,11 +190,13 @@ contract ArtNFT is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             prices[tokenIds[i]] = newPrices[i];
         }
-        // TODO emit event    
+
+        // TODO emit event
     }
 
     function sell(uint256 tokenId, uint256 newPrice) public onlyOwner {
         prices[tokenId] = newPrice;
+
         // TODO emit event
     }
 
@@ -261,16 +264,13 @@ contract ArtNFT is
 
     // ---- Minting ----
 
-    function _mint(uint256 tokenId, address to, bytes32 extraData) internal {
+    function _mintSpecific(uint256 tokenId, address to, bytes32 extraData) internal {
         require(supply + 1 <= maxSupply, "Not enough Tokens left");
 
         _safeMint(to, tokenId);
         data[tokenId] = extraData;
         supply = supply + 1;
     }
-
-
-    
 
     // ---- Mint control ----
 
@@ -289,44 +289,41 @@ contract ArtNFT is
         _;
     }
 
+    modifier isForSale(uint256 tokenId) {
+        require(prices[tokenId] > 0, "Token is not for sale");
+        _;
+    }
+
     // ---- Mint public ----
 
-    // Contract can sell tokens
- 
-    function mint(uint256 tokenId) external payable nonReentrant whenSaleStarted {
+    function mint(uint256 tokenId) external payable isForSale(tokenId) nonReentrant whenSaleStarted {
         require(prices[tokenId] <= msg.value, "Inconsistend amount sent!");
 
-        
-        _mint(tokenId, msg.sender, 0x0);
-    }   
-    
-     //Conract 
+        _mintSpecific(tokenId, msg.sender, 0x0);
+    }
 
     // Owner can increase maxSupply
-
-    function upgradeMaxSupply(uint256 countToAdd) external whenNotFrozen onlyOwner{
+    function issueTokens(uint256 countToAdd) external whenNotFrozen onlyOwner {
         maxSupply += countToAdd;
     }
 
-
     // Owner can claim free tokens
 
-    // Owner can take special token from 0 to maxSupply
-    function claimSpecific(uint256 tokenId, address to) external nonReentrant onlyOwner {
-        _mint(tokenId, to, 0x0);
+    // Owner can mint specific token for free
+    function claim(uint256 tokenId, address to, bytes32 extraData) external nonReentrant whenNotFrozen onlyOwner {
+        _mintSpecific(tokenId, to, extraData);
     }
-    
-    function claimBatch(uint256[] calldata tokenIds, address to) external nonReentrant onlyOwner {
+
+    function claimBatch(uint256[] calldata tokenIds, address to, bytes32 extraData) external nonReentrant whenNotFrozen onlyOwner {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(tokenIds[i], to, 0x0);
+            _mintSpecific(tokenIds[i], to, extraData);
         }
     }
+
     // ---- Mint via extension
-
     function mintExternal(uint256 tokenId, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
-        _mint(tokenId, to, extraData);
+        _mintSpecific(tokenId, to, extraData);
     }
-
 
     // ---- Sale control ----
 
@@ -368,7 +365,7 @@ contract ArtNFT is
         royaltyAmount = salePrice * royaltyFee / 10000;
     }
 
-    // ---- Allow royalty deposits from Opensea ----- 
+    // ---- Allow royalty deposits from Opensea -----
 
     receive() external payable {}
 
@@ -412,7 +409,7 @@ contract ArtNFT is
         returns (bool)
     {
         return interfaceId == type(IERC2981).interfaceId
-            || interfaceId == type(IMetaverseNFT).interfaceId
+            || interfaceId == type(IArtNFT).interfaceId
             || super.supportsInterface(interfaceId);
     }
 
