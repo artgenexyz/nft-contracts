@@ -3,13 +3,12 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import "./NFTExtension.sol";
 import "./SaleControl.sol";
 
-contract MintPass is NFTExtension, Ownable, SaleControl {
+contract MintPassExtension is NFTExtension, Ownable, SaleControl {
   uint256 public price;
 
   uint256 public maxPerAddress;
@@ -18,9 +17,7 @@ contract MintPass is NFTExtension, Ownable, SaleControl {
   address public mintPassAddress;
 
   // For used tokenIds in the mint pass
-  mapping(uint256 => bool) usedTokenIds;
-
-  mapping(address => uint256) public claimedByAddress;
+  mapping(uint256 => bool) public usedTokenIds;
 
   constructor(address _nft, address _mintPassAddress, uint256 _price, uint256 _maxPerAddress) NFTExtension(_nft) SaleControl() {
     stopSale();
@@ -42,19 +39,17 @@ contract MintPass is NFTExtension, Ownable, SaleControl {
   }
 
   function mint(uint256 nTokens, uint256 mintPassTokenId) external whenSaleStarted payable {
-    super.beforeMint();
+    beforeMint();
 
     require(usedTokenIds[mintPassTokenId] == false, "This tokenId has already been used");
 
-    require(IERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender, "Does not have mint pass");
+    require(ERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender, "Does not have the mint pass");
 
     require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
-    require(claimedByAddress[msg.sender] + nTokens <= maxPerAddress, "Cannot claim more per address");
+    require(nTokens <= maxPerAddress, "Cannot claim more per one mint pass");
 
     usedTokenIds[mintPassTokenId] = true;
-    
-    claimedByAddress[msg.sender] += nTokens;
 
     nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
   }
