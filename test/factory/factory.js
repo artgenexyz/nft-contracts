@@ -48,14 +48,15 @@ contract("MetaverseNFTFactory", (accounts) => {
     // it should measure gas spent on deployment
     it("should measure gas spent on deployment", async () => {
         let nft = await factory.createNFT(
-            ether.times(0.01),
-            10000,
-            0,
-            20,
+            ether.times(0.01), // price
+            10000, // max tokens
+            0, // reserved
+            20, // max per mint
+            0, // royalty fee
             "factory-test-buy",
             "Test",
             "NFT",
-            { value: ether.times(0.1) },
+            // { value: ether.times(0.1) },
         );
 
         const gasSpent = nft.receipt.gasUsed;
@@ -71,10 +72,11 @@ contract("MetaverseNFTFactory", (accounts) => {
             10000,
             0,
             20,
+            0, // royalty fee
             "factory-test",
             "Test",
             "NFT",
-            { value: ether.times(0.1) },
+            // { value: ether.times(0.1) },
         );
 
         assert.ok(nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress);
@@ -85,12 +87,13 @@ contract("MetaverseNFTFactory", (accounts) => {
         let nft = await factory.createNFT(
             ether.times(0.05),
             10000,
-            0,
+            1,
             20,
-            "factory-test",
+            0, // royalty fee
+            "factory-test/",
             "Test",
             "NFT",
-            { from: user1, value: ether.times(0.1) }
+            { from: user1 }
         );
 
         let deployedNFT = await MetaverseNFT.at(
@@ -98,10 +101,13 @@ contract("MetaverseNFTFactory", (accounts) => {
         );
 
         assert.equal(await deployedNFT.owner(), user1);
-        assert.include(await deployedNFT.baseURI(), "factory-test");
+
+        await deployedNFT.claim(1, user2, { from: user1 });
+
+        assert.include(await deployedNFT.tokenURI(0), "factory-test");
         assert.equal(
-            await deployedNFT.baseURI(),
-            "factory-test"
+            await deployedNFT.tokenURI(0),
+            "factory-test/0"
         );
     });
 
@@ -112,10 +118,11 @@ contract("MetaverseNFTFactory", (accounts) => {
             10000,
             0,
             20,
+            0, // royalty fee
             "factory-test",
             "Test",
             "NFT",
-            { from: user1, value: ether.times(0.1) }
+            { from: user1 }
         );
 
         let nft2 = await factory.createNFT(
@@ -123,10 +130,11 @@ contract("MetaverseNFTFactory", (accounts) => {
             10000,
             0,
             20,
+            0, // royalty fee
             "factory-test",
             "Test",
             "NFT",
-            { from: user1, value: ether.times(0.1) }
+            { from: user1 }
         );
 
         let deployedNFT = await MetaverseNFT.at(
@@ -139,12 +147,12 @@ contract("MetaverseNFTFactory", (accounts) => {
         await deployedNFT.setPrice(ether.times(0.1), { from: user1 });
 
         assert.equal(
-            (await deployedNFT.getPrice()).toString(),
+            (await deployedNFT.price()).toString(),
             ether.times(0.1).toString()
         );
 
         assert.equal(
-            (await deployedNFT2.getPrice()).toString(),
+            (await deployedNFT2.price()).toString(),
             ether.times(0.05).toString()
         );
     });
@@ -172,10 +180,11 @@ contract("MetaverseNFTFactory", (accounts) => {
             10000,
             0,
             20,
+            0, // royalty fee
             "factory-test-buy",
             "Test",
             "NFT",
-            { value: ether.times(0.1) },
+            // { value: ether.times(0.1) },
         );
 
         const gasSpent = nft.receipt.gasUsed;
@@ -192,17 +201,18 @@ contract("MetaverseNFTFactory", (accounts) => {
             10000,
             0,
             20,
+            0, // royalty fee
             "factory-test-buy",
             "Test",
             "NFT",
-            { value: ether.times(0.1) },
+            // { value: ether.times(0.1) },
         );
 
         let deployedNFT = await MetaverseNFT.at(
             nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
         );
 
-        await deployedNFT.flipSaleStarted();
+        await deployedNFT.startSale();
 
         await deployedNFT.mint(5, { from: user1, value: ether.times(0.05) });
         await deployedNFT.mint(5, { from: user2, value: ether.times(0.05) });
