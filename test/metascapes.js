@@ -27,7 +27,7 @@ contract("Metascapes", accounts => {
     it("should have a price of 0.3 ether", async () => {
         // // // const nft = await Metascapes.deployed();
         const price = await nft.getPrice();
-        assert.equal(price, (0.3 * ether).toString());
+        assert.equal(price, (0.33 * ether).toString());
     });
 
     // it should fail to mint when sale is not started
@@ -35,7 +35,7 @@ contract("Metascapes", accounts => {
         // // const nft = await Metascapes.deployed();
         // mint
         try {
-            await nft.mint(1, { from: accounts[1], value: 0.3 * ether });
+            await nft.mint(1, { from: accounts[1], value: 0.33 * ether });
         } catch (error) {
             // check that error message has expected substring 'Sale not started'
             assert.include(error.message, "Sale not started");
@@ -70,7 +70,7 @@ contract("Metascapes", accounts => {
         // // const nft = await Metascapes.deployed();
 
         // mint
-        const tx = await nft.mint(1, { from: owner, value: 0.3 * ether });
+        const tx = await nft.mint(1, { from: owner, value: 0.33 * ether });
         assert.ok(tx);
     });
 
