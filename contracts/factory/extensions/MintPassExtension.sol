@@ -11,7 +11,11 @@ import "./SaleControl.sol";
 contract MintPassExtension is NFTExtension, Ownable, SaleControl {
   uint256 public price;
 
-  uint256 public maxPerAddress;
+  // Maximum tokens that can be mint in the one mint pass
+  uint256 public maxPerToken;
+
+  // Number of remaining tokens
+  uint256 public nRemainingTokens;
 
   // The address of ERC721 contract that is used for mint pass
   address public mintPassAddress;
@@ -19,23 +23,34 @@ contract MintPassExtension is NFTExtension, Ownable, SaleControl {
   // For used tokenIds in the mint pass
   mapping(uint256 => bool) public usedTokenIds;
 
-  constructor(address _nft, address _mintPassAddress, uint256 _price, uint256 _maxPerAddress) NFTExtension(_nft) SaleControl() {
+  constructor(address _nft, address _mintPassAddress, uint256 _price, uint256 _maxPerToken, uint256 _maxPerExtension) NFTExtension(_nft) SaleControl() {
     stopSale();
     price = _price;
-    maxPerAddress = _maxPerAddress;
+    maxPerToken = _maxPerToken;
     mintPassAddress = _mintPassAddress;
+    
+    // At the begining, the number of tokens is max per extension
+    nRemainingTokens = _maxPerExtension;
   }  
 
   function updatePrice(uint256 _price) public onlyOwner {
     price = _price;
   }
 
-  function updateMaxPerAddress(uint256 _maxPerAddress) public onlyOwner {
-    maxPerAddress = _maxPerAddress;
+  function updateMaxPerToken(uint256 _maxPerToken) public onlyOwner {
+    maxPerToken = _maxPerToken;
   }
 
   function updateMintPassAddress(address _mintPassAddress) public onlyOwner {
     mintPassAddress = _mintPassAddress;
+  }
+
+  function updateRemainingTokens(uint256 _nRemainingTokens) public onlyOwner {
+    nRemainingTokens = _nRemainingTokens;
+  }
+
+  function increaseRemainingTokens(uint256 valueToAdd) public onlyOwner {
+    nRemainingTokens = nRemainingTokens + valueToAdd;
   }
 
   function mint(uint256 nTokens, uint256 mintPassTokenId) external whenSaleStarted payable {
@@ -43,11 +58,15 @@ contract MintPassExtension is NFTExtension, Ownable, SaleControl {
 
     require(usedTokenIds[mintPassTokenId] == false, "This tokenId has already been used");
 
+    require(nRemainingTokens >= nTokens, "The number of remaining tokens is less than nTokens");
+
     require(ERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender, "Does not have the mint pass");
 
     require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
-    require(nTokens <= maxPerAddress, "Cannot claim more per one mint pass");
+    require(nTokens <= maxPerToken, "Cannot claim more per one mint pass");
+
+    nRemainingTokens = nRemainingTokens - nTokens;
 
     usedTokenIds[mintPassTokenId] = true;
 
