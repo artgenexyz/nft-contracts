@@ -80,7 +80,7 @@ contract Metascapes is MetaverseBaseNFT {
         Address.sendValue(payable(BUILDSHIP_TEAM), balance * 375 / 10000);
         Address.sendValue(payable(AI_TEAM), balance * 500 / 10000);
 
-        Address.sendValue(payable(METASCAPES_TEAM), balance * 8250 / 10000);
+        Address.sendValue(payable(METASCAPES_TEAM), balance * 8750 / 10000);
 
     }
 
