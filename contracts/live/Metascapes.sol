@@ -2,8 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Address.sol";
-
-import "../AvatarNFTv2.sol";
+import "../MetaverseBaseNFT.sol";
 
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
@@ -42,16 +41,24 @@ import "../AvatarNFTv2.sol";
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
-contract Metascapes is AvatarNFTv2 {
+contract Metascapes is MetaverseBaseNFT {
 
-    constructor() AvatarNFTv2(
+    address immutable SLOIKA_TEAM = 0x720d71822E5A128EA015323e9c2Da40DDABe8e08;
+    address immutable BUILDSHIP_TEAM = 0x704C043CeB93bD6cBE570C6A2708c3E1C0310587;
+    address immutable AI_TEAM = 0x3F547A321EE5869DeE7B035A89aB24CfF4633181;
+    address immutable METASCAPES_TEAM = 0xD7096C2E4281a7429D94ee21B53E7F0011D59FA3;
+
+    constructor() MetaverseBaseNFT(
         0.33 ether,
-        3300, // total supply
+        3333, // total supply
         33, // reserved supply
         1, // max mint per transaction
+        750, // royalty fee
         "https://metadata.buildship.dev/api/token/metascapes/",
         "Metascapes", "MTSCPS"
-    ) {}
+    ) {
+        setRoyaltyReceiver(METASCAPES_TEAM);
+    }
 
     function withdraw() public override onlyOwner {
         uint256 balance = address(this).balance;
@@ -69,11 +76,11 @@ contract Metascapes is AvatarNFTv2 {
         // ​​0xD7096C2E4281a7429D94ee21B53E7F0011D59FA3
         // 87.5%
 
-        Address.sendValue(payable(0x720d71822E5A128EA015323e9c2Da40DDABe8e08), balance * 375 / 10000);
-        Address.sendValue(payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587), balance * 375 / 10000);
-        Address.sendValue(payable(0x3F547A321EE5869DeE7B035A89aB24CfF4633181), balance * 500 / 10000);
+        Address.sendValue(payable(SLOIKA_TEAM), balance * 375 / 10000);
+        Address.sendValue(payable(BUILDSHIP_TEAM), balance * 375 / 10000);
+        Address.sendValue(payable(AI_TEAM), balance * 500 / 10000);
 
-        Address.sendValue(payable(0xD7096C2E4281a7429D94ee21B53E7F0011D59FA3), balance * 8250 / 10000);
+        Address.sendValue(payable(METASCAPES_TEAM), balance * 8250 / 10000);
 
     }
 
