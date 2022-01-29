@@ -17,13 +17,16 @@
     "chai": "^4.3.4",
     "eth-gas-reporter": "^0.2.23",
     "ethereum-waffle": "^3.4.0",
-    "ganache-cli": "^6.12.2",
+    "ganache": "^7.0.0-alpha.2",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.2.27",
     "mocha": "^9.1.1",
     "nft.storage": "^3.3.0",
     "solidity-coverage": "^0.7.17",
     "truffle": "^5.4.8",
+    "truffle-contract-size": "^2.0.1",
     "truffle-flattener": "^1.5.0",
-    "truffle-plugin-verify": "^0.5.12"
+    "truffle-plugin-verify": "^0.5.20"
   },
   "resolutions": {
     "@solidity-parser/parser": "^0.14.0"
