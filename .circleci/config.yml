@@ -32,8 +32,13 @@ jobs:
       - store_test_results:
           path: test_results
       - run:
-          name: Code coverage report
-          command: npx ganache-cli --miner.legacyInstamine & yarn truffle run coverage
+          name: Ganache
+          command: npx ganache-cli --miner.legacyInstamine
+          background: true
+      - run:
+          name: Truffle Code coverage report
+          command: yarn truffle run coverage || true
+          when: always
       - store_artifacts:
           path: coverage
 
