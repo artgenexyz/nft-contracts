@@ -46,7 +46,7 @@ jobs:
           pkg-manager: yarn
       - run:
           name: Code coverage report
-          command: npx ganache-cli --miner.legacyInstamine & yarn truffle run coverage
+          command: npx ganache-cli --miner.legacyInstamine & yarn truffle run coverage || true
       - store_artifacts:
           path: coverage
 
