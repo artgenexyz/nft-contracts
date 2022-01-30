@@ -54,7 +54,7 @@ contract Metascapes is MetaverseBaseNFT {
         33, // reserved supply
         1, // max mint per transaction
         750, // royalty fee
-        "https://metadata.buildship.dev/api/token/metascapes/",
+        "ipfs://QmZaubUmk5Qm3Veb2EzoYS7ZEL9B995WRPCmUiG9RqSpsE/",
         "Metascapes", "MTSCPS"
     ) {
         setRoyaltyReceiver(METASCAPES_TEAM);
