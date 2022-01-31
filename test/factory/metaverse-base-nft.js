@@ -236,7 +236,7 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
         // info.royaltyFee is 5%
 
         assert.equal(info.receiver, nft.address);
-        assert.equal(info.royaltyAmount, 750);
+        assert.equal(info.royaltyAmount.toString(), 750.toString());
 
         // it can change 
 
