@@ -236,7 +236,7 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
         // info.royaltyFee is 5%
 
         assert.equal(info.receiver, nft.address);
-        assert.equal(info.royaltyAmount, 500);
+        assert.equal(info.royaltyAmount, 750);
 
         // it can change 
 
@@ -246,11 +246,6 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
 
         assert.equal(royaltyAmount, 100);
 
-        // it can't change royaltyReceiver
-        await expectRevert(
-            nft.setRoyaltyReceiver(owner),
-            "Only after 6 months of contract creation can the royalty receiver be changed."
-        );
     });
 
     // it should be able to mint reserved from owner account
