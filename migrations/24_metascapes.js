@@ -30,8 +30,8 @@ module.exports = async function (deployer, network) {
     // Deploy whitelist with arguments: 0x0, address of Metascapes, 0.33 ether, 1
     await deployer.deploy(
         "WhitelistMerkleTreeExtension",
-        "0x0",
         metascapes.address,
+        "0x0",
         web3.utils.toWei("0.33", "ether"),
         1
     );
