@@ -199,12 +199,9 @@ contract MetaverseNFT is
     }
 
     function isExtensionAllowed(address _extension) public view returns (bool) {
-        if (!ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId)) {
-            return false;
-        }
 
         for (uint index = 0; index < extensions.length; index++) {
-            if (extensions[index] == INFTExtension(_extension)) {
+            if (address(extensions[index]) == _extension) {
                 return true;
             }
         }
