@@ -211,12 +211,41 @@ contract("Metascapes", accounts => {
 
         // try minting 20 * 20 tokens, which is more than the max allowed (200)
         try {
-            await Promise.all(Array(20).fill().map(() =>
+            await Promise.all(Array(20).fill(null).map(() =>
                 nft.mint(20, { from: owner, value: 0.0001 * 20 * ether })
             ));
         } catch (error) {
             // check that error message has expected substring 'You cannot mint more than'
             assert.include(error.message, "Not enough Tokens left");
         }
+    })
+
+    it("should be able to withdraw", async () => {
+        const nft = await Metascapes.new();
+
+        // send 100 wei to nft.address
+        await web3.eth.sendTransaction({
+            from: accounts[0],
+            to: nft.address,
+            value: 1000,
+        });
+
+        const dev = await nft.DEVELOPER_ADDRESS();
+        const devBalanceBefore = await web3.eth.getBalance(dev);
+
+        await nft.withdraw();
+
+        // check that dev balance has increased
+        const devBalanceAfter = await web3.eth.getBalance(dev);
+        const devDelta = new BN(devBalanceAfter).sub(new BN(devBalanceBefore))
+
+        // check devDelta is 375
+        expect(devDelta.gte(375)).to.be.true;
+
+    })
+
+    // TODO: test 1 wei
+    it("should withdraw correctly even if has 1 wei", async () => {
+        console.log('skip')
     })
 })
