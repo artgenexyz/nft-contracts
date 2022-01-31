@@ -123,8 +123,6 @@ contract MetaverseBaseNFT is
         string memory _name, string memory _symbol
     ) ERC721(_name, _symbol) {
 
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
