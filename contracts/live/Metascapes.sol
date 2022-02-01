@@ -2,6 +2,8 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 import "../MetaverseBaseNFT.sol";
 
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
@@ -76,12 +78,18 @@ contract Metascapes is MetaverseBaseNFT {
         // ​​0xD7096C2E4281a7429D94ee21B53E7F0011D59FA3
         // 87.5%
 
+        Address.sendValue(payable(METASCAPES_TEAM), balance * 8750 / 10000);
+
         Address.sendValue(payable(SLOIKA_TEAM), balance * 375 / 10000);
         Address.sendValue(payable(BUILDSHIP_TEAM), balance * 375 / 10000);
         Address.sendValue(payable(AI_TEAM), balance * 500 / 10000);
 
-        Address.sendValue(payable(METASCAPES_TEAM), balance * 8750 / 10000);
+    }
 
+    function withdrawToken(IERC20 token) public override onlyOwner {
+        uint256 balance = token.balanceOf(address(this));
+
+        SafeERC20.safeTransfer(token, msg.sender, balance);
     }
 
 }
