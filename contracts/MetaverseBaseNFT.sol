@@ -81,7 +81,6 @@ contract MetaverseBaseNFT is
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
-    uint256 public createdAt;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -123,9 +122,6 @@ contract MetaverseBaseNFT is
         string memory _uri,
         string memory _name, string memory _symbol
     ) ERC721(_name, _symbol) {
-
-        createdAt = block.timestamp;
-        startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
         reserved = _nReserved;
@@ -186,12 +182,9 @@ contract MetaverseBaseNFT is
     }
 
     function isExtensionAllowed(address _extension) public view returns (bool) {
-        if (!ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId)) {
-            return false;
-        }
 
         for (uint index = 0; index < extensions.length; index++) {
-            if (extensions[index] == INFTExtension(_extension)) {
+            if (address(extensions[index]) == _extension) {
                 return true;
             }
         }
