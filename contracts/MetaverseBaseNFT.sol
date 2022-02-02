@@ -79,6 +79,7 @@ contract MetaverseBaseNFT is
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 public constant OXY_FEE = 1750; // of 10,000 = 17.5%
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -339,23 +340,32 @@ contract MetaverseBaseNFT is
 
     function withdraw() public virtual onlyOwner {
         uint256 balance = address(this).balance;
-        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 devAmount = balance * DEVELOPER_FEE / 10000;
+        uint256 oxyAmount = balance * OXY_FEE / 10000;
 
         address payable dev = DEVELOPER_ADDRESS();
+        address payable oxy = OXY_ADDRESS();
 
-        Address.sendValue(payable(msg.sender), amount);
-        Address.sendValue(dev, balance - amount);
+        Address.sendValue(dev, devAmount);
+        Address.sendValue(oxy, oxyAmount);
+        
+        uint256 finalBalance = address(this).balance;
+        Address.sendValue(payable(msg.sender), finalBalance);
     }
 
     function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
-
-        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 devAmount = balance * DEVELOPER_FEE / 10000;
+        uint256 oxyAmount = balance * OXY_FEE / 10000;
 
         address payable dev = DEVELOPER_ADDRESS();
+        address payable oxy = OXY_ADDRESS();
 
-        token.safeTransfer(payable(msg.sender), amount);
-        token.safeTransfer(dev, balance - amount);
+        token.safeTransfer(dev, devAmount);
+        token.safeTransfer(oxy, oxyAmount);
+        
+        uint256 finalBalance = token.balanceOf(address(this));
+        token.safeTransfer(payable(msg.sender), finalBalance);
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
@@ -364,6 +374,10 @@ contract MetaverseBaseNFT is
 
     function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
+    }
+
+    function OXY_ADDRESS() public pure returns (address payable _oxy) {
+        _oxy = payable(0xc73ab340a7d523EC7b1b71fE3d3494F94283b4B1);
     }
 
     // -------- ERC721 overrides --------
