@@ -5,21 +5,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "./NFTExtension.sol";
+import "./SaleControl.sol";
 
-contract FixPriceSaleExtension is NFTExtension, Ownable, Pausable {
+contract FixedPriceSaleExtension is NFTExtension, Ownable, SaleControl {
 
     uint256 public price;
     uint256 public maxPerMint;
 
     constructor(address _nft, uint256 _price, uint256 _maxPerMint) NFTExtension(_nft) {
-        _pause();
+        stopSale();
         // sale stopped by default
 
         price = _price;
         maxPerMint = _maxPerMint;
     }
 
-    function mint(uint256 nTokens) external whenNotPaused payable {
+    function mint(uint256 nTokens) external whenSaleStarted payable {
         super.beforeMint();
 
         require(nTokens <= maxPerMint, "Too many tokens to mint");
@@ -28,11 +29,4 @@ contract FixPriceSaleExtension is NFTExtension, Ownable, Pausable {
         nft.mintExternal{ value: msg.value }(nTokens, msg.sender, 0x0);
     }
 
-    function flipSaleStarted () public onlyOwner {
-        if (paused()) {
-            _unpause();
-        } else {
-            _pause();
-        }
-    }
 }
