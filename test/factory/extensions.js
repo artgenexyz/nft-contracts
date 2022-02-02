@@ -1,23 +1,28 @@
 const BigNumber = require("bignumber.js");
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { expectRevert, expectEvent } = require("@openzeppelin/test-helpers");
 const { assert, expect } = require("chai");
 const keccak256 = require("keccak256");
 const delay = require("delay");
 
 const { getGasCost, getAirdropTree, processAddress } = require("../utils");
+const {extension} = require("truffle/build/671.bundled");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
 const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
 const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
+const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
 const ether = new BigNumber(1e18);
 
 contract("AvatarNFTv2 – Extensions", (accounts) => {
     let nft;
     const [owner, user1, user2] = accounts;
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
 
     beforeEach(async () => {
         nft = await TemplateNFTv2.new();
@@ -166,6 +171,55 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
         await expectRevert(
             nft.mint(1, { from: user1 }),
             "Sale not started"
+        );
+    });
+
+    // it should allow to mint from ERC20SaleExtension
+    it ("it should allow to mint from ERC20SaleExtension", async () => {
+        const currency = await MockERC20CurrencyToken.new();
+        const metaverseFactory = await MetaverseNFTFactory.new();
+        const metaverseAddr = (await metaverseFactory.createNFT(
+            1e17.toString(), 10000, 100, 10, 500,
+            "https://metadata.buildship.dev/api/token/SYMBOL/",
+            "Avatar Collection NFT", "SYMBOL"
+        )).logs.find((event) => event.event === "NFTCreated").args.deployedAddress;
+        const metaverseNFT = await MetaverseNFT.at(metaverseAddr);
+
+        const ERC20Extension = await ERC20SaleExtension.new(metaverseAddr, currency.address, 10, 20);
+        await metaverseNFT.addExtension(ERC20Extension.address);
+
+        await currency.transfer(user1, 500);
+
+        await expectRevert(
+            ERC20Extension.mint(10, { from: user1 }),
+            "ERC20: transfer amount exceeds allowance"
+        );
+        await expectRevert(
+            ERC20Extension.mint(10, { from: user2 }),
+            "Not enough currency to mint"
+        );
+        await expectRevert(
+            ERC20Extension.mint(21, { from: user1 }),
+            "Too many tokens to mint"
+        );
+
+        await currency.approve(ERC20Extension.address, 500, { from: user1 });
+
+        await ERC20Extension.mint(20, { from: user1 })
+
+        const devAddress = await metaverseNFT.DEVELOPER_ADDRESS();
+
+        assert.equal(
+            await currency.balanceOf(metaverseNFT.address),
+            "200",
+            "Contract should have 200 currency tokens"
+        );
+
+        await metaverseNFT.withdrawToken(currency.address);
+        assert.equal(
+            await currency.balanceOf(devAddress),
+            "10",
+            "Contract developer should have 10 currency tokens after withdrawal"
         );
     });
 
