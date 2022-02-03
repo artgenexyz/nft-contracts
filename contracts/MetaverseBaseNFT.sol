@@ -1,25 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.9;
 
-/**
-* @title LICENSE REQUIREMENT
-* @dev This contract is licensed under the MIT license.
-* @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
-*/
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./extensions/INFTExtension.sol";
-import "./IMetaverseNFT.sol";
-import "./OpenseaProxy.sol";
+import "./factory/extensions/INFTExtension.sol";
+import "./factory/IMetaverseNFT.sol";
+import "./factory/OpenseaProxy.sol";
+
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
 //
@@ -68,10 +65,10 @@ import "./OpenseaProxy.sol";
 //         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
 //          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
 //           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
-contract MetaverseNFT is
-    ERC721Upgradeable,
-    ReentrancyGuardUpgradeable,
-    OwnableUpgradeable,
+contract MetaverseBaseNFT is
+    ERC721,
+    ReentrancyGuard,
+    Ownable,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -84,7 +81,6 @@ contract MetaverseNFT is
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
-    uint256 public createdAt;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -117,7 +113,7 @@ contract MetaverseNFT is
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
 
-    function initialize(
+    constructor(
         uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
@@ -125,13 +121,7 @@ contract MetaverseNFT is
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
-    ) public initializer {
-        __ERC721_init(_name, _symbol);
-        __ReentrancyGuard_init();
-        __Ownable_init();
-
-        createdAt = block.timestamp;
-        startTimestamp = SALE_STARTS_AT_INFINITY;
+    ) ERC721(_name, _symbol) {
 
         price = _price;
         reserved = _nReserved;
@@ -143,15 +133,8 @@ contract MetaverseNFT is
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
-    }
 
-    // This constructor ensures that this contract can only be used as a master copy
-    // Marking constructor as initializer makes sure that real initializer cannot be called
-    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
-    // on the other hand, it's impossible to call this function in proxy,
-    // so the real initializer is the only initializer
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
@@ -339,7 +322,6 @@ contract MetaverseNFT is
     }
 
     function setRoyaltyReceiver(address _receiver) public onlyOwner {
-        require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
         royaltyReceiver = _receiver;
     }
 
@@ -355,7 +337,7 @@ contract MetaverseNFT is
 
     // ---- Withdraw -----
 
-    function withdraw() public onlyOwner {
+    function withdraw() public virtual onlyOwner {
         uint256 balance = address(this).balance;
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
@@ -365,7 +347,7 @@ contract MetaverseNFT is
         Address.sendValue(dev, balance - amount);
     }
 
-    function withdrawToken(IERC20 token) public onlyOwner {
+    function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
 
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
