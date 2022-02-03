@@ -23,10 +23,10 @@ contract("Metascapes", accounts => {
         assert.ok(nft.address);
     });
 
-    // price should equal 0.3 ether
-    it("should have a price of 0.3 ether", async () => {
+    // price should equal 0.33 ether
+    it("should have a price of 0.33 ether", async () => {
         // // // const nft = await Metascapes.deployed();
-        const price = await nft.getPrice();
+        const price = await nft.price();
         assert.equal(price, (0.33 * ether).toString());
     });
 
@@ -42,24 +42,22 @@ contract("Metascapes", accounts => {
         }
     });
     // it should not be able to start sale when beneficiary is not set
-    it("should fail to start sale when beneficiary is not set", async () => {
+    xit("should fail to start sale when beneficiary is not set", async () => {
         // // const nft = await Metascapes.deployed();
         // start sale
         try {
-            await nft.flipSaleStarted({ from: owner });
+            await nft.startSale({ from: owner });
         } catch (error) {
             // check that error message has expected substring 'Beneficiary not set'
             assert.include(error.message, "Beneficiary not set");
         }
     });
 
-    // it should be able to start sale when beneficiary is set
-    it("should be able to start sale when beneficiary is set", async () => {
+
+    it("should be able to start sale", async () => {
         // // const nft = await Metascapes.deployed();
-        // set beneficiary
-        await nft.setBeneficiary(beneficiary, { from: owner });
         // start sale
-        await nft.flipSaleStarted({ from: owner });
+        await nft.startSale({ from: owner });
         // check that sale is started
         const isSaleStarted = await nft.saleStarted();
         assert.equal(isSaleStarted, true);
@@ -101,8 +99,8 @@ contract("Metascapes", accounts => {
     // it should be able to mint 10 tokens in one transaction
     xit("should be able to mint 10 tokens in one transaction", async () => {
         // // const nft = await Metascapes.deployed();
-        // flipSaleStarted
-        // await nft.flipSaleStarted();
+        // startSale
+        // await nft.startSale();
         // mint
         const nTokens = 10;
         const tx = await nft.mint(nTokens, { from: owner, value: 0.3 * nTokens * ether });
@@ -138,8 +136,8 @@ contract("Metascapes", accounts => {
         const baseURI = "https://avatar.com/";
         await nft.setBaseURI(baseURI, { from: owner });
         // check _baseURI() value
-        const _baseURI = await nft.baseURI();
-        assert.equal(_baseURI, baseURI);
+        const uri = await nft.tokenURI(0);
+        assert.include(uri, baseURI);
     });
 
     // it should be able to mint reserved from owner account
@@ -206,20 +204,48 @@ contract("Metascapes", accounts => {
     xit("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
         const nft = await Metascapes.new();
 
-        await nft.setBeneficiary(beneficiary); // set beneficiary so sale can start
-        await nft.flipSaleStarted();
+        await nft.startSale();
 
         // set price to 0.0001 ether
         await nft.setPrice(0.0001 * ether);
 
         // try minting 20 * 20 tokens, which is more than the max allowed (200)
         try {
-            await Promise.all(Array(20).fill().map(() =>
+            await Promise.all(Array(20).fill(null).map(() =>
                 nft.mint(20, { from: owner, value: 0.0001 * 20 * ether })
             ));
         } catch (error) {
             // check that error message has expected substring 'You cannot mint more than'
             assert.include(error.message, "Not enough Tokens left");
         }
+    })
+
+    it("should be able to withdraw", async () => {
+        const nft = await Metascapes.new();
+
+        // send 100 wei to nft.address
+        await web3.eth.sendTransaction({
+            from: accounts[0],
+            to: nft.address,
+            value: 1000,
+        });
+
+        const dev = await nft.DEVELOPER_ADDRESS();
+        const devBalanceBefore = await web3.eth.getBalance(dev);
+
+        await nft.withdraw();
+
+        // check that dev balance has increased
+        const devBalanceAfter = await web3.eth.getBalance(dev);
+        const devDelta = new BN(devBalanceAfter).sub(new BN(devBalanceBefore))
+
+        // check devDelta is 375
+        expect(devDelta.gte(375)).to.be.true;
+
+    })
+
+    // TODO: test 1 wei
+    it("should withdraw correctly even if has 1 wei", async () => {
+        console.log('skip')
     })
 })

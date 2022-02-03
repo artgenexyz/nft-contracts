@@ -5,6 +5,8 @@ const admin = "0x31f40bc42cbae2d36aa11623d6d07d94c8339613";
 
 module.exports = async function(deployer, network) {
 
+  return;
+
   // const ethlandis = { address: "0xad700bae76965f01aa322068ab953082cfd3b9d6" };
 
   const root = "0x8a615c49449352c94d8bb01562934a4dcbc3ebb4e465f46b3f3f0978348c395d"
