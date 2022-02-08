@@ -19,6 +19,7 @@ contract("MintPass – Extension", (accounts) => {
             nft.address,
             1e14.toString(), // price
             1, // max per address
+            100, // max per extension
             {from: owner}
         );
     });
@@ -53,13 +54,13 @@ contract("MintPass – Extension", (accounts) => {
         assert.equal(price, 1e18.toString());
     }) 
 
-    // should be possible to update MaxPerAddress
-    it("should be possible to update maxPerAddress", async() => {
-        await extension.updateMaxPerAddress('10');
-        let maxPerAddress = await extension.maxPerAddress.call().then(callback => {
+    // should be possible to update maxPerToken
+    it("should be possible to update maxPerToken", async() => {
+        await extension.updateMaxPerToken('10');
+        let maxPerToken = await extension.maxPerToken.call().then(callback => {
             return callback.toString();
         })  
-        assert.equal(maxPerAddress, '10');     
+        assert.equal(maxPerToken, '10');     
     }) 
     
     // should be possible to update mintPassAddress
@@ -67,9 +68,32 @@ contract("MintPass – Extension", (accounts) => {
         await extension.updateMintPassAddress(user1, {from: owner});
         let mintPassAddress = await extension.mintPassAddress.call().then(callback => {
             return callback.toString();
-        })  
+        });
+
         assert.equal(mintPassAddress, user1);
     }) 
+
+    // should be possible to update nRemainingTokens
+    it("should be possible to update nRemainingTokens", async () => {
+        await extension.updateRemainingTokens('200', {from: owner});
+
+        let nRemainingTokens = await extension.nRemainingTokens.call().then(callback => {
+            return callback.toString();
+        });
+
+        assert.equal(nRemainingTokens, '200');
+    })
+
+    // should be possible to increase nRemainingTokens
+    it("should be possible to increase nRemainingTokens", async () => {
+        await extension.increaseRemainingTokens('200', {from: owner});
+
+        let nRemainingTokens = await extension.nRemainingTokens.call().then(callback => {
+            return callback.toString();
+        });
+
+        assert.equal(nRemainingTokens, '300');
+    })
 
 
     // should be possible to mint
@@ -97,8 +121,22 @@ contract("MintPass – Extension", (accounts) => {
         // totalSupply should be equal 11 (10 previous + 1)
         await nft.totalSupply().then(callback => {
             assert.equal(callback.toString(), '11');
-        })
+        });
 
+         // nRemainingTokens should be equal 9 (100 - 1 minted)
+         await extension.nRemainingTokens.call().then(callback => {
+            assert.equal(callback.toString(), '99');
+        });
+
+        try {
+            await extension.mint('1', '1', {from: user2, value: ether.toString()});
+        } 
+        catch {}
+
+        // should not be possible to mint without nft
+        await nft.totalSupply().then(callback => {
+            assert.equal(callback.toString(), '11');
+        });
     })
 
 
