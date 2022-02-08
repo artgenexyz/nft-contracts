@@ -90,7 +90,7 @@ console.log("");
 
     // result of running:
     // truffle exec scripts/upload.mjs WhitelistMerkleTreeExtension --network rinkeby
-    const whitelistHash = 'bafkreifr5he5hx2j3mtmpfo7ttygzfcmoycwsql2wpsy6vqdnrht2rtjce'
+    const whitelistHash = 'bafkreidnvwubd2ysaca62oglvwzwttncen3g6vgs6mid65bwen6e6kgn74'
 
     const deploy_url = `https://gate.buildship.dev/deploy/${whitelistHash}?args=${args}`
 
