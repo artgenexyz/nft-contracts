@@ -16,7 +16,7 @@ const processAddress = (address) => {
 }
 
 // extract contract name from config arguments
-const [ ,, filename, contractAddress ] = process.argv;
+const [ ,, filename, contractAddress, whitelist_address ] = process.argv;
 
 console.log("Using contract", contractAddress);
 console.log("With list of addresses from", filename);
@@ -36,7 +36,7 @@ console.log("");
     const url = `https://metadata.buildship.dev/api/extensions/merkle-tree/create`;
 
     const body = JSON.stringify({
-        // whitelist_address is empty, we probably didn't deploy yet
+        whitelist_address: whitelist_address,
         token_address: contractAddress,
         creator: contractAddress,
         addresses: whitelist
