@@ -18,7 +18,7 @@ contract MoojiSale is ERC1155Sale {
         ItemType itemType,
         bool
     ) public {
-        super.addItem(
+        super._addItem(
             name,
             imageUrl,
             animationUrl,

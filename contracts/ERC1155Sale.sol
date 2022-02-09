@@ -147,7 +147,7 @@ contract ERC1155Sale is ERC1155, Ownable {
     }
 
     // Add new item to the marketplace
-    function addItem(string memory name, string memory imageUrl, string calldata animationUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public virtual onlyOwner {
+    function _addItem(string memory name, string memory imageUrl, string calldata animationUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) internal virtual {
         require(maxSupply > 0, "Invalid maxSupply");
 
         uint256 newItemId = totalItems;
@@ -163,6 +163,10 @@ contract ERC1155Sale is ERC1155, Ownable {
         _saleStarted[newItemId] = startSale;
 
         emit ItemAdded(newItemId, name, imageUrl, price, maxSupply, itemType, startSale);
+    }
+
+    function addItem(string memory name, string memory imageUrl, string calldata animationUrl, uint256 price, uint256 maxSupply, ItemType itemType, bool startSale) public virtual onlyOwner {
+        _addItem(name, imageUrl, animationUrl, price, maxSupply, itemType, startSale);
     }
 
     // Change price for item
