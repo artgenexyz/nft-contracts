@@ -4,6 +4,12 @@ const { exec } = require("child_process");
 const { NFTStorage } = require("nft.storage");
 
 const NFT_STORAGE_API_KEY = process.env.NFT_STORAGE_API_KEY;
+
+if (!NFT_STORAGE_API_KEY) {
+  console.error('Please put NFT_STORAGE_API_KEY in .env');
+  process.exit(-1);
+}
+
 const client = new NFTStorage({ token: NFT_STORAGE_API_KEY });
 
 /**
@@ -66,7 +72,7 @@ module.exports = async function(callback) {
       console.log("Error flattening contract, sending empty source code", err);
     } finally {
       // rm flattened file
-      fs.rmSync("./tmp/Flattened.sol");
+      !process.env.KEEP && fs.rmSync("./tmp/Flattened.sol");
       // fs.rmdirSync("./tmp");
     }
 

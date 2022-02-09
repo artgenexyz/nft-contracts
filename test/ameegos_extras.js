@@ -7,6 +7,8 @@ const { BN } = web3.utils;
 const AmeegosMarketplace = artifacts.require("AmeegosMarketplace");
 const DemoAGOS = artifacts.require("DemoAGOS");
 
+const { getGasCost } = require("./utils");
+
 
 /*
  * uncomment accounts to access the test accounts made available by the
@@ -287,9 +289,7 @@ contract("AmeegosMarketplace", function (accounts) {
 
     const tx = await extras.withdraw({ from: owner });
 
-    const gasCost = new BN(tx.receipt.gasUsed).mul(
-      new BN(await web3.eth.getGasPrice())
-    );
+    const gasCost = new BN(getGasCost(tx).toString())
 
     const buildshipBalanceAfter = await web3.eth.getBalance(buildship);
     const ownerBalanceAfter = await web3.eth.getBalance(owner);
