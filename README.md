@@ -118,7 +118,7 @@ truffle exec ./scripts/upload.mjs [contract name] --compile
 
 It needs network selection to run, but it doesn't matter which you use. You can run with development network.
 
-In the end, you get IPFS hash to the uploaded bytecode. Use in on https://app.buildship.dev/deploy?ipfs=QmExampleHash
+In the end, you get IPFS hash to the uploaded bytecode. Use in on https://gate-rinkeby.buildship.dev/deploy/QmExampleHash
 
 ### Bonus
 
