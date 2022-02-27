@@ -15,7 +15,7 @@ contract HogLordz is MetaverseBaseNFT {
         6, // max mint per transaction
         50, // royalty fee
         "https://metadata.buildship.dev/api/dummy-metadata-for/bafybeianop3ltvag6t533qzyvguhpqbnkaixfxba7s4znaajnmmzcwok6m/",
-        "Hog Lordz", "HL"
+        "Hog Lordz", "HOG"
     ) {
         setRoyaltyReceiver(msg.sender);
     }
