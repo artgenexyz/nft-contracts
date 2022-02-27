@@ -13,7 +13,8 @@ const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
-const MOONSCAN_API_KEY = process.env.MOONSCAN_API_KEY;
+const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
+const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 
 module.exports = {
   /**
@@ -135,7 +136,9 @@ module.exports = {
     etherscan: ETHERSCAN_API_KEY,
     polygonscan: POLYGONSCAN_API_KEY,
     bscscan: BSCSCAN_API_KEY,
-    moonscan: MOONSCAN_API_KEY,
+    moonbeam: MOONBEAM_API_KEY,
+    moonriver: MOONRIVER_API_KEY,
+    moonscan: MOONRIVER_API_KEY,
   }
 
 };
