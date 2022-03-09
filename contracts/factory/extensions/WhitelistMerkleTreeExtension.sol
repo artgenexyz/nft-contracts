@@ -46,9 +46,10 @@ contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
 
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
+        claimedByAddress[msg.sender] += nTokens;
+
         nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
 
-        claimedByAddress[msg.sender] += nTokens;
     }
 
     function isWhitelisted(bytes32 root, address receiver, bytes32[] memory proof) public pure returns (bool) {
