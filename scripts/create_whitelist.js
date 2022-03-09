@@ -16,7 +16,7 @@ const processAddress = (address) => {
 }
 
 // extract contract name from config arguments
-const [ ,, filename, contractAddress ] = process.argv;
+const [ ,, filename, contractAddress, whitelist_address ] = process.argv;
 
 console.log("Using contract", contractAddress);
 console.log("With list of addresses from", filename);
@@ -36,7 +36,7 @@ console.log("");
     const url = `https://metadata.buildship.dev/api/extensions/merkle-tree/create`;
 
     const body = JSON.stringify({
-        // whitelist_address is empty, we probably didn't deploy yet
+        whitelist_address: whitelist_address,
         token_address: contractAddress,
         creator: contractAddress,
         addresses: whitelist
@@ -90,7 +90,7 @@ console.log("");
 
     // result of running:
     // truffle exec scripts/upload.mjs WhitelistMerkleTreeExtension --network rinkeby
-    const whitelistHash = 'bafkreihhu4z7b7jzku7ahi4f64yshejaz67upnz7mv6fgpdj2s65hxhtry'
+    const whitelistHash = 'bafkreidvqvbflsd2ngh6u6kw2fysrf2n5dm7h6dxmlkao7vzlizz2itk7m'
 
     const deploy_url = `https://gate.buildship.dev/deploy/${whitelistHash}?args=${args}`
 
