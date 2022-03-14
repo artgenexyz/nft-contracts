@@ -13,6 +13,8 @@ const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
+const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
+const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 
 module.exports = {
   /**
@@ -59,6 +61,10 @@ module.exports = {
       skipDryRun: false,
       timeoutBlocks: 200,
       networkCheckTimeout: 60000, // If you have a slow internet connection, try configuring a longer timeout in your Truffle config.
+    },
+    moonriver: {
+      network_id: 1285,
+      provider: () => new HDWalletProvider(mnemonic, `https://rpc.api.moonriver.moonbeam.network`),
     },
     polygon: {
       provider: () => new HDWalletProvider({
@@ -130,6 +136,9 @@ module.exports = {
     etherscan: ETHERSCAN_API_KEY,
     polygonscan: POLYGONSCAN_API_KEY,
     bscscan: BSCSCAN_API_KEY,
+    moonbeam: MOONBEAM_API_KEY,
+    moonriver: MOONRIVER_API_KEY,
+    moonscan: MOONRIVER_API_KEY,
   }
 
 };

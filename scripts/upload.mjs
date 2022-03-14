@@ -72,7 +72,7 @@ module.exports = async function(callback) {
       console.log("Error flattening contract, sending empty source code", err);
     } finally {
       // rm flattened file
-      fs.rmSync("./tmp/Flattened.sol");
+      !process.env.KEEP && fs.rmSync("./tmp/Flattened.sol");
       // fs.rmdirSync("./tmp");
     }
 

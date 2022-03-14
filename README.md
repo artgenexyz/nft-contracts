@@ -1,8 +1,8 @@
-# NFT Contracts by buildship.dev
+# NFT Contracts by Buildship
 
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
 
-Made by https://buildship.dev. If you can't code, use our simple web-app to deploy!
+Made by https://buildship.xyz. If you can't code, use our simple web-app to deploy!
 
 USE AT YOUR OWN RISK. Most of the features are in production already, however this doesn't guarantee any security. Unreleased and speculative code is located in `contracts/experiments` directory.
 
@@ -66,7 +66,7 @@ truffle compile
 Then, in another tab and leave running:
 
 ```bash
-npx ganache-cli --miner.legacyInstamine
+npx ganache-cli --instamine eager
 ```
 
 Finally, to test your code:
@@ -118,7 +118,7 @@ truffle exec ./scripts/upload.mjs [contract name] --compile
 
 It needs network selection to run, but it doesn't matter which you use. You can run with development network.
 
-In the end, you get IPFS hash to the uploaded bytecode. Use in on https://app.buildship.dev/deploy?ipfs=QmExampleHash
+In the end, you get IPFS hash to the uploaded bytecode. Use in on https://gate-rinkeby.buildship.xyz/deploy/QmExampleHash
 
 ### Bonus
 
@@ -136,7 +136,7 @@ Run ganache to fork from mainnet:
 
 ```bash
 source .env
-npx ganache-cli --miner.legacyInstamine \
+npx ganache-cli --instamine eager \
                 --fork https://mainnet.infura.io/v3/$INFURA_KEY\
                 --unlock 0x44244acacd0b008004f308216f791f2ebe4c4c50
 ```
