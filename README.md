@@ -1,8 +1,8 @@
-# NFT Contracts by buildship.dev
+# NFT Contracts by Buildship
 
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
 
-Made by https://buildship.dev. If you can't code, use our simple web-app to deploy!
+Made by https://buildship.xyz. If you can't code, use our simple web-app to deploy!
 
 USE AT YOUR OWN RISK. Most of the features are in production already, however this doesn't guarantee any security. Unreleased and speculative code is located in `contracts/experiments` directory.
 
@@ -118,7 +118,7 @@ truffle exec ./scripts/upload.mjs [contract name] --compile
 
 It needs network selection to run, but it doesn't matter which you use. You can run with development network.
 
-In the end, you get IPFS hash to the uploaded bytecode. Use in on https://gate-rinkeby.buildship.dev/deploy/QmExampleHash
+In the end, you get IPFS hash to the uploaded bytecode. Use in on https://gate-rinkeby.buildship.xyz/deploy/QmExampleHash
 
 ### Bonus
 
