@@ -110,7 +110,7 @@ contract Market is ERC1155Holder, Ownable {
         uint256 rest = msg.value - offer.price * amount;
         // TODO: take fee?
 
-        payable(owner).transfer(offer.price * amount);
+        owner.transfer(offer.price * amount);
         payable(msg.sender).transfer(rest);
 
         // if no more tokens, remove offer
