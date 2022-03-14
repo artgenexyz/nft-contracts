@@ -21,12 +21,27 @@ contract MetaverseNFTFactory {
 
     address public immutable proxyImplementation;
 
-    event NFTCreated(address deployedAddress);
+    event NFTCreated(
+        address deployedAddress,
+        // creation parameters
+        uint256 price,
+        uint256 maxSupply,
+        uint256 nReserved,
+        string name,
+        string symbol
+    );
 
     constructor() {
         proxyImplementation = address(new MetaverseNFT());
 
-        emit NFTCreated(proxyImplementation);
+        emit NFTCreated(
+            proxyImplementation,
+            0,
+            0,
+            0,
+            "IMPLEMENTATION",
+            "IMPLEMENTATION"
+        );
     }
 
     function createNFT(
@@ -53,7 +68,17 @@ contract MetaverseNFTFactory {
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
 
-        emit NFTCreated(clone);
+        emit NFTCreated(
+            clone,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol
+        );
+
+    }
+
 
     }
 
