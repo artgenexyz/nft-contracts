@@ -31,18 +31,21 @@ contract Market is ERC1155Holder, Ownable {
     // ERC1155 contract
     IERC1155 public immutable tokenContract;
 
-    mapping (uint256 => Offer) public offers;
+    struct Offer {
+        uint256 price;
+        // uint256 itemId;
+        uint256 amount;
+        // address payable owner;
+    }
+
+    // tokenId => (owner address => offer)
+    mapping (uint256 => mapping (address => Offer)) public offers;
     // mapping (address => Offer) public offerByOwner;
 
     // mapping (uint256 => mapping (address => Offer) userOffers;
     // mapping (address => Offer) pendingOffers;
 
-    struct Offer {
-        uint256 price;
-        // uint256 itemId;
-        uint256 amount;
-        address payable owner;
-    }
+
 
     // users can purchase item if minter didn't run out of supply and if saleStarted = true
     // users can list item for sale
@@ -69,53 +72,50 @@ contract Market is ERC1155Holder, Ownable {
         // tokenContract.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
 
         // create selling offer
-        Offer memory offer = Offer(price, amount, payable(msg.sender));
-        offers[tokenId] = offer;
+        Offer memory offer = Offer(price, amount);
+        offers[tokenId][msg.sender] = offer;
     }
- 
-    function unlist(uint256 tokenId, uint256 amount) public {
-        Offer storage offer = offers[tokenId];
 
-        require(offer.owner == msg.sender, "Only owner can unlist");
+    function unlist(uint256 tokenId, uint256 amount) public {
+        Offer storage offer = offers[tokenId][msg.sender];
+        require(offer.amount >= amount, "Not enough tokens");
 
         // tokenContract.safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
-
         offer.amount -= amount;
-
         // if no more tokens, remove offer
         if (offer.amount == 0) {
-            delete offers[tokenId];
+            delete offers[tokenId][msg.sender];
         }
     }
 
-    function buy(uint256 tokenId, uint256 amount) payable public {
+    function buy(uint256 tokenId, address payable owner, uint256 amount) payable public {
         // find offer
-        Offer storage offer = offers[tokenId];
+        Offer storage offer = offers[tokenId][owner];
         require(offer.amount >= amount, "Not enough tokens");
 
         // check user passed enough ETH
         require(msg.value >= offer.price * amount, "Not enough ETH");
 
-        if(!tokenContract.isApprovedForAll(offer.owner, address(this))) {
-            delete offers[tokenId];
+        if(!tokenContract.isApprovedForAll(owner, address(this))) {
+            delete offers[tokenId][owner];
             require(false, "Cant buy, offer is not valid");
         }
 
         // transfer tokens to user
         offer.amount -= amount;
-        tokenContract.safeTransferFrom(offer.owner, msg.sender, tokenId, amount, "");
+        tokenContract.safeTransferFrom(owner, msg.sender, tokenId, amount, "");
 
         // payout to buyer
         // TODO: hack, change to pendingWithdrawals
         uint256 rest = msg.value - offer.price * amount;
         // TODO: take fee?
 
-        offer.owner.transfer(offer.price * amount);
+        payable(owner).transfer(offer.price * amount);
         payable(msg.sender).transfer(rest);
 
         // if no more tokens, remove offer
         if (offer.amount == 0) {
-            delete offers[tokenId];
+            delete offers[tokenId][owner];
         }
     }
 
