@@ -17,7 +17,7 @@ contract NFTExtension is INFTExtension, ERC165 {
         require(nft.isExtensionAllowed(address(this)), "NFTExtension: this contract is not allowed to be used as an extension");
     }
 
-    function supportsInterface(bytes4 interfaceId) public override(IERC165, ERC165) view returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public virtual override(IERC165, ERC165) view returns (bool) {
         return interfaceId == type(INFTExtension).interfaceId || super.supportsInterface(interfaceId);
     }
 
