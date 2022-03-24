@@ -28,7 +28,7 @@ contract ERC20SaleExtension is NFTExtension, Ownable {
     }
 
     // In order to mint user have to approve ERC20 tokens to extension address
-    function mint(uint256 nTokens) external payable {
+    function mint(uint256 nTokens) external {
         super.beforeMint();
 
         require(nTokens <= maxPerMint, "Too many tokens to mint");
