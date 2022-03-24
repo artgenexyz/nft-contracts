@@ -98,6 +98,7 @@ contract MetaverseNFT is
 
     bool public isFrozen;
     bool private isOpenSeaProxyActive = true;
+    bool private startAtOne = false;
 
     /** 
     * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -124,7 +125,8 @@ contract MetaverseNFT is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
+        string memory _name, string memory _symbol,
+        bool _startAtOne
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -140,6 +142,8 @@ contract MetaverseNFT is
 
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
+
+        startAtOne = _startAtOne;
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
@@ -171,6 +175,10 @@ contract MetaverseNFT is
         }
 
         return super.tokenURI(tokenId);
+    }
+
+    function startTokenId() public view returns (uint256) {
+        return startAtOne ? 0 : 1;
     }
 
     function totalSupply() public view returns (uint256) {
@@ -258,7 +266,7 @@ contract MetaverseNFT is
         require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
 
         for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
+            uint256 tokenId = _tokenIdCounter.current() + startTokenId();
             _tokenIdCounter.increment();
 
             _safeMint(to, tokenId);

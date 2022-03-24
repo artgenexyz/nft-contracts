@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./MetaverseNFT.sol";
 
+import "./extensions/JSONTokenURIExtension.sol";
 
 /**
 * MetaverseNFT is a cloneable contract for your NFT collection.
@@ -63,7 +64,8 @@ contract MetaverseNFTFactory {
             _maxTokensPerMint,
             _royaltyFee,
             _uri,
-            _name, _symbol
+            _name, _symbol,
+            false
         );
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
@@ -79,7 +81,84 @@ contract MetaverseNFTFactory {
 
     }
 
+    function createNFTStartSale(
+        uint256 _startPrice,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxTokensPerMint,
+        uint256 _royaltyFee,
+        string memory _uri,
+        string memory _name, string memory _symbol
+    ) external {
+
+        address clone = Clones.clone(proxyImplementation);
+
+        MetaverseNFT(payable(clone)).initialize(
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _maxTokensPerMint,
+            _royaltyFee,
+            _uri,
+            _name, _symbol,
+            false
+        );
+
+        MetaverseNFT(payable(clone)).startSale();
+
+        MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
+
+        emit NFTCreated(
+            clone,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol
+        );
 
     }
+
+    function createNFTwithIPFSJSON(
+        uint256 _startPrice,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxTokensPerMint,
+        uint256 _royaltyFee,
+        string memory _uri,
+        string memory _name, string memory _symbol
+    ) external {
+
+        address clone = Clones.clone(proxyImplementation);
+
+        MetaverseNFT(payable(clone)).initialize(
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _maxTokensPerMint,
+            _royaltyFee,
+            _uri,
+            _name, _symbol,
+            false
+        );
+
+        INFTURIExtension ext = new JSONTokenURIExtension(clone, ".json");
+
+        MetaverseNFT(payable(clone)).setExtensionTokenURI(address(ext));
+
+        MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
+ 
+        emit NFTCreated(
+            clone,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol
+        );
+    }
+
+    // TODO: createNFTnoPublicSale
+
 
 }
