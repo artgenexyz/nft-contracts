@@ -145,6 +145,10 @@ contract MetaverseNFTFactory is Ownable {
 
         address clone = Clones.clone(proxyImplementation);
 
+        // NOTE:
+        // tokenIds start at 1
+        // .json by default
+
         MetaverseNFT(payable(clone)).initialize(
             _startPrice,
             _maxSupply,
@@ -153,7 +157,7 @@ contract MetaverseNFTFactory is Ownable {
             _royaltyFee,
             _uri,
             _name, _symbol,
-            false
+            true
         );
 
         INFTURIExtension ext = new JSONTokenURIExtension(clone, ".json");
