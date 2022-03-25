@@ -178,7 +178,7 @@ contract MetaverseNFT is
     }
 
     function startTokenId() public view returns (uint256) {
-        return startAtOne ? 0 : 1;
+        return startAtOne ? 1 : 0;
     }
 
     function totalSupply() public view returns (uint256) {
