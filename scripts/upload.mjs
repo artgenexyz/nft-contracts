@@ -55,21 +55,29 @@ module.exports = async function(callback) {
       console.log("\nRunning command:", sh);
 
       await new Promise((resolve, reject) => {
-        exec(sh, (err, stdout) => {
+        exec(sh, (err, stdout, stderr) => {
           if (err) {
             console.log("Error flattening contract:", err);
             return reject(err);
           }
 
-          console.log("Flattened contract:", stdout);
+          // pipe stdout and stderr to console
+          stdout && console.log(`\nOutput: ${stdout.split("\n").join("\n\t")}`);
+          stderr && console.log(`\nErrors: ${stderr.split("\n").join("\n\t")}`);
+
           resolve();
         });
       })
 
       flattened = fs.readFileSync("./tmp/Flattened.sol", "utf8");
 
+      if (!flattened) {
+        throw new Error("No flattened contract");
+      }
+
     } catch (err) {
-      console.log("Error flattening contract, sending empty source code", err);
+      // process exit with error message
+      return callback(`\nError: ${err.message}\n`);
     } finally {
       // rm flattened file
       !process.env.KEEP && fs.rmSync("./tmp/Flattened.sol");
