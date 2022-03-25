@@ -94,6 +94,7 @@ contract MetaverseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
+    address public payoutReceiver = address(0x0);
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
@@ -351,10 +352,18 @@ contract MetaverseNFT is
         royaltyReceiver = _receiver;
     }
 
+    function setPayoutReceiver(address _receiver) public onlyOwner {
+        payoutReceiver = payable(_receiver);
+    }
+
     function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
         receiver = royaltyReceiver;
         royaltyAmount = salePrice * royaltyFee / 10000;
+    }
+
+    function getPayoutReceiver() public view returns (address payable receiver) {
+        receiver = payoutReceiver != address(0x0) ? payable(payoutReceiver) : payable(msg.sender);
     }
 
     // ---- Allow royalty deposits from Opensea ----- 
@@ -367,9 +376,10 @@ contract MetaverseNFT is
         uint256 balance = address(this).balance;
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        Address.sendValue(payable(msg.sender), amount);
+        Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
     }
 
@@ -378,9 +388,10 @@ contract MetaverseNFT is
 
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        token.safeTransfer(payable(msg.sender), amount);
+        token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
     }
 
