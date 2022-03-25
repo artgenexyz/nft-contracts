@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./MetaverseNFT.sol";
 
@@ -18,9 +19,10 @@ import "./extensions/JSONTokenURIExtension.sol";
 * 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
 */
 
-contract MetaverseNFTFactory {
+contract MetaverseNFTFactory is Ownable {
 
     address public immutable proxyImplementation;
+    IERC721 public earlyAccessPass;
 
     event NFTCreated(
         address deployedAddress,
@@ -32,8 +34,16 @@ contract MetaverseNFTFactory {
         string symbol
     );
 
-    constructor() {
+    modifier hasAccess(address creator) {
+        // check that creator owns NFT
+        require(address(earlyAccessPass) == address(0) || earlyAccessPass.balanceOf(msg.sender) > 0, "You dont own Early Access Pass");
+        _;
+    }
+
+    constructor(address _earlyAccessPass) {
         proxyImplementation = address(new MetaverseNFT());
+
+        earlyAccessPass = IERC721(_earlyAccessPass);
 
         emit NFTCreated(
             proxyImplementation,
@@ -45,6 +55,10 @@ contract MetaverseNFTFactory {
         );
     }
 
+    function updateEarlyAccessPass(address _earlyAccessPass) public onlyOwner {
+        earlyAccessPass = IERC721(_earlyAccessPass);
+    }
+
     function createNFT(
         uint256 _startPrice,
         uint256 _maxSupply,
@@ -53,7 +67,7 @@ contract MetaverseNFTFactory {
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
-    ) external {
+    ) external hasAccess(msg.sender) {
 
         address clone = Clones.clone(proxyImplementation);
 
@@ -89,7 +103,7 @@ contract MetaverseNFTFactory {
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
-    ) external {
+    ) external hasAccess(msg.sender) {
 
         address clone = Clones.clone(proxyImplementation);
 
@@ -127,7 +141,7 @@ contract MetaverseNFTFactory {
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name, string memory _symbol
-    ) external {
+    ) external hasAccess(msg.sender) {
 
         address clone = Clones.clone(proxyImplementation);
 
@@ -157,8 +171,5 @@ contract MetaverseNFTFactory {
             _symbol
         );
     }
-
-    // TODO: createNFTnoPublicSale
-
 
 }
