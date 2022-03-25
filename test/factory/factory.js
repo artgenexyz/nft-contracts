@@ -1,10 +1,12 @@
 const BigNumber = require("bignumber.js");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 const { getGasCost } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+
+const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
 
 const ether = new BigNumber(1e18);
 
@@ -21,28 +23,59 @@ const ether = new BigNumber(1e18);
  */
 
 contract("MetaverseNFTFactory", (accounts) => {
-    let factory;
+    let factory, pass;
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        factory = await NFTFactory.new();
+        pass = await TemplateNFTv2.new();
+        factory = await NFTFactory.new(pass.address);
+
+        await pass.claimReserved(1, owner, { from: owner });
+        await pass.claimReserved(1, user1, { from: owner });
     });
 
     // it should deploy successfully
     it("should deploy successfully", async () => {
-        assert.ok(factory.address);
+        assert.ok(factory.address, "Factory not deployed");
 
         const original = await MetaverseNFT.at(await factory.proxyImplementation());
 
         assert.equal(
             await original.owner(),
-            "0x0000000000000000000000000000000000000000"
+            "0x0000000000000000000000000000000000000000",
+            "Owner is not zero"
         );
 
-        await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
-            "Sale not started"
-        );
+        try {
+            await original.mint(1, { from: user1, value: ether.times(0.1) });
+        } catch (err) {
+
+            // extract transaction hash from error
+            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
+
+            const tx = await web3.eth.getTransactionReceipt(txHash);
+
+            // check if transaction was reverted
+            assert.equal(
+                await tx.status,
+                false,
+                "Transaction was not reverted"
+            );
+
+            // // check if transaction was reverted with correct reason
+            // assert.equal(
+            //     await tx.logs[0].data,
+            //     "Sale not started",
+            //     "Transaction was not reverted with correct reason"
+            // );
+
+        }
+
+        // await expectRevert(
+        //     original.mint(1, { from: user1, value: ether.times(0.1) }),
+        //     "Sale not started",
+        //     "Minting not failed"
+        // );
     });
 
     // it should measure gas spent on deployment
@@ -55,13 +88,12 @@ contract("MetaverseNFTFactory", (accounts) => {
             0, // royalty fee
             "factory-test-buy",
             "Test",
-            "NFT",
-            // { value: ether.times(0.1) },
+            "NFT"
         );
 
         const gasSpent = nft.receipt.gasUsed;
 
-        assert.isBelow(gasSpent, 500_000);
+        assert.isBelow(gasSpent, 500_000, "Gas spent is too high");
 
     });
 
@@ -167,10 +199,29 @@ contract("MetaverseNFTFactory", (accounts) => {
             "0x0000000000000000000000000000000000000000"
         );
 
-        await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
-            "Sale not started"
-        );
+        try {
+            await original.mint(1, { from: user1, value: ether.times(0.1) });
+        } catch (err) {
+
+            // extract transaction hash from error
+            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
+
+            const tx = await web3.eth.getTransactionReceipt(txHash);
+
+            // check if transaction was reverted
+            assert.equal(
+                await tx.status,
+                false,
+                "Transaction was not reverted"
+            );
+
+            // // check if transaction was reverted with correct reason
+            // assert.equal(
+            //     await tx.logs[0].data,
+            //     "Sale not started",
+            //     "Transaction was not reverted with correct reason"
+            // );
+        }
     });
 
     // it should measure gas spent on deployment
