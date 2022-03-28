@@ -95,17 +95,27 @@ contract MetaverseNFTFactory is Ownable {
 
     }
 
-    function createNFTStartSale(
+    function createNFTwithParams(
         uint256 _startPrice,
         uint256 _maxSupply,
         uint256 _nReserved,
         uint256 _maxTokensPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
+        string memory _name, string memory _symbol,
+        address payoutReceiver,
+        bool shouldUseJSONExtension,
+        uint16 miscParams
     ) external hasAccess(msg.sender) {
 
         address clone = Clones.clone(proxyImplementation);
+
+        // params is a bitmask of:
+
+        // bool startTokenIdAtOne = (miscParams & 0x01) == 0x01;
+        // bool shouldUseJSONExtension = (miscParams & 0x02) == 0x02;
+        // bool shouldStartSale = (miscParams & 0x04) == 0x04;
+        // bool shouldFreeze = (miscParams & 0x08) == 0x08;
 
         MetaverseNFT(payable(clone)).initialize(
             _startPrice,
@@ -115,54 +125,26 @@ contract MetaverseNFTFactory is Ownable {
             _royaltyFee,
             _uri,
             _name, _symbol,
-            false
+            (miscParams & 0x01) == 0x01
         );
 
-        MetaverseNFT(payable(clone)).startSale();
+        if (shouldUseJSONExtension) {
+            INFTURIExtension ext = new JSONTokenURIExtension(clone, ".json");
 
-        MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
+            MetaverseNFT(payable(clone)).setExtensionTokenURI(address(ext));
+        }
 
-        emit NFTCreated(
-            clone,
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _name,
-            _symbol
-        );
+        if ((miscParams & 0x04) == 0x04) {
+            MetaverseNFT(payable(clone)).startSale();
+        }
 
-    }
+        if ((miscParams & 0x08) == 0x08) {
+            MetaverseNFT(payable(clone)).freeze();
+        }
 
-    function createNFTwithIPFSJSON(
-        uint256 _startPrice,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxTokensPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
-        string memory _name, string memory _symbol
-    ) external hasAccess(msg.sender) {
-
-        address clone = Clones.clone(proxyImplementation);
-
-        // NOTE:
-        // tokenIds start at 1
-        // .json by default
-
-        MetaverseNFT(payable(clone)).initialize(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
-            _uri,
-            _name, _symbol,
-            true
-        );
-
-        INFTURIExtension ext = new JSONTokenURIExtension(clone, ".json");
-
-        MetaverseNFT(payable(clone)).setExtensionTokenURI(address(ext));
+        if (payoutReceiver != address(0)) {
+            MetaverseNFT(payable(clone)).setPayoutReceiver(payoutReceiver);
+        }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
  
