@@ -24,7 +24,7 @@ const ether = new BigNumber(1e18);
 
 contract("MetaverseNFTFactory", (accounts) => {
     let factory, pass;
-    const [owner, user1, user2] = accounts;
+    const [owner, user1, user2, user3] = accounts;
 
     beforeEach(async () => {
         pass = await TemplateNFTv2.new();
@@ -46,8 +46,16 @@ contract("MetaverseNFTFactory", (accounts) => {
             "Owner is not zero"
         );
 
+        // TODO: fix for ganache v7 https://github.com/trufflesuite/ganache/discussions/1075#user-content-v7.0.0-alpha.0-the-big-ones
+
+        await expectRevert(
+            original.mint(1, { from: user1, value: ether.times(0.1) }),
+            "Sale not started"
+        );
+
+        return;
+
         try {
-            await original.mint(1, { from: user1, value: ether.times(0.1) });
         } catch (err) {
 
             // extract transaction hash from error
@@ -199,8 +207,14 @@ contract("MetaverseNFTFactory", (accounts) => {
             "0x0000000000000000000000000000000000000000"
         );
 
+        await expectRevert(
+            original.mint(1, { from: user1, value: ether.times(0.1) }),
+            "Sale not started"
+        )
+
+        return;
+
         try {
-            await original.mint(1, { from: user1, value: ether.times(0.1) });
         } catch (err) {
 
             // extract transaction hash from error
@@ -320,6 +334,107 @@ contract("MetaverseNFTFactory", (accounts) => {
         assert.include(await deployedNFT.tokenURI(0), "factory-test");
         assert.include(await deployedNFT.tokenURI(0), ".json");
     });
+
+    // it start token ids from 0 when calling normal createNFT
+    it("start token ids from 0 when calling normal createNFT", async () => {
+        let nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy",
+            "Test",
+            "NFT",
+        );
+
+        let deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        const tx = await deployedNFT.claim(1, user1);
+
+        // check tx events for Transfer
+        assert.equal(
+            tx.logs.find(l => l.event === "Transfer").args.from,
+            "0x0000000000000000000000000000000000000000",
+        );
+
+        assert.equal(
+            tx.logs.find(l => l.event === "Transfer").args.tokenId,
+            "0",
+        );
+
+    });
+
+    // it should be able to createNFTwithParams
+    it("should be able to createNFTwithParams", async () => {
+        const nft = await factory.createNFTwithParams(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            user2, // address payoutReceiver,
+            true, // bool shouldUseJSONExtension,
+            1 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+            { from: user1 },
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        assert.equal(
+            await deployedNFT.owner(),
+            user1,
+        );
+
+        assert.equal(
+            await deployedNFT.getPayoutReceiver(),
+            user2,
+        );
+
+        // test if miscParams are parsed correctly:
+        // bool startTokenIdAtOne = (miscParams & 0x01) == 0x01;
+        // bool shouldUseJSONExtension = (miscParams & 0x02) == 0x02;
+        // bool shouldStartSale = (miscParams & 0x04) == 0x04;
+        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+
+        assert.equal(
+            await deployedNFT.startTokenId(),
+            "1"
+        );
+
+        await deployedNFT.claim(1, owner, { from: user1 });
+
+        // TODO: fix for ganache v7 https://github.com/trufflesuite/ganache/discussions/1075#user-content-v7.0.0-alpha.0-the-big-ones
+
+        // expect tokenURI(0) to fail
+        expectRevert(deployedNFT.tokenURI(0), "ERC721Metadata: URI query for nonexistent token");
+
+        assert.equal(
+            await deployedNFT.tokenURI(1),
+            "factory-test-buy/1.json",
+        );
+
+
+        // saleStarted is true
+        assert.equal(
+            await deployedNFT.saleStarted(),
+            true,
+        );
+
+        // not possible to change payout receiver
+        expectRevert(
+            deployedNFT.setPayoutReceiver(user3, { from: user1 }),
+            "Payout change is locked"
+        );
+
+    })
 
 
 });
