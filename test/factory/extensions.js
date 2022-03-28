@@ -173,7 +173,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     });
 
     // it should allow to mint from ERC20SaleExtension
-    it ("it should allow to mint from ERC20SaleExtension", async () => {
+    xit ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
         const pass = await TemplateNFTv2.new();
         await pass.claimReserved(2, owner);
