@@ -421,6 +421,11 @@ contract("MetaverseNFTFactory", (accounts) => {
             "factory-test-buy/1.json",
         );
 
+        assert.equal(
+            await deployedNFT.totalSupply(),
+            1,
+            "total supply is wrong ≠ 1"
+        );
 
         // saleStarted is true
         assert.equal(
@@ -457,6 +462,63 @@ contract("MetaverseNFTFactory", (accounts) => {
             "MetaverseNFTFactory: Early Access Pass is required"
         );
     });
+
+    // it should be able to set early access pass to zero address, and everyone can mint
+    it("should be able to set early access pass to zero address, and everyone can mint", async () => {
+
+        await factory.updateEarlyAccessPass("0x0000000000000000000000000000000000000000");
+
+        const nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            { from: user2 }, // usually doesn't have access
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.claim(1, user2, { from: user2 });
+
+    });
+
+    // it should be able to mint 10 tokens and check totalSupply
+    it("should be able to mint 10 tokens and check totalSupply", async () => {
+        const nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            { from: user1 }, // usually doesn't have access
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.startSale({ from: user1 });
+
+        await deployedNFT.mint(10, { from: user1, value: ether });
+
+        assert.equal(
+            await deployedNFT.totalSupply(),
+            10,
+        );
+    })
+
+
+    // 
+
 
 
 });
