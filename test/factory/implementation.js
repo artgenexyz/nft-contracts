@@ -7,6 +7,7 @@ const { getGasCost } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
 const NFTExtension = artifacts.require("NFTExtension");
 const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -15,12 +16,14 @@ const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const ether = new BigNumber(1e18);
 
 contract("MetaverseNFT – Implementation", accounts => {
-    let factory, nft;
+    let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
 
     beforeEach(async () => {
-        factory = factory || (await NFTFactory.new());
+        pass = pass || (await TemplateNFTv2.new());
+
+        factory = factory || (await NFTFactory.new(pass.address));
 
         tx = await factory.createNFT(
             ether.times(0.03),
