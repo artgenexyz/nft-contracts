@@ -386,7 +386,7 @@ contract MetaverseNFT is
     }
 
     function getPayoutReceiver() public view returns (address payable receiver) {
-        receiver = payoutReceiver != address(0x0) ? payable(payoutReceiver) : payable(msg.sender);
+        receiver = payoutReceiver != address(0x0) ? payable(payoutReceiver) : payable(owner());
     }
 
     // ---- Allow royalty deposits from Opensea ----- 
