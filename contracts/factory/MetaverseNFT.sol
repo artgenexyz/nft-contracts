@@ -21,7 +21,7 @@ import "./extensions/INFTExtension.sol";
 import "./IMetaverseNFT.sol";
 import "./OpenseaProxy.sol";
 
-//      Want to launch your own collection ? Check out https://buildship.dev.
+//      Want to launch your own collection ? Check out https://buildship.xyz.
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
@@ -158,7 +158,7 @@ contract MetaverseNFT is
 
         startAtOne = _startAtOne;
 
-        // Need help with uploading metadata? Try https://buildship.dev
+        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
     }
 
@@ -419,7 +419,7 @@ contract MetaverseNFT is
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.dev";
+        _url = "https://buildship.xyz";
     }
 
     function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
