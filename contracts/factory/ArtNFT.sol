@@ -205,7 +205,7 @@ contract ArtNFT is
         isFrozen = true;
     }
 
-    function isExtensionAllowed(address _extension) public view returns (bool) {
+    function isExtensionAdded(address _extension) public view returns (bool) {
         if (!ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId)) {
             return false;
         }
@@ -223,7 +223,7 @@ contract ArtNFT is
     function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
 
-        require(!isExtensionAllowed(_extension), "Extension already added");
+        require(!isExtensionAdded(_extension), "Extension already added");
 
         extensions.push(INFTExtension(_extension));
 
@@ -285,7 +285,7 @@ contract ArtNFT is
     }
 
     modifier onlyExtension() {
-        require(isExtensionAllowed(msg.sender), "Extension should be added to contract before minting");
+        require(isExtensionAdded(msg.sender), "Extension should be added to contract before minting");
         _;
     }
 

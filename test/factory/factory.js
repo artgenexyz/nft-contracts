@@ -1,10 +1,12 @@
 const BigNumber = require("bignumber.js");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 const { getGasCost } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+
+const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
 
 const ether = new BigNumber(1e18);
 
@@ -21,28 +23,67 @@ const ether = new BigNumber(1e18);
  */
 
 contract("MetaverseNFTFactory", (accounts) => {
-    let factory;
-    const [owner, user1, user2] = accounts;
+    let factory, pass;
+    const [owner, user1, user2, user3] = accounts;
 
     beforeEach(async () => {
-        factory = await NFTFactory.new();
+        pass = await TemplateNFTv2.new();
+        factory = await NFTFactory.new(pass.address);
+
+        await pass.claimReserved(1, owner, { from: owner });
+        await pass.claimReserved(1, user1, { from: owner });
     });
 
     // it should deploy successfully
     it("should deploy successfully", async () => {
-        assert.ok(factory.address);
+        assert.ok(factory.address, "Factory not deployed");
 
         const original = await MetaverseNFT.at(await factory.proxyImplementation());
 
         assert.equal(
             await original.owner(),
-            "0x0000000000000000000000000000000000000000"
+            "0x0000000000000000000000000000000000000000",
+            "Owner is not zero"
         );
 
+        // TODO: fix for ganache v7 https://github.com/trufflesuite/ganache/discussions/1075#user-content-v7.0.0-alpha.0-the-big-ones
+
         await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
+            original.mint(1, { from: user1, value: ether.times(0.1) }),
             "Sale not started"
         );
+
+        return;
+
+        try {
+        } catch (err) {
+
+            // extract transaction hash from error
+            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
+
+            const tx = await web3.eth.getTransactionReceipt(txHash);
+
+            // check if transaction was reverted
+            assert.equal(
+                await tx.status,
+                false,
+                "Transaction was not reverted"
+            );
+
+            // // check if transaction was reverted with correct reason
+            // assert.equal(
+            //     await tx.logs[0].data,
+            //     "Sale not started",
+            //     "Transaction was not reverted with correct reason"
+            // );
+
+        }
+
+        // await expectRevert(
+        //     original.mint(1, { from: user1, value: ether.times(0.1) }),
+        //     "Sale not started",
+        //     "Minting not failed"
+        // );
     });
 
     // it should measure gas spent on deployment
@@ -55,13 +96,12 @@ contract("MetaverseNFTFactory", (accounts) => {
             0, // royalty fee
             "factory-test-buy",
             "Test",
-            "NFT",
-            // { value: ether.times(0.1) },
+            "NFT"
         );
 
         const gasSpent = nft.receipt.gasUsed;
 
-        assert.isBelow(gasSpent, 500_000);
+        assert.isBelow(gasSpent, 500_000, "Gas spent is too high");
 
     });
 
@@ -168,9 +208,34 @@ contract("MetaverseNFTFactory", (accounts) => {
         );
 
         await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
+            original.mint(1, { from: user1, value: ether.times(0.1) }),
             "Sale not started"
-        );
+        )
+
+        return;
+
+        try {
+        } catch (err) {
+
+            // extract transaction hash from error
+            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
+
+            const tx = await web3.eth.getTransactionReceipt(txHash);
+
+            // check if transaction was reverted
+            assert.equal(
+                await tx.status,
+                false,
+                "Transaction was not reverted"
+            );
+
+            // // check if transaction was reverted with correct reason
+            // assert.equal(
+            //     await tx.logs[0].data,
+            //     "Sale not started",
+            //     "Transaction was not reverted with correct reason"
+            // );
+        }
     });
 
     // it should measure gas spent on deployment
@@ -244,4 +309,216 @@ contract("MetaverseNFTFactory", (accounts) => {
             ether.times(0.1).times(0.05).toString(),
         );
     });
+
+    // it should create nft and add .json using setPostfixURI
+    it("should create nft and add .json using setPostfixURI", async () => {
+        let nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy",
+            "Test",
+            "NFT",
+        );
+
+        let deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.setPostfixURI(".json");
+
+        await deployedNFT.claim(1, user1);
+
+        assert.include(await deployedNFT.tokenURI(0), "factory-test");
+        assert.include(await deployedNFT.tokenURI(0), ".json");
+    });
+
+    // it start token ids from 0 when calling normal createNFT
+    it("start token ids from 0 when calling normal createNFT", async () => {
+        let nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy",
+            "Test",
+            "NFT",
+        );
+
+        let deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        const tx = await deployedNFT.claim(1, user1);
+
+        // check tx events for Transfer
+        assert.equal(
+            tx.logs.find(l => l.event === "Transfer").args.from,
+            "0x0000000000000000000000000000000000000000",
+        );
+
+        assert.equal(
+            tx.logs.find(l => l.event === "Transfer").args.tokenId,
+            "0",
+        );
+
+    });
+
+    // it should be able to createNFTWithSettings
+    it("should be able to createNFTWithSettings", async () => {
+        const nft = await factory.createNFTWithSettings(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            user2, // address payoutReceiver,
+            true, // bool shouldUseJSONExtension,
+            2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8 = 1<<0,1<<1,1<<2,1<<3
+            { from: user1 },
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        assert.equal(
+            await deployedNFT.owner(),
+            user1,
+        );
+
+        assert.equal(
+            await deployedNFT.getPayoutReceiver(),
+            user2,
+        );
+
+        // test if miscParams are parsed correctly:
+        // bool startTokenIdAtOne = (miscParams & 0x01) == 0x01;
+        // bool shouldUseJSONExtension = (miscParams & 0x02) == 0x02;
+        // bool shouldStartSale = (miscParams & 0x04) == 0x04;
+        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+
+        assert.equal(
+            await deployedNFT.startTokenId(),
+            "1"
+        );
+
+        await deployedNFT.claim(1, owner, { from: user1 });
+
+        // TODO: fix for ganache v7 https://github.com/trufflesuite/ganache/discussions/1075#user-content-v7.0.0-alpha.0-the-big-ones
+
+        // expect tokenURI(0) to fail
+        expectRevert(deployedNFT.tokenURI(0), "ERC721Metadata: URI query for nonexistent token");
+
+        assert.equal(
+            await deployedNFT.tokenURI(1),
+            "factory-test-buy/1.json",
+        );
+
+        assert.equal(
+            await deployedNFT.totalSupply(),
+            1,
+            "total supply is wrong ≠ 1"
+        );
+
+        // saleStarted is true
+        assert.equal(
+            await deployedNFT.saleStarted(),
+            true,
+        );
+
+        // not possible to change payout receiver
+        expectRevert(
+            deployedNFT.setPayoutReceiver(user3, { from: user1 }),
+            "Payout change is locked"
+        );
+
+    });
+
+    // it should not allow createNFT if you dont own earlyPass
+
+    it("should not allow createNFT if you dont own earlyPass", async () => {
+        await expectRevert(
+            factory.createNFTWithSettings(
+                ether.times(0.01),
+                10000,
+                1, // reserved
+                20,
+                0, // royalty fee
+                "factory-test-buy/",
+                "Test",
+                "NFT",
+                user2, // address payoutReceiver,
+                true, // bool shouldUseJSONExtension,
+                2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+                { from: user3 },
+            ),
+            "MetaverseNFTFactory: Early Access Pass is required"
+        );
+    });
+
+    // it should be able to set early access pass to zero address, and everyone can mint
+    it("should be able to set early access pass to zero address, and everyone can mint", async () => {
+
+        await factory.updateEarlyAccessPass("0x0000000000000000000000000000000000000000");
+
+        const nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            { from: user2 }, // usually doesn't have access
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.claim(1, user2, { from: user2 });
+
+    });
+
+    // it should be able to mint 10 tokens and check totalSupply
+    it("should be able to mint 10 tokens and check totalSupply", async () => {
+        const nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Test",
+            "NFT",
+            { from: user1 }, // usually doesn't have access
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.startSale({ from: user1 });
+
+        await deployedNFT.mint(10, { from: user1, value: ether });
+
+        assert.equal(
+            await deployedNFT.totalSupply(),
+            10,
+        );
+    })
+
+
+    // 
+
+
+
 });
