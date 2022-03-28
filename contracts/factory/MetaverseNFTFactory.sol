@@ -34,7 +34,7 @@ contract MetaverseNFTFactory is Ownable {
 
     modifier hasAccess(address creator) {
         // check that creator owns NFT
-        require(address(earlyAccessPass) == address(0) || earlyAccessPass.balanceOf(msg.sender) > 0, "You dont own Early Access Pass");
+        require(address(earlyAccessPass) == address(0) || earlyAccessPass.balanceOf(msg.sender) > 0, "MetaverseNFTFactory: Early Access Pass is required");
         _;
     }
 
