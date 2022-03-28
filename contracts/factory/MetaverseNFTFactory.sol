@@ -113,7 +113,7 @@ contract MetaverseNFTFactory is Ownable {
         // bool startTokenIdAtOne = (miscParams & 0x01) == 0x01;
         // bool shouldUseJSONExtension = (miscParams & 0x02) == 0x02;
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
-        // bool shouldFreeze = (miscParams & 0x08) == 0x08;
+        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
         MetaverseNFT(payable(clone)).initialize(
             _startPrice,
@@ -134,12 +134,12 @@ contract MetaverseNFTFactory is Ownable {
             MetaverseNFT(payable(clone)).startSale();
         }
 
-        if ((miscParams & 0x08) == 0x08) {
-            MetaverseNFT(payable(clone)).freeze();
-        }
-
         if (payoutReceiver != address(0)) {
             MetaverseNFT(payable(clone)).setPayoutReceiver(payoutReceiver);
+        }
+
+        if ((miscParams & 0x08) == 0x08) {
+            MetaverseNFT(payable(clone)).lockPayoutChange();
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);

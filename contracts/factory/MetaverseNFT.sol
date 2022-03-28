@@ -109,6 +109,7 @@ contract MetaverseNFT is
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
+    bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive = true;
     bool private startAtOne = false;
 
@@ -230,6 +231,11 @@ contract MetaverseNFT is
         isFrozen = true;
     }
 
+    // Lock changing withdraw address
+    function lockPayoutChange() public onlyOwner {
+        isPayoutChangeLocked = true;
+    }
+
     function isExtensionAllowed(address _extension) public view returns (bool) {
 
         for (uint index = 0; index < extensions.length; index++) {
@@ -310,6 +316,11 @@ contract MetaverseNFT is
         _;
     }
 
+    modifier whenNotPayoutChangeLocked() {
+        require(!isPayoutChangeLocked, "Payout change is locked");
+        _;
+    }
+
     modifier onlyExtension() {
         require(isExtensionAllowed(msg.sender), "Extension should be added to contract before minting");
         _;
@@ -375,7 +386,7 @@ contract MetaverseNFT is
         royaltyReceiver = _receiver;
     }
 
-    function setPayoutReceiver(address _receiver) public onlyOwner {
+    function setPayoutReceiver(address _receiver) public onlyOwner whenNotPayoutChangeLocked {
         payoutReceiver = payable(_receiver);
     }
 
