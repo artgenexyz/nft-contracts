@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./MetaverseNFT.sol";
 
-import "./extensions/JSONTokenURIExtension.sol";
-
 /**
 * MetaverseNFT is a cloneable contract for your NFT collection.
 * It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
@@ -129,9 +127,7 @@ contract MetaverseNFTFactory is Ownable {
         );
 
         if (shouldUseJSONExtension) {
-            INFTURIExtension ext = new JSONTokenURIExtension(clone, ".json");
-
-            MetaverseNFT(payable(clone)).setExtensionTokenURI(address(ext));
+            MetaverseNFT(payable(clone)).setPostfixURI(".json");
         }
 
         if ((miscParams & 0x04) == 0x04) {
