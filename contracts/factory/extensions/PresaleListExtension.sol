@@ -38,7 +38,6 @@ contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
     }
 
     function mint(uint256 nTokens, bytes32[] memory proof) external whenSaleStarted payable {
-        super.beforeMint();
 
         require(isWhitelisted(whitelistRoot, msg.sender, proof), "Not whitelisted");
 
