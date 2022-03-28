@@ -28,12 +28,12 @@ jobs:
           pkg-manager: yarn
       - run:
           name: Run tests
-          command: npx ganache-cli --instamine eager & yarn test
+          command: npx ganache --instamine eager --chain.vmErrorsOnRPCResponse true & yarn test
       - store_test_results:
           path: test_results
       - run:
           name: Ganache
-          command: npx ganache-cli --instamine eager
+          command: npx ganache --instamine eager --chain.vmErrorsOnRPCResponse true
           background: true
       - run:
           name: Truffle Code coverage report
@@ -51,7 +51,7 @@ jobs:
           pkg-manager: yarn
       - run:
           name: Ganache
-          command: npx ganache-cli --instamine eager
+          command: npx ganache --instamine eager --chain.vmErrorsOnRPCResponse true
           background: true
       - run:
           name: Truffle Code coverage report
