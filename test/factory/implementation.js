@@ -7,6 +7,7 @@ const { getGasCost } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
+const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
 const NFTExtension = artifacts.require("NFTExtension");
 const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -15,12 +16,17 @@ const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const ether = new BigNumber(1e18);
 
 contract("MetaverseNFT – Implementation", accounts => {
-    let factory, nft;
+    let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
 
     beforeEach(async () => {
-        factory = factory || (await NFTFactory.new());
+        if (!pass || !factory) {
+            pass = await TemplateNFTv2.new();
+            await pass.claimReserved(2, owner);
+
+            factory = await NFTFactory.new(pass.address);
+        }
 
         tx = await factory.createNFT(
             ether.times(0.03),
@@ -52,23 +58,33 @@ contract("MetaverseNFT – Implementation", accounts => {
     // it should fail to mint when sale is not started
     it("should fail to mint when sale is not started", async () => {
 
-        try {
-            await nft.mint(1, { from: accounts[1], value: ether.times(0.03) });
-        } catch (error) {
-            // check that error message has expected substring 'Sale not started'
-            assert.include(error.message, "Sale not started");
-        }
+        // try {
+        //     await nft.mint(1, { from: accounts[1], value: ether.times(0.03) });
+        // } catch (error) {
+        //     // check that error message has expected substring 'Sale not started'
+        //     assert.include(error.message, "Sale not started");
+        // }
+
+        await expectRevert(
+            nft.mint(1, { from: accounts[1], value: ether.times(0.03) }),
+            "Sale not started",
+        );
     });
     // it should not be able to start sale when beneficiary is not set
     xit("should fail to start sale when beneficiary is not set", async () => {
 
         // start sale
-        try {
-            await nft.startSale({ from: owner });
-        } catch (error) {
-            // check that error message has expected substring 'Beneficiary not set'
-            assert.include(error.message, "Beneficiary not set");
-        }
+        // try {
+        //     await nft.startSale({ from: owner });
+        // } catch (error) {
+        //     // check that error message has expected substring 'Beneficiary not set'
+        //     assert.include(error.message, "Beneficiary not set");
+        // }
+
+        await expectRevert(
+            nft.startSale({ from: owner }),
+            "Beneficiary not set",
+        );
     });
 
     // it should be able to start sale when beneficiary is set
@@ -251,11 +267,16 @@ contract("MetaverseNFT – Implementation", accounts => {
 
         assert.equal(royaltyAmount, 100);
 
-        // it can't change royaltyReceiver
-        await expectRevert(
-            nft.setRoyaltyReceiver(owner),
-            "Only after 6 months of contract creation can the royalty receiver be changed."
-        );
+        // it can change royaltyReceiver
+        await nft.setRoyaltyReceiver(owner)
+
+        const { receiver } = await nft.royaltyInfo(0, 10000);
+        assert.equal(receiver, owner);
+
+        // TODO: temporarily disabled
+        // await expectRevert(
+        //     "Only after 6 months of contract creation can the royalty receiver be changed."
+        // );
     });
 
     // it should be able to mint reserved from owner account
@@ -356,10 +377,15 @@ contract("MetaverseNFT – Implementation", accounts => {
     // it should be able to add and remove extension
     it("should be able to add and remove extension", async () => {
         const extension = await NFTExtension.new(nft.address);
+        const extension2 = await NFTExtension.new(nft.address);
+        const extension3 = await NFTExtension.new(nft.address);
 
         await nft.addExtension(extension.address);
+        await nft.addExtension(extension2.address);
+        await nft.addExtension(extension3.address);
+
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             true,
         );
         // check that extensions(0) is extension address
@@ -368,8 +394,20 @@ contract("MetaverseNFT – Implementation", accounts => {
         await nft.revokeExtension(extension.address);
 
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             false,
+        );
+
+        await nft.revokeExtension(extension3.address);
+
+        assert.equal(
+            await nft.isExtensionAdded(extension3.address),
+            false,
+        );
+
+        assert.equal(
+            await nft.isExtensionAdded(extension2.address),
+            true,
         );
 
     });

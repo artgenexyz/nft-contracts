@@ -181,7 +181,7 @@ contract MetaverseBaseNFT is
         isFrozen = true;
     }
 
-    function isExtensionAllowed(address _extension) public view returns (bool) {
+    function isExtensionAdded(address _extension) public view returns (bool) {
 
         for (uint index = 0; index < extensions.length; index++) {
             if (address(extensions[index]) == _extension) {
@@ -196,7 +196,7 @@ contract MetaverseBaseNFT is
     function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
 
-        require(!isExtensionAllowed(_extension), "Extension already added");
+        require(!isExtensionAdded(_extension), "Extension already added");
 
         extensions.push(INFTExtension(_extension));
 
@@ -262,7 +262,7 @@ contract MetaverseBaseNFT is
     }
 
     modifier onlyExtension() {
-        require(isExtensionAllowed(msg.sender), "Extension should be added to contract before minting");
+        require(isExtensionAdded(msg.sender), "Extension should be added to contract before minting");
         _;
     }
 
