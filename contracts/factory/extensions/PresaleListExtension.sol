@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./NFTExtension.sol";
 import "./SaleControl.sol";
 
-contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
+contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
 
     uint256 public price;
     uint256 public maxPerAddress;
