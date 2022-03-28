@@ -17,10 +17,16 @@ import "./MetaverseNFT.sol";
 * 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
 */
 
+
 contract MetaverseNFTFactory is Ownable {
 
     address public immutable proxyImplementation;
     IERC721 public earlyAccessPass;
+
+    // bitmask params
+    uint32 constant SHOULD_START_AT_ONE = 1 << 1;
+    uint32 constant SHOULD_START_SALE = 1 << 2;
+    uint32 constant SHOULD_LOCK_PAYOUT_CHANGE = 1 << 3;
 
     event NFTCreated(
         address deployedAddress,
@@ -29,7 +35,12 @@ contract MetaverseNFTFactory is Ownable {
         uint256 maxSupply,
         uint256 nReserved,
         string name,
-        string symbol
+        string symbol,
+        bool shouldUseJSONExtension,
+        bool shouldStartAtOne,
+        bool shouldStartSale,
+        bool shouldLockPayoutChange
+
     );
 
     modifier hasAccess(address creator) {
@@ -49,7 +60,11 @@ contract MetaverseNFTFactory is Ownable {
             0,
             0,
             "IMPLEMENTATION",
-            "IMPLEMENTATION"
+            "IMPLEMENTATION",
+            false,
+            false,
+            false,
+            false
         );
     }
 
@@ -88,7 +103,11 @@ contract MetaverseNFTFactory is Ownable {
             _maxSupply,
             _nReserved,
             _name,
-            _symbol
+            _symbol,
+            false,
+            false,
+            false,
+            false
         );
 
     }
@@ -110,8 +129,8 @@ contract MetaverseNFTFactory is Ownable {
 
         // params is a bitmask of:
 
-        // bool startTokenIdAtOne = (miscParams & 0x01) == 0x01;
-        // bool shouldUseJSONExtension = (miscParams & 0x02) == 0x02;
+        // bool shouldUseJSONExtension = (miscParams & 0x01) == 0x01;
+        // bool startTokenIdAtOne = (miscParams & 0x02) == 0x02;
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
         // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
@@ -123,14 +142,14 @@ contract MetaverseNFTFactory is Ownable {
             _royaltyFee,
             _uri,
             _name, _symbol,
-            (miscParams & 0x01) == 0x01
+            miscParams & SHOULD_START_AT_ONE != 0
         );
 
         if (shouldUseJSONExtension) {
             MetaverseNFT(payable(clone)).setPostfixURI(".json");
         }
 
-        if ((miscParams & 0x04) == 0x04) {
+        if (miscParams & SHOULD_START_SALE != 0) {
             MetaverseNFT(payable(clone)).startSale();
         }
 
@@ -138,7 +157,7 @@ contract MetaverseNFTFactory is Ownable {
             MetaverseNFT(payable(clone)).setPayoutReceiver(payoutReceiver);
         }
 
-        if ((miscParams & 0x08) == 0x08) {
+        if (miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0) {
             MetaverseNFT(payable(clone)).lockPayoutChange();
         }
 
@@ -150,7 +169,11 @@ contract MetaverseNFTFactory is Ownable {
             _maxSupply,
             _nReserved,
             _name,
-            _symbol
+            _symbol,
+            shouldUseJSONExtension,
+            miscParams & SHOULD_START_AT_ONE != 0,
+            miscParams & SHOULD_START_SALE != 0,
+            miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
         );
     }
 
