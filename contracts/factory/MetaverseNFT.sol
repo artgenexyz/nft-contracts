@@ -125,6 +125,7 @@ contract MetaverseNFT is
     string public PROVENANCE_HASH = "";
     string private CONTRACT_URI = "";
     string private BASE_URI;
+    string private URI_POSTFIX = "";
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -186,7 +187,14 @@ contract MetaverseNFT is
             }
         }
 
-        return super.tokenURI(tokenId);
+        if (bytes(URI_POSTFIX).length > 0) {
+            return string(abi.encodePacked(
+                super.tokenURI(tokenId),
+                URI_POSTFIX
+            ));
+        } else {
+            return super.tokenURI(tokenId);
+        }
     }
 
     function startTokenId() public view returns (uint256) {
@@ -207,6 +215,10 @@ contract MetaverseNFT is
     // Contract-level metadata for Opensea
     function setContractURI(string calldata uri) public onlyOwner {
         CONTRACT_URI = uri;
+    }
+
+    function setPostfixURI(string calldata postfix) public onlyOwner {
+        URI_POSTFIX = postfix;
     }
 
     function setPrice(uint256 _price) public onlyOwner {
