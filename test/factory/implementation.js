@@ -58,23 +58,33 @@ contract("MetaverseNFT – Implementation", accounts => {
     // it should fail to mint when sale is not started
     it("should fail to mint when sale is not started", async () => {
 
-        try {
-            await nft.mint(1, { from: accounts[1], value: ether.times(0.03) });
-        } catch (error) {
-            // check that error message has expected substring 'Sale not started'
-            assert.include(error.message, "Sale not started");
-        }
+        // try {
+        //     await nft.mint(1, { from: accounts[1], value: ether.times(0.03) });
+        // } catch (error) {
+        //     // check that error message has expected substring 'Sale not started'
+        //     assert.include(error.message, "Sale not started");
+        // }
+
+        await expectRevert(
+            nft.mint(1, { from: accounts[1], value: ether.times(0.03) }),
+            "Sale not started",
+        );
     });
     // it should not be able to start sale when beneficiary is not set
     xit("should fail to start sale when beneficiary is not set", async () => {
 
         // start sale
-        try {
-            await nft.startSale({ from: owner });
-        } catch (error) {
-            // check that error message has expected substring 'Beneficiary not set'
-            assert.include(error.message, "Beneficiary not set");
-        }
+        // try {
+        //     await nft.startSale({ from: owner });
+        // } catch (error) {
+        //     // check that error message has expected substring 'Beneficiary not set'
+        //     assert.include(error.message, "Beneficiary not set");
+        // }
+
+        await expectRevert(
+            nft.startSale({ from: owner }),
+            "Beneficiary not set",
+        );
     });
 
     // it should be able to start sale when beneficiary is set
