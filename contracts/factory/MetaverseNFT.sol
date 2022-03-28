@@ -89,7 +89,7 @@ contract MetaverseNFT is
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdCounter;
+    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -204,7 +204,7 @@ contract MetaverseNFT is
 
     function totalSupply() public view returns (uint256) {
         // Only works like this for sequential mint tokens
-        return _tokenIdCounter.current();
+        return _tokenIndexCounter.current();
     }
 
     // ----- Admin functions -----
@@ -293,11 +293,11 @@ contract MetaverseNFT is
     // ---- Minting ----
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+        require(_tokenIndexCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
 
         for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIdCounter.current() + startTokenId();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
             _safeMint(to, tokenId);
             data[tokenId] = extraData;
