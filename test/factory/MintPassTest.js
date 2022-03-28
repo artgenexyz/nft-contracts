@@ -40,7 +40,7 @@ contract("MintPass – Extension", (accounts) => {
         await nft.addExtension(extension.address);
 
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             true,
         )
     });
