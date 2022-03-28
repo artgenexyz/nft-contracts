@@ -1,10 +1,15 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const mnemonic = (() => {
-    try {
-        return fs.readFileSync(".mnemonic").toString().trim();
-    } catch (err) { return null }
-})();
+import "@nomiclabs/hardhat-ganache";
+import "@nomiclabs/hardhat-truffle5";
+import "@nomiclabs/hardhat-etherscan";
+import "solidity-coverage";
+
+// import hardhat-gas-reporter hardhat-deploy hardhat-contract-sizer hardhat-tracer
+import "hardhat-gas-reporter";
+import "hardhat-deploy";
+import "hardhat-contract-sizer";
+import "hardhat-tracer";
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -13,27 +18,15 @@ const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
 const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 
-
-// import plugins for hardhat:
-// 'truffle-plugin-verify',
-// 'truffle-contract-size',
-// 'solidity-coverage',
-// 'hardhat-gas-reporter',
-
-import "@nomiclabs/hardhat-ganache";
-import "@nomiclabs/hardhat-truffle5";
-import "@nomiclabs/hardhat-etherscan";
-// import "@nomiclabs/hardhat-waffle";
-// import "@nomiclabs/hardhat-ethers";
-import "solidity-coverage";
-
+const mnemonic = (() => {
+    try {
+        return fs.readFileSync(".mnemonic").toString().trim();
+    } catch (err) { return null }
+})();
 
 export default {
-    defaultNetwork: "rinkeby",
+    defaultNetwork: "ganache",
     networks: {
-        // hardhat: {
-
-        // },
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
             accounts: {
