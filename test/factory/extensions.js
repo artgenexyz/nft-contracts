@@ -175,7 +175,8 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     // it should allow to mint from ERC20SaleExtension
     it ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const metaverseFactory = await MetaverseNFTFactory.new();
+        const pass = await TemplateNFTv2.new();
+        const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
         const metaverseAddr = (await metaverseFactory.createNFT(
             1e17.toString(), 10000, 100, 10, 500,
             "https://metadata.buildship.dev/api/token/SYMBOL/",
