@@ -93,7 +93,7 @@ contract MetaverseNFTFactory is Ownable {
 
     }
 
-    function createNFTwithParams(
+    function createNFTWithSettings(
         uint256 _startPrice,
         uint256 _maxSupply,
         uint256 _nReserved,

@@ -367,9 +367,9 @@ contract("MetaverseNFTFactory", (accounts) => {
 
     });
 
-    // it should be able to createNFTwithParams
-    it("should be able to createNFTwithParams", async () => {
-        const nft = await factory.createNFTwithParams(
+    // it should be able to createNFTWithSettings
+    it("should be able to createNFTWithSettings", async () => {
+        const nft = await factory.createNFTWithSettings(
             ether.times(0.01),
             10000,
             1, // reserved
@@ -445,7 +445,7 @@ contract("MetaverseNFTFactory", (accounts) => {
 
     it("should not allow createNFT if you dont own earlyPass", async () => {
         await expectRevert(
-            factory.createNFTwithParams(
+            factory.createNFTWithSettings(
                 ether.times(0.01),
                 10000,
                 1, // reserved
