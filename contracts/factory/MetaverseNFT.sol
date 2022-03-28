@@ -382,7 +382,8 @@ contract MetaverseNFT is
     }
 
     function setRoyaltyReceiver(address _receiver) public onlyOwner {
-        require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
+        // remove because opensea doesn't care about this anyway
+        // require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
         royaltyReceiver = _receiver;
     }
 
