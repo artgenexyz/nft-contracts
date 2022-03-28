@@ -295,4 +295,31 @@ contract("MetaverseNFTFactory", (accounts) => {
             ether.times(0.1).times(0.05).toString(),
         );
     });
+
+    // it should create nft and add .json using setPostfixURI
+    it("should create nft and add .json using setPostfixURI", async () => {
+        let nft = await factory.createNFT(
+            ether.times(0.01),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy",
+            "Test",
+            "NFT",
+        );
+
+        let deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        await deployedNFT.setPostfixURI(".json");
+
+        await deployedNFT.claim(1, user1);
+
+        assert.include(await deployedNFT.tokenURI(0), "factory-test");
+        assert.include(await deployedNFT.tokenURI(0), ".json");
+    });
+
+
 });
