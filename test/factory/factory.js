@@ -434,7 +434,29 @@ contract("MetaverseNFTFactory", (accounts) => {
             "Payout change is locked"
         );
 
-    })
+    });
+
+    // it should not allow createNFT if you dont own earlyPass
+
+    it("should not allow createNFT if you dont own earlyPass", async () => {
+        await expectRevert(
+            factory.createNFTwithParams(
+                ether.times(0.01),
+                10000,
+                1, // reserved
+                20,
+                0, // royalty fee
+                "factory-test-buy/",
+                "Test",
+                "NFT",
+                user2, // address payoutReceiver,
+                true, // bool shouldUseJSONExtension,
+                1 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+                { from: user3 },
+            ),
+            "MetaverseNFTFactory: Early Access Pass is required"
+        );
+    });
 
 
 });
