@@ -21,9 +21,12 @@ contract("MetaverseNFT – Implementation", accounts => {
     const beneficiary = owner;
 
     beforeEach(async () => {
-        pass = pass || (await TemplateNFTv2.new());
+        if (!pass || !factory) {
+            pass = await TemplateNFTv2.new();
+            await pass.claim(2, owner);
 
-        factory = factory || (await NFTFactory.new(pass.address));
+            factory = await NFTFactory.new(pass.address);
+        }
 
         tx = await factory.createNFT(
             ether.times(0.03),
