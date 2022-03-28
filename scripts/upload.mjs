@@ -1,9 +1,11 @@
 const fs = require("fs");
 const { exec } = require("child_process");
+const minimist = require("minimist");
 
 const { NFTStorage } = require("nft.storage");
 
 const NFT_STORAGE_API_KEY = process.env.NFT_STORAGE_API_KEY;
+const argv = minimist(process.argv.slice(2));
 
 if (!NFT_STORAGE_API_KEY) {
   console.error('Please put NFT_STORAGE_API_KEY in .env');
@@ -21,18 +23,18 @@ module.exports = async function(callback) {
     // console.log('process.argv', process.argv)
 
     // if process.argv elements contain "help"
-    if (process.argv.find((elem) => elem.includes("help"))) {
+    if (argv._.find((elem) => elem.includes("help"))) {
       console.log(`Usage: truffle exec upload [contract]`);
       return callback();
     }
 
     // extract contract name from config arguments
-    const [, , , , contractName] = process.argv;
+    const contractName = argv._[2] || argv.contractName;
 
     console.log("Using contract", contractName);
 
     if (!contractName) {
-      console.log(`Usage: truffle exec upload [contract]`);
+      console.log(`Usage: truffle exec upload [contract] --args '"arg1","arg2"'`);
       return callback();
     }
 
@@ -102,7 +104,10 @@ module.exports = async function(callback) {
 
     console.log(`Deploy here:`);
 
-    return callback(`https://gate-rinkeby.buildship.dev/deploy/${cid}`);
+    const argsString = argv.args ? `?args=%5B${encodeURIComponent(argv.args)}%5D` : "";
+
+    return callback(`https://gate-rinkeby.buildship.dev/deploy/${cid}${argsString}`);
+
   } catch (err) {
     return callback(err);
   }
