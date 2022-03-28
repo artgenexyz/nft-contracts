@@ -23,7 +23,7 @@ contract("MetaverseNFT – Implementation", accounts => {
     beforeEach(async () => {
         if (!pass || !factory) {
             pass = await TemplateNFTv2.new();
-            await pass.claim(2, owner);
+            await pass.claimReserved(2, owner);
 
             factory = await NFTFactory.new(pass.address);
         }
