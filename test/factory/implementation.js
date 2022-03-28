@@ -377,8 +377,13 @@ contract("MetaverseNFT – Implementation", accounts => {
     // it should be able to add and remove extension
     it("should be able to add and remove extension", async () => {
         const extension = await NFTExtension.new(nft.address);
+        const extension2 = await NFTExtension.new(nft.address);
+        const extension3 = await NFTExtension.new(nft.address);
 
         await nft.addExtension(extension.address);
+        await nft.addExtension(extension2.address);
+        await nft.addExtension(extension3.address);
+
         assert.equal(
             await nft.isExtensionAdded(extension.address),
             true,
@@ -391,6 +396,18 @@ contract("MetaverseNFT – Implementation", accounts => {
         assert.equal(
             await nft.isExtensionAdded(extension.address),
             false,
+        );
+
+        await nft.revokeExtension(extension3.address);
+
+        assert.equal(
+            await nft.isExtensionAdded(extension3.address),
+            false,
+        );
+
+        assert.equal(
+            await nft.isExtensionAdded(extension2.address),
+            true,
         );
 
     });
