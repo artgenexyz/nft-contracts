@@ -380,7 +380,7 @@ contract("MetaverseNFT – Implementation", accounts => {
 
         await nft.addExtension(extension.address);
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             true,
         );
         // check that extensions(0) is extension address
@@ -389,7 +389,7 @@ contract("MetaverseNFT – Implementation", accounts => {
         await nft.revokeExtension(extension.address);
 
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             false,
         );
 
