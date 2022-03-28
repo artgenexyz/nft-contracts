@@ -10,7 +10,7 @@ interface IAvatarNFT {
 
     // ------ View functions ------
     function saleStarted() external view returns (bool);
-    function isExtensionAllowed(address extension) external view returns (bool);
+    function isExtensionAdded(address extension) external view returns (bool);
 
     /**
         Extra information stored for each tokenId. Optional, provided on mint

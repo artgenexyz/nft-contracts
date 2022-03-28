@@ -41,7 +41,7 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
     string public PROVENANCE_HASH = "";
     string public baseURI;
 
-    mapping (address => bool) public isExtensionAllowed;
+    mapping (address => bool) public isExtensionAdded;
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -91,13 +91,13 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
 
         require(ERC165Checker.supportsInterface(_extension, type(INFTExtension).interfaceId), "Not conforms to extension");
 
-        isExtensionAllowed[_extension] = true;
+        isExtensionAdded[_extension] = true;
 
         emit ExtensionAdded(_extension);
     }
 
     function revokeExtension(address _extension) public onlyOwner {
-        isExtensionAllowed[_extension] = false;
+        isExtensionAdded[_extension] = false;
 
         emit ExtensionRevoked(_extension);
     }
@@ -128,7 +128,7 @@ contract AvatarNFTv2 is ERC721, ERC721Enumerable, IAvatarNFT, Ownable {
     }
 
     modifier onlyExtension() {
-        require(isExtensionAllowed[msg.sender], "Extension should be added to contract before minting");
+        require(isExtensionAdded[msg.sender], "Extension should be added to contract before minting");
         _;
     }
 

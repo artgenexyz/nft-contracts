@@ -55,7 +55,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
         await nft.addExtension(extension.address);
 
         assert.equal(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             true,
         );
     });
@@ -145,7 +145,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
         await nft.addExtension(extension.address);
         await extension.startSale();
 
-        assert(await nft.isExtensionAllowed(extension.address), "Extension should be allowed");
+        assert(await nft.isExtensionAdded(extension.address), "Extension should be allowed");
 
         await delay(1000);
 
@@ -280,7 +280,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
         await delay(1000);
 
         assert(
-            await nft.isExtensionAllowed(extension.address),
+            await nft.isExtensionAdded(extension.address),
             "Extension should be allowed"
         );
 
