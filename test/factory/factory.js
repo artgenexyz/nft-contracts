@@ -380,7 +380,7 @@ contract("MetaverseNFTFactory", (accounts) => {
             "NFT",
             user2, // address payoutReceiver,
             true, // bool shouldUseJSONExtension,
-            1 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+            2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8 = 1<<0,1<<1,1<<2,1<<3
             { from: user1 },
         );
 
@@ -456,7 +456,7 @@ contract("MetaverseNFTFactory", (accounts) => {
                 "NFT",
                 user2, // address payoutReceiver,
                 true, // bool shouldUseJSONExtension,
-                1 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+                2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
                 { from: user3 },
             ),
             "MetaverseNFTFactory: Early Access Pass is required"
