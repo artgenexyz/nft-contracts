@@ -29,12 +29,13 @@ contract MetaverseNFTFactory is Ownable {
     uint32 constant SHOULD_LOCK_PAYOUT_CHANGE = 1 << 3;
 
     event NFTCreated(
-        address deployedAddress,
+        address indexed deployedAddress,
+        address indexed creator,
         // creation parameters
         uint256 price,
         uint256 maxSupply,
         uint256 nReserved,
-        string name,
+        string indexed name,
         string symbol,
         bool shouldUseJSONExtension,
         bool shouldStartAtOne,
@@ -56,6 +57,7 @@ contract MetaverseNFTFactory is Ownable {
 
         emit NFTCreated(
             proxyImplementation,
+            msg.sender,
             0,
             0,
             0,
@@ -99,6 +101,7 @@ contract MetaverseNFTFactory is Ownable {
 
         emit NFTCreated(
             clone,
+            msg.sender,
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -162,8 +165,8 @@ contract MetaverseNFTFactory is Ownable {
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
- 
-        emit NFTCreated(
+
+        emitEvent(
             clone,
             _startPrice,
             _maxSupply,
@@ -176,5 +179,33 @@ contract MetaverseNFTFactory is Ownable {
             miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
         );
     }
+
+    function emitEvent(
+        address clone,
+        uint256 _startPrice,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        string memory _name,
+        string memory _symbol,
+        bool shouldUseJSONExtension,
+        bool shouldStartAtOne,
+        bool shouldStartSale,
+        bool shouldLockPayoutChange
+    ) internal {
+        emit NFTCreated(
+            clone,
+            msg.sender,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol,
+            shouldUseJSONExtension,
+            shouldStartAtOne,
+            shouldStartSale,
+            shouldLockPayoutChange
+        );
+    }
+
 
 }
