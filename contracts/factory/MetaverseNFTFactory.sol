@@ -35,7 +35,7 @@ contract MetaverseNFTFactory is Ownable {
         uint256 price,
         uint256 maxSupply,
         uint256 nReserved,
-        string indexed name,
+        string name,
         string symbol,
         bool shouldUseJSONExtension,
         bool shouldStartAtOne,
