@@ -21,53 +21,64 @@ import "./extensions/INFTExtension.sol";
 import "./IMetaverseNFT.sol";
 import "./OpenseaProxy.sol";
 
-//      Want to launch your own collection ? Check out https://buildship.dev.
-//
-//                                   zAAAAA#QQQQQ=                                     
-//                                   yN8NNN@@@@@@L                                     
-//                                   jgggggQ@@@@@|                                     
-//                                   ~;!!!!|ccccc~                                     
-//                                   ,~__~~>||L||_                                     
-//                                   ,~__~~>|||||_                                     
-//                                   ,~__~~>|||||_                                     
-//             ``````````````````````',,,,,~;;;;;,``````````````````````               
-//             .'..................''''''''.....''''.................''.               
-//            `'''..'''....''''''.....''''''..''''''''....'''''''....''.               
-//            `'''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.'.               
-//            `.'''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'...`              
-//            `..''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~''..`              
-//     ```````...''~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~:''..```````        
-//     ..'..........''...'''...'...''''..''..''''...'...'''...''.............''`       
-//     .''..........''.........'.........''.........'.........''.............''`       
-//     .''..';^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc'..''`       
-//     .''..,|77777777777777777777777777777777777777777777777777777777777^'..''`       
-//     .''..'.''.'''.....'''''.....''.'''....''.'''.....'''''.....''.''''....''`       
-//     .''..''...'''..............................................''''...''..''`       
-//     ``````....''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,''...'```````       
-//           `...'':_______________________________________________,'...'`             
-//           ....'':_______________________________________________,'....`             
-//           .'...':__~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~___,'....`             
-//           .'...':__~~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~~___,'...'`             
-//          `.'..'':___~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~___~,'...'.             
-// `,,,,,,,,:~~~~~~;!!!!!r=================|iiiiiiiiiiiiiiiii|>>>>>=^^^^^^;;;;;;;;:    
-// `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU?    
-//  ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUw:    
-//  .t555555555yyyyy55555yyyyy555555yyyyy55Dgggggggggggggggggggggggggggggggggggggz     
-//   vNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ@QQQ!     
-//   ,KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQP`     
-//    |6666666666666666666666666666666666668QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ8;      
-//    `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLZUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU6L       
-//     ,LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj.       
-//      !LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX;        
-//      .*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU7`        
-//       _LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUa'         
-//        ^LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX!          
-//        `+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU>           
-//         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
-//          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
-//           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
+//      Want to launch your own collection ? Check out https://buildship.xyz.
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWNK0kdocccoONMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWX0xol:,....  .. .lXMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKOdc;'..  .....  .... .OMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKko:'.. ..... ...';cc.... .OMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN0d:'...... ...;coxOKXWWK; .. 'OMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWMW0d;.........;ldOKNWMMMMMMM0' .. ,0MMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMX0k:........,lxKNMMMMMMMMMMMMMO. ...;KMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKd,........;oONMMMMMMMMMMMMMMMMMx. ...cNMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKo'.......'lONMMMMMMMMMMMMMMMMMMMNl.....dWMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKOxdolllodxo'.......;xXWMMMMMMMMMMMMMMMMMMMMMK; .. 'OMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMN0xl;'..       .......':kNMMMMMMMMMMMMMMMMMMMMMMMWx. ...:XMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMNOo;.. ....    ........:OXNMMMMMMMMMMMMMMMMMMMMMMMMMK:... .xWMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMNOl,.........;col,...... ,0MMMMMMMMMMMMMMMMMMMMMMMMMMMWd. .. ;KMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMN0o;. ......;okKNWNd. ..... ,0MMMMMMMMMMMMMMMMMMMMMMMMMMWO' .. .kWMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMWXx:........:xKWMMMMWk. ...... :XMMMMMMMMMMMMMMMMMMMMMMMMMM0;.....oNMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMN0l'.......:d0NMMMMMMMNl....... 'OWMMMMMMMMMMMMMMMMMMMMMMMMW0;.....cXMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMXl.......'o0WMMMMMMMMMMWk'... ..c0WMMMMMMMMMMMMMMMMMMMMMMMMWO,.....cKMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMWd........':cllodxkO0KXWMWKdccld0WMMMMMMMMMMMMMMMMMMMMMMMMMNx'.....cKMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMWk' ........     .....,;cldOKNWMMMMMMMMMMMMMMMMMMMMMMMMMMMKl......oXMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMW0l;,'......  .  ......  ...;cd0NMMMMMMMMMMMMMMMMMMMMMMNk,.....'xNMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMWWNXK00Okxdoolc:;'...  .... ..;oONMMMMMMMMMMMMMNKkolc;......:0WWMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWNXK0kdl:'........;xOXWMMMMMMMXd;..   ......lXMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWWXOo:.. .....'dXMMMMWO;.............;0MMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWWWWWMMMMWKd,..... .,kNMM0, ..............cXMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWN0kxdxOKNWMMMMNx;.......lXMO' .......:l' .. '0MMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMWKdc:::::cokKNWWMMNd'......:KNx,....,oON0, .. 'OMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMW0o::::::::::cd0NWMMWOo;.....;0WN0kO0NWMWx. .. ;KMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMW0l:::::::::::::cd0WWMWMK:.....cNMMMMMMMMK;... .dWMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMWXo::::::::::::::::ckNMMMMKc....dNMMMMMMMNl.....:XMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMWk::::::::::::::::::cOWMMMMN0kkKWMMMMMMMNd. .. ,OMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMXd::::::::::::::::::l0WMMMMMMMMMMMMMMMMNd. .. .kWMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMWKl::::::::::::::::cdKWMMMMMMMMMMMMMMMMNd.... .xWMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMW0c::::::::::::::lx0NMMMMMMMMMMMMMMMMMNd.... .dNMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMKo::::::::::cldOXWMMMMMMMMMMMMMMMMMMNo......dNMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMWKdlccclodxOKNWMMMMMMMMMMMMMMMMMMMMXl. ...'xWMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMWWXKKKXNWWMMMMMMMMMMMMMMMMMMMMMWWKc.....'kWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMW0:.....,OWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNl.....;0WMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWO:..'lKMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNK0XWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+// MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 contract MetaverseNFT is
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
@@ -78,7 +89,7 @@ contract MetaverseNFT is
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdCounter;
+    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -94,10 +105,13 @@ contract MetaverseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
+    address public payoutReceiver = address(0x0);
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
+    bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive = true;
+    bool private startAtOne = false;
 
     /** 
     * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -112,6 +126,7 @@ contract MetaverseNFT is
     string public PROVENANCE_HASH = "";
     string private CONTRACT_URI = "";
     string private BASE_URI;
+    string private URI_POSTFIX = "";
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -124,7 +139,8 @@ contract MetaverseNFT is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
+        string memory _name, string memory _symbol,
+        bool _startAtOne
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -141,7 +157,9 @@ contract MetaverseNFT is
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
 
-        // Need help with uploading metadata? Try https://buildship.dev
+        startAtOne = _startAtOne;
+
+        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
     }
 
@@ -170,12 +188,23 @@ contract MetaverseNFT is
             }
         }
 
-        return super.tokenURI(tokenId);
+        if (bytes(URI_POSTFIX).length > 0) {
+            return string(abi.encodePacked(
+                super.tokenURI(tokenId),
+                URI_POSTFIX
+            ));
+        } else {
+            return super.tokenURI(tokenId);
+        }
+    }
+
+    function startTokenId() public view returns (uint256) {
+        return startAtOne ? 1 : 0;
     }
 
     function totalSupply() public view returns (uint256) {
         // Only works like this for sequential mint tokens
-        return _tokenIdCounter.current();
+        return _tokenIndexCounter.current();
     }
 
     // ----- Admin functions -----
@@ -189,6 +218,10 @@ contract MetaverseNFT is
         CONTRACT_URI = uri;
     }
 
+    function setPostfixURI(string calldata postfix) public onlyOwner {
+        URI_POSTFIX = postfix;
+    }
+
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
     }
@@ -198,7 +231,12 @@ contract MetaverseNFT is
         isFrozen = true;
     }
 
-    function isExtensionAllowed(address _extension) public view returns (bool) {
+    // Lock changing withdraw address
+    function lockPayoutChange() public onlyOwner {
+        isPayoutChangeLocked = true;
+    }
+
+    function isExtensionAdded(address _extension) public view returns (bool) {
 
         for (uint index = 0; index < extensions.length; index++) {
             if (address(extensions[index]) == _extension) {
@@ -213,7 +251,7 @@ contract MetaverseNFT is
     function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
 
-        require(!isExtensionAllowed(_extension), "Extension already added");
+        require(!isExtensionAdded(_extension), "Extension already added");
 
         extensions.push(INFTExtension(_extension));
 
@@ -250,16 +288,17 @@ contract MetaverseNFT is
     // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
     function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive) public onlyOwner {
         isOpenSeaProxyActive = _isOpenSeaProxyActive;
+
     }
 
     // ---- Minting ----
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+        require(_tokenIndexCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
 
         for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
             _safeMint(to, tokenId);
             data[tokenId] = extraData;
@@ -278,8 +317,13 @@ contract MetaverseNFT is
         _;
     }
 
+    modifier whenNotPayoutChangeLocked() {
+        require(!isPayoutChangeLocked, "Payout change is locked");
+        _;
+    }
+
     modifier onlyExtension() {
-        require(isExtensionAllowed(msg.sender), "Extension should be added to contract before minting");
+        require(isExtensionAdded(msg.sender), "Extension should be added to contract before minting");
         _;
     }
 
@@ -339,14 +383,23 @@ contract MetaverseNFT is
     }
 
     function setRoyaltyReceiver(address _receiver) public onlyOwner {
-        require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
+        // remove because opensea doesn't care about this anyway
+        // require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
         royaltyReceiver = _receiver;
+    }
+
+    function setPayoutReceiver(address _receiver) public onlyOwner whenNotPayoutChangeLocked {
+        payoutReceiver = payable(_receiver);
     }
 
     function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
         receiver = royaltyReceiver;
         royaltyAmount = salePrice * royaltyFee / 10000;
+    }
+
+    function getPayoutReceiver() public view returns (address payable receiver) {
+        receiver = payoutReceiver != address(0x0) ? payable(payoutReceiver) : payable(owner());
     }
 
     // ---- Allow royalty deposits from Opensea ----- 
@@ -359,9 +412,10 @@ contract MetaverseNFT is
         uint256 balance = address(this).balance;
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        Address.sendValue(payable(msg.sender), amount);
+        Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
     }
 
@@ -370,14 +424,15 @@ contract MetaverseNFT is
 
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        token.safeTransfer(payable(msg.sender), amount);
+        token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.dev";
+        _url = "https://buildship.xyz";
     }
 
     function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {

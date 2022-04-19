@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./NFTExtension.sol";
 import "./SaleControl.sol";
 
-contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
+contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
 
     uint256 public price;
     uint256 public maxPerAddress;
@@ -38,7 +38,6 @@ contract WhitelistMerkleTreeExtension is NFTExtension, Ownable, SaleControl {
     }
 
     function mint(uint256 nTokens, bytes32[] memory proof) external whenSaleStarted payable {
-        super.beforeMint();
 
         require(isWhitelisted(whitelistRoot, msg.sender, proof), "Not whitelisted");
 
