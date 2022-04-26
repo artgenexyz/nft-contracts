@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "./NFTExtension.sol";
 
-contract FixPriceSaleExtension is NFTExtension, Ownable, Pausable {
+contract PublicSaleExtension is NFTExtension, Ownable, Pausable {
 
     uint256 public price;
     uint256 public maxPerMint;
