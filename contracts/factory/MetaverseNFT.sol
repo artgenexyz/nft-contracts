@@ -247,6 +247,10 @@ contract MetaverseNFT is
         return false;
     }
 
+    function extensionsLength() public view returns (uint) {
+        return extensions.length;
+    }
+
     // Extensions are allowed to mint
     function addExtension(address _extension) public onlyOwner {
         require(_extension != address(this), "Cannot add self as extension");
