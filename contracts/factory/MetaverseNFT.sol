@@ -11,11 +11,11 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import 'erc721a-upgradeable/contracts/ERC721AUpgradeable.sol';
 
 import "./extensions/INFTExtension.sol";
 import "./IMetaverseNFT.sol";
@@ -80,16 +80,13 @@ import "./OpenseaProxy.sol";
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 contract MetaverseNFT is
-    ERC721Upgradeable,
+    ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -142,7 +139,7 @@ contract MetaverseNFT is
         string memory _name, string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        __ERC721_init(_name, _symbol);
+        __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
 
@@ -198,13 +195,12 @@ contract MetaverseNFT is
         }
     }
 
-    function startTokenId() public view returns (uint256) {
+    function _startTokenId() internal override view returns (uint256) {
         return startAtOne ? 1 : 0;
     }
 
-    function totalSupply() public view returns (uint256) {
-        // Only works like this for sequential mint tokens
-        return _tokenIndexCounter.current();
+    function startTokenId() public view returns (uint256) {
+        return _startTokenId();
     }
 
     // ----- Admin functions -----
@@ -297,14 +293,12 @@ contract MetaverseNFT is
 
     // ---- Minting ----
 
-    function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(_tokenIndexCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+    function _mintConsecutive(uint256 quantity, address to, bytes32 extraData) internal {
+        require(_currentIndex + quantity + reserved <= maxSupply, "Not enough Tokens left.");
 
-        for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
-            _tokenIndexCounter.increment();
-
-            _safeMint(to, tokenId);
+        _safeMint(to, quantity);
+        for (uint256 i; i < quantity; i++) {
+            uint256 tokenId = _currentIndex + i;
             data[tokenId] = extraData;
         }
     }

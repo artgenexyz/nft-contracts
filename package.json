@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.1",
-    "@openzeppelin/contracts-upgradeable": "^4.3.2",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "dotenv": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2"
   },
@@ -15,6 +15,7 @@
     "@openzeppelin/test-helpers": "^0.5.15",
     "@truffle/hdwallet-provider": "^1.5.0",
     "chai": "^4.3.4",
+    "erc721a-upgradeable": "^3.2.0",
     "eth-gas-reporter": "^0.2.23",
     "ethereum-waffle": "^3.4.0",
     "ganache": "^7.0.1",
