@@ -1,7 +1,9 @@
 const assert = require("assert");
 const BigNumber = require("bignumber.js");
 
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const { createNFTSale } = require("../utils");
+
+const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
 
 const MintPassExtension = artifacts.require("MintPassExtension");
 
@@ -13,8 +15,8 @@ contract("MintPass – Extension", (accounts) => {
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await TemplateNFTv2.new();
-        mintpass = await TemplateNFTv2.new();
+        nft = await createNFTSale(AvatarNFTv2);
+        mintpass = await createNFTSale(AvatarNFTv2);
 
         extension = await MintPassExtension.new(
             nft.address,

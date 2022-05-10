@@ -2,6 +2,7 @@ const BigNumber = require("bignumber.js");
 const { MerkleTree } = require('merkletreejs');
 const { isAddress, toChecksumAddress } = require('web3-utils');
 const keccak256 = require('keccak256');
+const ether = require("@openzeppelin/test-helpers/src/ether");
 
 const getGasCost = tx => {
     return new BigNumber(tx.receipt.gasUsed).times(tx.receipt.effectiveGasPrice);
@@ -37,6 +38,9 @@ const getAirdropTree = (addresses) => {
 
 }
 
+const createNFTSale = (AvatarNFTv2) => {
+    return AvatarNFTv2.new(0.1 * ether, 1000, 10, 5, "ipfs://avatar-nft/", "NFT", "NFT")
+}
 
 async function mineBlock() {
     return rpc({ method: 'evm_mine' });
@@ -55,4 +59,4 @@ async function rpc(request) {
 }
 
 
-module.exports = { getGasCost, getAirdropTree, processAddress, mineBlock, rpc }
+module.exports = { getGasCost, getAirdropTree, processAddress, createNFTSale, mineBlock, rpc }

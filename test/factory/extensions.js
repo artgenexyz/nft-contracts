@@ -4,15 +4,15 @@ const { assert, expect } = require("chai");
 const keccak256 = require("keccak256");
 const delay = require("delay");
 
-const { getGasCost, getAirdropTree, processAddress } = require("../utils");
+const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require("../utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
@@ -23,7 +23,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await TemplateNFTv2.new();
+        nft = await createNFTSale(AvatarNFTv2);
     });
 
     // it should deploy successfully
@@ -33,7 +33,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
     // it should deploy extension successfully
     it("should deploy extension successfully", async () => {
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             "0x0", // mock merkle root
             1e17.toString(), // price
@@ -45,7 +45,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
     // it should connect extension to NFT
     it("should connect extension to NFT", async () => {
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             "0x0", // mock merkle root
             1e17.toString(), // price
@@ -103,7 +103,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
         const { tree } = getAirdropTree(addresses)
 
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             tree.getHexRoot(), // mock merkle root
             1e17.toString(), // price
@@ -135,7 +135,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
         const { tree } = getAirdropTree(addresses)
 
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             tree.getHexRoot(), // mock merkle root
             1e17.toString(), // price
@@ -175,7 +175,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     // it should allow to mint from ERC20SaleExtension
     xit ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const pass = await TemplateNFTv2.new();
+        const pass = await createNFTSale(AvatarNFTv2);
         await pass.claimReserved(2, owner);
 
         const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
