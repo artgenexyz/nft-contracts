@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./factory/extensions/INFTExtension.sol";
 import "./factory/IMetaverseNFT.sol";
-import "./factory/OpenseaProxy.sol";
+import "./utils/OpenseaProxy.sol";
 
 // Want to launch your own collection ? Check out https://buildship.dev
 

@@ -15,7 +15,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./factory/extensions/INFTExtension.sol";
 import "./factory/IMetaverseNFT.sol";
-import "./factory/OpenseaProxy.sol";
+import "./utils/OpenseaProxy.sol";
 
 
 //      Want to launch your own collection ? Check out https://buildship.dev.
