@@ -12,12 +12,24 @@
     "mocha-junit-reporter": "^2.0.2"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-ganache": "^2.0.1",
+    "@nomiclabs/hardhat-truffle5": "^2.0.5",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/test-helpers": "^0.5.15",
     "@truffle/hdwallet-provider": "^1.5.0",
-    "chai": "^4.3.4",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.23",
+    "chai": "^4.3.6",
     "eth-gas-reporter": "^0.2.23",
     "ethereum-waffle": "^3.4.0",
     "ganache": "^7.0.1",
+    "hardhat": "^2.9.2",
+    "hardhat-contract-sizer": "^2.5.1",
+    "hardhat-deploy": "^0.11.2",
+    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-tracer": "^1.1.0-rc.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
     "minimist": "^1.2.5",
@@ -27,7 +39,10 @@
     "truffle": "^5.4.8",
     "truffle-contract-size": "^2.0.1",
     "truffle-flattener": "^1.6.0",
-    "truffle-plugin-verify": "^0.5.21"
+    "truffle-plugin-verify": "^0.5.21",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3",
+    "web3": "^1.7.1"
   },
   "resolutions": {
     "@solidity-parser/parser": "^0.14.0"
