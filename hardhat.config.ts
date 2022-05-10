@@ -25,7 +25,6 @@ const mnemonic = (() => {
 })();
 
 export default {
-    defaultNetwork: "ganache",
     networks: {
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
