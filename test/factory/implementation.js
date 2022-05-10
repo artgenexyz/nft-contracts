@@ -3,13 +3,13 @@ const delay = require("delay");
 const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost, createNFTSale } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
 const NFTExtension = artifacts.require("NFTExtension");
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
@@ -22,7 +22,7 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     beforeEach(async () => {
         if (!pass || !factory) {
-            pass = await TemplateNFTv2.new();
+            pass = await createNFTSale(AvatarNFTv2);
             await pass.claimReserved(2, owner);
 
             factory = await NFTFactory.new(pass.address);
