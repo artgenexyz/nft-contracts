@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -17,65 +16,56 @@ import "./factory/extensions/INFTExtension.sol";
 import "./factory/IMetaverseNFT.sol";
 import "./utils/OpenseaProxy.sol";
 
-
 //      Want to launch your own collection ? Check out https://buildship.dev.
 //
-//                                   zAAAAA#QQQQQ=                                     
-//                                   yN8NNN@@@@@@L                                     
-//                                   jgggggQ@@@@@|                                     
-//                                   ~;!!!!|ccccc~                                     
-//                                   ,~__~~>||L||_                                     
-//                                   ,~__~~>|||||_                                     
-//                                   ,~__~~>|||||_                                     
-//             ``````````````````````',,,,,~;;;;;,``````````````````````               
-//             .'..................''''''''.....''''.................''.               
-//            `'''..'''....''''''.....''''''..''''''''....'''''''....''.               
-//            `'''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.'.               
-//            `.'''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'...`              
-//            `..''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~''..`              
-//     ```````...''~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~:''..```````        
-//     ..'..........''...'''...'...''''..''..''''...'...'''...''.............''`       
-//     .''..........''.........'.........''.........'.........''.............''`       
-//     .''..';^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc'..''`       
-//     .''..,|77777777777777777777777777777777777777777777777777777777777^'..''`       
-//     .''..'.''.'''.....'''''.....''.'''....''.'''.....'''''.....''.''''....''`       
-//     .''..''...'''..............................................''''...''..''`       
-//     ``````....''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,''...'```````       
-//           `...'':_______________________________________________,'...'`             
-//           ....'':_______________________________________________,'....`             
-//           .'...':__~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~___,'....`             
-//           .'...':__~~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~~___,'...'`             
-//          `.'..'':___~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~___~,'...'.             
-// `,,,,,,,,:~~~~~~;!!!!!r=================|iiiiiiiiiiiiiiiii|>>>>>=^^^^^^;;;;;;;;:    
-// `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU?    
-//  ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUw:    
-//  .t555555555yyyyy55555yyyyy555555yyyyy55Dgggggggggggggggggggggggggggggggggggggz     
-//   vNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ@QQQ!     
-//   ,KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQP`     
-//    |6666666666666666666666666666666666668QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ8;      
-//    `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLZUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU6L       
-//     ,LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj.       
-//      !LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX;        
-//      .*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU7`        
-//       _LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUa'         
-//        ^LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX!          
-//        `+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU>           
-//         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
-//          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
-//           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
-contract MetaverseBaseNFT is
-    ERC721,
-    ReentrancyGuard,
-    Ownable,
-    IMetaverseNFT // implements IERC2981
-{
+//                                   zAAAAA#QQQQQ=
+//                                   yN8NNN@@@@@@L
+//                                   jgggggQ@@@@@|
+//                                   ~;!!!!|ccccc~
+//                                   ,~__~~>||L||_
+//                                   ,~__~~>|||||_
+//                                   ,~__~~>|||||_
+//             ``````````````````````',,,,,~;;;;;,``````````````````````
+//             .'..................''''''''.....''''.................''.
+//            `'''..'''....''''''.....''''''..''''''''....'''''''....''.
+//            `'''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.'.
+//            `.'''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'...`
+//            `..''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~''..`
+//     ```````...''~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~:''..```````
+//     ..'..........''...'''...'...''''..''..''''...'...'''...''.............''`
+//     .''..........''.........'.........''.........'.........''.............''`
+//     .''..';^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'....`
+//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv'....`
+//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc'..''`
+//     .''..,|77777777777777777777777777777777777777777777777777777777777^'..''`
+//     .''..'.''.'''.....'''''.....''.'''....''.'''.....'''''.....''.''''....''`
+//     .''..''...'''..............................................''''...''..''`
+//     ``````....''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,''...'```````
+//           `...'':_______________________________________________,'...'`
+//           ....'':_______________________________________________,'....`
+//           .'...':__~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~___,'....`
+//           .'...':__~~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~~___,'...'`
+//          `.'..'':___~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~___~,'...'.
+// `,,,,,,,,:~~~~~~;!!!!!r=================|iiiiiiiiiiiiiiiii|>>>>>=^^^^^^;;;;;;;;:
+// `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU?
+//  ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUw:
+//  .t555555555yyyyy55555yyyyy555555yyyyy55Dgggggggggggggggggggggggggggggggggggggz
+//   vNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ@QQQ!
+//   ,KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQP`
+//    |6666666666666666666666666666666666668QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ8;
+//    `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLZUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU6L
+//     ,LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj.
+//      !LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX;
+//      .*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU7`
+//       _LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUa'
+//        ^LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX!
+//        `+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU>
+//         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`
+//          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'
+//           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:
+contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
     using Address for address;
     using SafeERC20 for IERC20;
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIdCounter;
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -95,14 +85,14 @@ contract MetaverseBaseNFT is
     bool public isFrozen;
     bool private isOpenSeaProxyActive = true;
 
-    /** 
-    * @dev Additional data for each token that needs to be stored and accessed on-chain
-    */
-    mapping (uint256 => bytes32) public data;
+    /**
+     * @dev Additional data for each token that needs to be stored and accessed on-chain
+     */
+    mapping(uint256 => bytes32) public data;
 
     /**
-    * @dev List of connected extensions
-    */
+     * @dev List of connected extensions
+     */
     INFTExtension[] public extensions;
 
     string public PROVENANCE_HASH = "";
@@ -120,9 +110,9 @@ contract MetaverseBaseNFT is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
-    ) ERC721(_name, _symbol) {
-
+        string memory _name,
+        string memory _symbol
+    ) ERC721A(_name, _symbol) {
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
@@ -133,7 +123,6 @@ contract MetaverseBaseNFT is
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
-
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -144,9 +133,16 @@ contract MetaverseBaseNFT is
         uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : _baseURI();
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
         if (uriExtension != address(0)) {
-            string memory uri = INFTURIExtension(uriExtension).tokenURI(tokenId);
+            string memory uri = INFTURIExtension(uriExtension).tokenURI(
+                tokenId
+            );
 
             if (bytes(uri).length > 0) {
                 return uri;
@@ -154,11 +150,6 @@ contract MetaverseBaseNFT is
         }
 
         return super.tokenURI(tokenId);
-    }
-
-    function totalSupply() public view returns (uint256) {
-        // Only works like this for sequential mint tokens
-        return _tokenIdCounter.current();
     }
 
     // ----- Admin functions -----
@@ -182,8 +173,7 @@ contract MetaverseBaseNFT is
     }
 
     function isExtensionAdded(address _extension) public view returns (bool) {
-
-        for (uint index = 0; index < extensions.length; index++) {
+        for (uint256 index = 0; index < extensions.length; index++) {
             if (address(extensions[index]) == _extension) {
                 return true;
             }
@@ -221,7 +211,14 @@ contract MetaverseBaseNFT is
     function setExtensionTokenURI(address extension) public onlyOwner {
         require(extension != address(this), "Cannot add self as extension");
 
-        require(extension == address(0x0) || ERC165Checker.supportsInterface(extension, type(INFTURIExtension).interfaceId), "Not conforms to extension");
+        require(
+            extension == address(0x0) ||
+                ERC165Checker.supportsInterface(
+                    extension,
+                    type(INFTURIExtension).interfaceId
+                ),
+            "Not conforms to extension"
+        );
 
         uriExtension = extension;
 
@@ -231,22 +228,26 @@ contract MetaverseBaseNFT is
     // function to disable gasless listings for security in case
     // opensea ever shuts down or is compromised
     // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
-    function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive) public onlyOwner {
+    function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive)
+        public
+        onlyOwner
+    {
         isOpenSeaProxyActive = _isOpenSeaProxyActive;
     }
 
     // ---- Minting ----
 
-    function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+    function _mintConsecutive(
+        uint256 nTokens,
+        address to,
+        bytes memory extraData
+    ) internal {
+        require(
+            totalSupply() + nTokens + reserved <= maxSupply,
+            "Not enough Tokens left."
+        );
 
-        for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
-
-            _safeMint(to, tokenId);
-            data[tokenId] = extraData;
-        }
+        _safeMint(to, nTokens, extraData);
     }
 
     // ---- Mint control ----
@@ -262,39 +263,62 @@ contract MetaverseBaseNFT is
     }
 
     modifier onlyExtension() {
-        require(isExtensionAdded(msg.sender), "Extension should be added to contract before minting");
+        require(
+            isExtensionAdded(msg.sender),
+            "Extension should be added to contract before minting"
+        );
         _;
     }
 
     // ---- Mint public ----
 
     // Contract can sell tokens
-    function mint(uint256 nTokens) external payable nonReentrant whenSaleStarted {
-        require(nTokens <= maxPerMint, "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!");
+    function mint(uint256 nTokens)
+        external
+        payable
+        nonReentrant
+        whenSaleStarted
+    {
+        require(
+            nTokens <= maxPerMint,
+            "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
+        );
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, 0x0);
+        _mintConsecutive(nTokens, msg.sender, "");
     }
 
     // Owner can claim free tokens
-    function claim(uint256 nTokens, address to) external nonReentrant onlyOwner {
+    function claim(uint256 nTokens, address to)
+        external
+        nonReentrant
+        onlyOwner
+    {
         require(nTokens <= reserved, "That would exceed the max reserved.");
 
         reserved = reserved - nTokens;
 
-        _mintConsecutive(nTokens, to, 0x0);
+        _mintConsecutive(nTokens, to, "");
     }
 
     // ---- Mint via extension
 
-    function mintExternal(uint256 nTokens, address to, bytes32 extraData) external payable onlyExtension nonReentrant {
+    function mintExternal(
+        uint256 nTokens,
+        address to,
+        bytes memory extraData
+    ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
     }
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner whenNotFrozen {
+    function updateStartTimestamp(uint256 _startTimestamp)
+        public
+        onlyOwner
+        whenNotFrozen
+    {
         startTimestamp = _startTimestamp;
     }
 
@@ -325,13 +349,17 @@ contract MetaverseBaseNFT is
         royaltyReceiver = _receiver;
     }
 
-    function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(uint256, uint256 salePrice)
+        external
+        view
+        returns (address receiver, uint256 royaltyAmount)
+    {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
         receiver = royaltyReceiver;
-        royaltyAmount = salePrice * royaltyFee / 10000;
+        royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
 
-    // ---- Allow royalty deposits from Opensea ----- 
+    // ---- Allow royalty deposits from Opensea -----
 
     receive() external payable {}
 
@@ -339,7 +367,7 @@ contract MetaverseBaseNFT is
 
     function withdraw() public virtual onlyOwner {
         uint256 balance = address(this).balance;
-        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
         address payable dev = DEVELOPER_ADDRESS();
 
@@ -350,7 +378,7 @@ contract MetaverseBaseNFT is
     function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
 
-        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
         address payable dev = DEVELOPER_ADDRESS();
 
@@ -374,11 +402,11 @@ contract MetaverseBaseNFT is
         override
         returns (bool)
     {
-        return interfaceId == type(IERC2981).interfaceId
-            || interfaceId == type(IMetaverseNFT).interfaceId
-            || super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            interfaceId == type(IMetaverseNFT).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
-
 
     /**
      * @dev Override isApprovedForAll to allowlist user's OpenSea proxy accounts to enable gas-less listings.
@@ -392,13 +420,17 @@ contract MetaverseBaseNFT is
     {
         // Get a reference to OpenSea's proxy registry contract by instantiating
         // the contract using the already existing address.
-        ProxyRegistry proxyRegistry = ProxyRegistry(0xa5409ec958C83C3f309868babACA7c86DCB077c1);
+        ProxyRegistry proxyRegistry = ProxyRegistry(
+            0xa5409ec958C83C3f309868babACA7c86DCB077c1
+        );
 
-        if (isOpenSeaProxyActive && address(proxyRegistry.proxies(owner)) == operator) {
+        if (
+            isOpenSeaProxyActive &&
+            address(proxyRegistry.proxies(owner)) == operator
+        ) {
             return true;
         }
 
         return super.isApprovedForAll(owner, operator);
     }
-
 }

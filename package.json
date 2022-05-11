@@ -22,6 +22,7 @@
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.23",
     "chai": "^4.3.6",
+    "erc721a": "^3.3.0",
     "eth-gas-reporter": "^0.2.23",
     "ethereum-waffle": "^3.4.0",
     "ganache": "^7.0.1",
