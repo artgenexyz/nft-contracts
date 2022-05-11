@@ -243,7 +243,7 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
         bytes memory extraData
     ) internal {
         require(
-            totalSupply() + nTokens + reserved <= maxSupply,
+            _totalMinted() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
         );
 
