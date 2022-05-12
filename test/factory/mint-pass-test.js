@@ -3,7 +3,7 @@ const BigNumber = require("bignumber.js");
 
 const { createNFTSale } = require("../utils");
 
-const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const MintPassExtension = artifacts.require("MintPassExtension");
 
@@ -15,8 +15,8 @@ contract("MintPass – Extension", (accounts) => {
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await createNFTSale(AvatarNFTv2);
-        mintpass = await createNFTSale(AvatarNFTv2);
+        nft = await createNFTSale(MetaverseBaseNFT);
+        mintpass = await createNFTSale(MetaverseBaseNFT);
 
         extension = await MintPassExtension.new(
             nft.address,
@@ -95,15 +95,15 @@ contract("MintPass – Extension", (accounts) => {
 
     // should be possible to mint
     it("should be possible to mint", async () => {
-        await nft.setBeneficiary(owner);
+        // await nft.setBeneficiary(owner);
 
-        await nft.flipSaleStarted({from: owner});
+        await nft.startSale({from: owner});
 
         await nft.mint(10, { from: user1, value: ether.times(10).toString() });
 
-        await mintpass.setBeneficiary(owner);
+        // await mintpass.setBeneficiary(owner);
 
-        await mintpass.flipSaleStarted({from: owner});
+        await mintpass.startSale({from: owner});
 
         await mintpass.mint(10, { from: user1, value: ether.times(10).toString() });
 

@@ -11,19 +11,19 @@ const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("AvatarNFTv2 – Extensions", (accounts) => {
+contract("MetaverseBaseNFT – Extensions", (accounts) => {
     let nft;
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await createNFTSale(AvatarNFTv2);
+        nft = await createNFTSale(MetaverseBaseNFT);
     });
 
     // it should deploy successfully
@@ -175,7 +175,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     // it should allow to mint from ERC20SaleExtension
     xit ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const pass = await createNFTSale(AvatarNFTv2);
+        const pass = await createNFTSale(MetaverseBaseNFT);
         await pass.claimReserved(2, owner);
 
         const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
