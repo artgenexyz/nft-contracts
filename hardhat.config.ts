@@ -1,11 +1,14 @@
-import fs from 'fs';
+import fs from "fs";
+import { HardhatUserConfig } from "hardhat/config";
 
+import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ganache";
 import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-etherscan";
-import "solidity-coverage";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 
-// import hardhat-gas-reporter hardhat-deploy hardhat-contract-sizer hardhat-tracer
+import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
@@ -21,10 +24,10 @@ const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const mnemonic = (() => {
     try {
         return fs.readFileSync(".mnemonic").toString().trim();
-    } catch (err) { return null }
+    } catch (err) { return undefined }
 })();
 
-export default {
+const config: HardhatUserConfig = {
     networks: {
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
@@ -72,15 +75,15 @@ export default {
     },
 
     // wrong format?
-    api_keys: {
-        etherscan: ETHERSCAN_API_KEY,
-        polygonscan: POLYGONSCAN_API_KEY,
-        bscscan: BSCSCAN_API_KEY,
-        moonbeam: MOONBEAM_API_KEY,
-        moonriver: MOONRIVER_API_KEY,
-        moonscan: MOONRIVER_API_KEY,
-    }
+    // api_keys: {
+    //     etherscan: ETHERSCAN_API_KEY,
+    //     polygonscan: POLYGONSCAN_API_KEY,
+    //     bscscan: BSCSCAN_API_KEY,
+    //     moonbeam: MOONBEAM_API_KEY,
+    //     moonriver: MOONRIVER_API_KEY,
+    //     moonscan: MOONRIVER_API_KEY,
+    // }
 
 };
 
-
+export default config
