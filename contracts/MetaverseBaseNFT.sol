@@ -240,14 +240,23 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
     function _mintConsecutive(
         uint256 nTokens,
         address to,
-        bytes memory extraData
+        bytes32 extraData
     ) internal {
         require(
             _totalMinted() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
         );
 
-        _safeMint(to, nTokens, extraData);
+        uint256 currentTokenIndex = _currentIndex;
+
+        _safeMint(to, nTokens, "");
+
+        if (extraData.length > 0) {
+            for (uint256 i; i < nTokens; i++) {
+                uint256 tokenId = currentTokenIndex + i;
+                data[tokenId] = extraData;
+            }
+        }
     }
 
     // ---- Mint control ----
@@ -286,7 +295,7 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, "");
+        _mintConsecutive(nTokens, msg.sender, 0x0);
     }
 
     // Owner can claim free tokens
@@ -299,7 +308,7 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
 
         reserved = reserved - nTokens;
 
-        _mintConsecutive(nTokens, to, "");
+        _mintConsecutive(nTokens, to, 0x0);
     }
 
     // ---- Mint via extension
@@ -307,7 +316,7 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
     function mintExternal(
         uint256 nTokens,
         address to,
-        bytes memory extraData
+        bytes32 extraData
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
     }
