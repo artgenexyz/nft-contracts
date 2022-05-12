@@ -3,8 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./NFTExtension.sol";
-import "./SaleControl.sol";
+import "./base/NFTExtension.sol";
+import "./base/SaleControl.sol";
 
 contract LimitAmountSaleExtension is NFTExtension, Ownable, SaleControl {
 

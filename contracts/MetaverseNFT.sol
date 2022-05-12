@@ -17,9 +17,9 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./extensions/INFTExtension.sol";
-import "./IMetaverseNFT.sol";
-import "../utils/OpenseaProxy.sol";
+import "./interfaces/INFTExtension.sol";
+import "./interfaces/IMetaverseNFT.sol";
+import "./utils/OpenseaProxy.sol";
 
 //      Want to launch your own collection ? Check out https://buildship.xyz.
 // MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM

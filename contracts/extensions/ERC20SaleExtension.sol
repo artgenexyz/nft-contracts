@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./NFTExtension.sol";
+import "./base/NFTExtension.sol";
 
 contract ERC20SaleExtension is NFTExtension, Ownable {
 
