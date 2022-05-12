@@ -23,7 +23,7 @@ const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 
 const mnemonic = (() => {
     try {
-        return fs.readFileSync(".mnemonic").toString().trim();
+        return process.env.MNEMONIC || fs.readFileSync(".mnemonic").toString().trim();
     } catch (err) { return undefined }
 })();
 

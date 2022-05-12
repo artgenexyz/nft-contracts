@@ -61,6 +61,25 @@ jobs:
       - store_artifacts:
           path: coverage
 
+  hardhat:
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+          name: Hardhat Tests
+          command: yarn hardhat test
+      - store_test_results:
+          path: test_results
+      - run:
+          name: Hardhat Code coverage report
+          command: yarn hardhat coverage
+          when: always
+      - store_artifacts:
+          path: coverage
+
 workflows:
   # Below is the definition of your workflow.
   # Inside the workflow, you provide the jobs you want to run, e.g this workflow runs the build-and-test job above.
@@ -70,3 +89,4 @@ workflows:
     jobs:
       - build-and-test
       - coverage
+      - hardhat
