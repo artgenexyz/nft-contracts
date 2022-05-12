@@ -35,6 +35,14 @@ const config: HardhatUserConfig = {
                 mnemonic,
             },
         },
+        hardhat: {
+            forking: {
+                url: 'https://eth-rinkeby.alchemyapi.io/v2/3uqnYb74lL7L2HAI_nb_OunBW1FhpFdm',
+            },
+            accounts: {
+                mnemonic,
+            },
+        },
         mainnet: {
             url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
             accounts: {

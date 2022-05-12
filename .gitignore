@@ -12,6 +12,7 @@ coverage.json
 
 test_results
 typechain-types
+cache
 
 tmp
 

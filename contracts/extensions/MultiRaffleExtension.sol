@@ -221,7 +221,8 @@ contract MultiRaffle is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable
             // If ticket is a winner
             if (tickets[i] + 1 <= AVAILABLE_SUPPLY) {
                 // Mint NFT to caller
-                nft.mintExternal(nftCount + 1, msg.sender, "");
+                // TODO: optimize, call mintExternal only once
+                nft.mintExternal(1, msg.sender, bytes32(nftCount + 1));
                 // Increment number of minted NFTs
                 nftCount++;
             }
