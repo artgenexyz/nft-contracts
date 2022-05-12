@@ -7,7 +7,7 @@ const { getGasCost, createNFTSale } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
-const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -22,8 +22,8 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     beforeEach(async () => {
         if (!pass || !factory) {
-            pass = await createNFTSale(AvatarNFTv2);
-            await pass.claimReserved(2, owner);
+            pass = await createNFTSale(MetaverseBaseNFT);
+            await pass.claim(2, owner);
 
             factory = await NFTFactory.new(pass.address);
         }
