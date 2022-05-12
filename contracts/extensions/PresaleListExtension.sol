@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-import "./NFTExtension.sol";
-import "./SaleControl.sol";
+import "./base/NFTExtension.sol";
+import "./base/SaleControl.sol";
 
 contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
 

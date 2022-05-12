@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-import "./NFTExtension.sol";
+import "./base/NFTExtension.sol";
 
 contract PublicSaleExtension is NFTExtension, Ownable, Pausable {
 

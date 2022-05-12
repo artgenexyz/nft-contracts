@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import "./NFTExtension.sol";
-import "./SaleControl.sol";
+import "./base/NFTExtension.sol";
+import "./base/SaleControl.sol";
 
 contract MintPassExtension is NFTExtension, Ownable, SaleControl {
   uint256 public price;
