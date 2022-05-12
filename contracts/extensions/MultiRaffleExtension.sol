@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 /// ============ Imports ============
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol"; // OZ: Ownership
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol"; // OZ: ERC721
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,7 +16,7 @@ import "../interfaces/INFTExtension.sol";
 /// @title MultiRaffle
 /// @author Anish Agnihotri, caffeinum
 /// @notice Multi-winner ERC721 distribution (randomized raffle & metadata), packed as Extension for MetaverseNFT contracts
-contract MultiRaffle is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable {
+contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable {
 
     /// ============ Structs ============
 
@@ -134,6 +136,9 @@ contract MultiRaffle is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable
     /// @notice Enters raffle with numTickets entries
     /// @param numTickets Number of raffle entries
     function enterRaffle(uint256 numTickets) external payable {
+
+        console.log("Entering raffle with %s tickets", numTickets);
+
         // Ensure raffle is active
         require(block.timestamp >= RAFFLE_START_TIME, "Raffle not active");
         // Ensure raffle has not ended
@@ -194,6 +199,9 @@ contract MultiRaffle is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable
     /// @notice Allows user to mint NFTs for winning tickets or claim refund for losing tickets
     /// @param tickets indices of all raffle tickets owned by caller
     function claimRaffle(uint256[] calldata tickets) external {
+
+        console.log("Claiming raffle tickets", block.timestamp, RAFFLE_END_TIME);
+
         // Ensure raffle has ended
         require(block.timestamp > RAFFLE_END_TIME, "Raffle has not ended");
         // Ensure raffle has been cleared
@@ -253,6 +261,8 @@ contract MultiRaffle is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable
         require(raffleEntries.length > AVAILABLE_SUPPLY, "Raffle does not need entropy");
         // Ensure raffle requires entropy (entropy not already set)
         require(!clearingEntropySet, "Clearing entropy already set");
+
+        console.log("Setting clearing entropy");
 
         // Request randomness from Chainlink VRF
         return requestRandomness(KEY_HASH, 2e18);
