@@ -83,6 +83,7 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
+    bool public isStartFromOne;
     bool private isOpenSeaProxyActive = true;
 
     /**
@@ -111,7 +112,8 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
         uint256 _royaltyFee,
         string memory _uri,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        bool _isStartFromOne
     ) ERC721A(_name, _symbol) {
         price = _price;
         reserved = _nReserved;
@@ -123,13 +125,15 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
 
         // Need help with uploading metadata? Try https://buildship.dev
         BASE_URI = _uri;
+
+        isStartFromOne = _isStartFromOne;
     }
 
     /**
      * To change the starting tokenId, please override this function.
      */
     function _startTokenId() internal view virtual override returns (uint256) {
-        return 1;
+        return isStartFromOne ? 1 : 0;
     }
 
     function _baseURI() internal view override returns (string memory) {
