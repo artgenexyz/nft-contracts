@@ -1,6 +1,8 @@
 import fs from "fs";
 import { HardhatUserConfig } from "hardhat/config";
 
+import { generateMnemonic } from "bip39";
+
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ganache";
 import "@nomiclabs/hardhat-truffle5";
@@ -24,7 +26,7 @@ const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const mnemonic = (() => {
     try {
         return process.env.MNEMONIC || fs.readFileSync(".mnemonic").toString().trim();
-    } catch (err) { return undefined }
+    } catch (err) { return generateMnemonic() }
 })();
 
 const config: HardhatUserConfig = {
