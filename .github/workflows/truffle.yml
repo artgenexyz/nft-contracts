@@ -1,4 +1,4 @@
-name: Test Contracts
+name: Truffle Tests
 
 # Controls when the workflow will run
 on:
