@@ -38,7 +38,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm install
 
       - name: Run Hardhat tests
         run: npm run test
