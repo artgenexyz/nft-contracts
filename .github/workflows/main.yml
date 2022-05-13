@@ -1,0 +1,50 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+
+  pull_request:
+    branches:
+      - main
+      - core-*
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Hardhat Action
+      - name: Hardhat Solidity
+        uses: amine7777/hardhat-action@v1
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Hardhat tests
+        run: npx hardhat test
+
+      - name: Run Coverage
+        run: npx hardhat coverage
+      
+      # TODO: upload coverage artifacts
+      - name: Upload Coverage Artifacts
+        run: echo "Coverage not implemented yet"
+        
