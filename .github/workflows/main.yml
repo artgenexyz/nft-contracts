@@ -40,8 +40,8 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm install
 
-      - name: Run Hardhat tests
-        run: npm run test
+      - name: Run tests
+        run: npm run test-ci
 
       - name: Run Coverage
         run: npm run coverage
