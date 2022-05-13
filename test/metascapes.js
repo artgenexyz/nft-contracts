@@ -167,7 +167,7 @@ contract("Metascapes", accounts => {
         // // const nft = await Metascapes.deployed();
 
         await expectRevert(
-            nft.withdraw({ from: beneficiary }),
+            nft.withdraw({ from: accounts[3] }),
             "Ownable: caller is not the owner"
         )
     });
