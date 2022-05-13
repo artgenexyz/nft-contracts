@@ -52,9 +52,6 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
 
-      - name: Codiga GitHub action
-        uses: codiga/github-action@v1
-
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3.0.0
         with:
