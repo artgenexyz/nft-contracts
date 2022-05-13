@@ -1,5 +1,5 @@
 const Metascapes = artifacts.require("Metascapes");
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const PresaleListExtension = artifacts.require("PresaleListExtension");
 
 /**
  * Steps:
@@ -29,14 +29,14 @@ module.exports = async function (deployer, network) {
 
     // Deploy whitelist with arguments: 0x0, address of Metascapes, 0.33 ether, 1
     await deployer.deploy(
-        "WhitelistMerkleTreeExtension",
+        "PresaleListExtension",
         metascapes.address,
         "0x0",
         web3.utils.toWei("0.33", "ether"),
         1
     );
 
-    const whitelist = await WhitelistMerkleTreeExtension.deployed();
+    const whitelist = await PresaleListExtension.deployed();
 
     // Metascapes.addExtension(whitelist address)
     await metascapes.addExtension(whitelist.address);

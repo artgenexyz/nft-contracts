@@ -1,4 +1,4 @@
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const admin = "0x31f40bc42cbae2d36aa11623d6d07d94c8339613";
@@ -11,9 +11,9 @@ module.exports = async function(deployer, network) {
 
   const root = "0x8a615c49449352c94d8bb01562934a4dcbc3ebb4e465f46b3f3f0978348c395d"
 
-  await deployer.deploy(WhitelistMerkleTreeExtension, "0x3A6704803fA770b6E765a262Ff476846AD7D0138", root, 8e16.toString(), 1);
+  await deployer.deploy(PresaleListExtension, "0x3A6704803fA770b6E765a262Ff476846AD7D0138", root, 8e16.toString(), 1);
 
-  const wl = await WhitelistMerkleTreeExtension.deployed();
+  const wl = await PresaleListExtension.deployed();
 
   // print wl address
   console.log('Whitelist address: ', `https://etherscan.io/address/${wl.address}`)
@@ -26,7 +26,7 @@ module.exports = async function(deployer, network) {
   // await wl1.transferOwnership(admin)
 
   console.log('Verify: \n')
-  console.log(`truffle run verify WhitelistMerkleTreeExtension@${wl.address} --network ${network}`)
+  console.log(`truffle run verify PresaleListExtension@${wl.address} --network ${network}`)
   console.log('\n')
 
 };

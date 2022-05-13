@@ -9,7 +9,7 @@ const { getGasCost, getAirdropTree, processAddress } = require("../utils");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
 const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
@@ -33,7 +33,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
     // it should deploy extension successfully
     it("should deploy extension successfully", async () => {
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             "0x0", // mock merkle root
             1e17.toString(), // price
@@ -45,7 +45,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
     // it should connect extension to NFT
     it("should connect extension to NFT", async () => {
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             "0x0", // mock merkle root
             1e17.toString(), // price
@@ -103,7 +103,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
         const { tree } = getAirdropTree(addresses)
 
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             tree.getHexRoot(), // mock merkle root
             1e17.toString(), // price
@@ -135,7 +135,7 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
 
         const { tree } = getAirdropTree(addresses)
 
-        const extension = await WhitelistMerkleTreeExtension.new(
+        const extension = await PresaleListExtension.new(
             nft.address,
             tree.getHexRoot(), // mock merkle root
             1e17.toString(), // price
