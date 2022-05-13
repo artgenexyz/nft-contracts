@@ -24,6 +24,7 @@ const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
 const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const MNEMONIC = process.env.MNEMONIC;
+const ALCHEMY_RINKEBY_API = process.env.ALCHEMY_RINKEBY_API;
 
 console.log('Using env variables', {
     INFURA_KEY: INFURA_KEY ? '✅' : '❌',
@@ -33,6 +34,7 @@ console.log('Using env variables', {
     MOONBEAM_API_KEY: MOONBEAM_API_KEY ? '✅' : '❌',
     MOONRIVER_API_KEY: MOONRIVER_API_KEY ? '✅' : '❌',
     MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
+    ALCHEMY_RINKEBY_API: ALCHEMY_RINKEBY_API ? '✅' : '❌',
 });
 
 const mnemonic = (() => {
@@ -56,9 +58,9 @@ const config: HardhatUserConfig = {
             },
         },
         hardhat: {
-            forking: {
-                url: 'https://eth-rinkeby.alchemyapi.io/v2/3uqnYb74lL7L2HAI_nb_OunBW1FhpFdm',
-            },
+            forking: ALCHEMY_RINKEBY_API ? {
+                url: ALCHEMY_RINKEBY_API,
+            } : undefined,
             accounts: {
                 mnemonic,
             },
