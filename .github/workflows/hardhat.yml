@@ -31,6 +31,8 @@ jobs:
         id: cache-npm-deps
         uses: actions/cache@v2
         with:
+          # we cache node_modules directly, it may have downsides, but much faster
+          # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
           path: ./node_modules
           key: modules-${{ hashFiles('package-lock.json') }}
 
@@ -47,14 +49,9 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
 
-      - name: Codiga GitHub action
-        uses: codiga/github-action@v1
-
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3.0.0
         with:
           # Artifact name
           name: coverage
           path: coverage/
-
-
