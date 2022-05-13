@@ -31,13 +31,11 @@ jobs:
         id: cache-npm-deps
         uses: actions/cache@v2
         with:
-          path: '~/.npm'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          path: ./node_modules
+          key: modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install Dependencies
-        # if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
       - name: Run tests
