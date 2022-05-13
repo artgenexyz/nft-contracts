@@ -48,6 +48,7 @@ jobs:
 
       - name: Run Coverage
         run: npm run coverage
+        continue-on-error: true # https://proinsias.github.io/til/github-actions-continue-on-error/
 
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
