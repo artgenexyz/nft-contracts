@@ -1,4 +1,5 @@
 import fs from "fs";
+import "dotenv/config";
 import { HardhatUserConfig } from "hardhat/config";
 
 import { generateMnemonic } from "bip39";
@@ -22,11 +23,28 @@ const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY;
 const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
+const MNEMONIC = process.env.MNEMONIC;
+
+console.log('Using env variables', {
+    INFURA_KEY: INFURA_KEY ? '✅' : '❌',
+    ETHERSCAN_API_KEY: ETHERSCAN_API_KEY ? '✅' : '❌',
+    POLYGONSCAN_API_KEY: POLYGONSCAN_API_KEY ? '✅' : '❌',
+    BSCSCAN_API_KEY: BSCSCAN_API_KEY ? '✅' : '❌',
+    MOONBEAM_API_KEY: MOONBEAM_API_KEY ? '✅' : '❌',
+    MOONRIVER_API_KEY: MOONRIVER_API_KEY ? '✅' : '❌',
+    MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
+});
 
 const mnemonic = (() => {
+    if (MNEMONIC) {
+        return MNEMONIC;
+    }
+
     try {
-        return process.env.MNEMONIC || fs.readFileSync(".mnemonic").toString().trim();
-    } catch (err) { return generateMnemonic() }
+        return fs.readFileSync(".mnemonic").toString().trim();
+    } catch (err) {
+        return generateMnemonic()
+    }
 })();
 
 const config: HardhatUserConfig = {
