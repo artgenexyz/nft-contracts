@@ -42,7 +42,7 @@ jobs:
         run: npm run compile
 
       - name: Run tests
-        run: npm run test-ci -- --compile-none
+        run: npm run test-ci
 
       - name: Run Coverage
         run: npm run coverage
