@@ -125,6 +125,13 @@ contract MetaverseBaseNFT is ERC721A, ReentrancyGuard, Ownable {
         BASE_URI = _uri;
     }
 
+    /**
+     * To change the starting tokenId, please override this function.
+     */
+    function _startTokenId() internal view virtual override returns (uint256) {
+        return 1;
+    }
+
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
     }
