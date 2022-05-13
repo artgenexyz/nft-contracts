@@ -31,10 +31,6 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world!
 
-      # Hardhat Action
-      - name: Hardhat Solidity
-        uses: amine7777/hardhat-action@v1
-
       - name: Install Dependencies
         run: npm install
 
@@ -43,8 +39,10 @@ jobs:
 
       - name: Run Coverage
         run: npx hardhat coverage
-      
-      # TODO: upload coverage artifacts
+
       - name: Upload Coverage Artifacts
-        run: echo "Coverage not implemented yet"
-        
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          # Artifact name
+          name: coverage
+          path: coverage/
