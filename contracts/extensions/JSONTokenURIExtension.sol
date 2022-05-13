@@ -3,9 +3,9 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./INFTExtension.sol";
-import "./NFTExtension.sol";
-import "../IMetaverseNFT.sol";
+import "../interfaces/IMetaverseNFT.sol";
+import "../interfaces/INFTExtension.sol";
+import "./base/NFTExtension.sol";
 
 contract JSONTokenURIExtension is NFTExtension, INFTURIExtension {
 

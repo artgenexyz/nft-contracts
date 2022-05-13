@@ -3,8 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./INFTExtension.sol";
-import "../IMetaverseNFT.sol";
+import "../../interfaces/INFTExtension.sol";
+import "../../interfaces/IMetaverseNFT.sol";
 
 contract MockTokenURIExtension is INFTURIExtension, ERC165 {
     IMetaverseNFT public immutable nft;
