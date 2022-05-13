@@ -1,9 +1,10 @@
 {
   "scripts": {
-    "compile": "truffle compile",
+    "compile": "hardhat compile",
     "deploy:local": "echo RUN GANACHE FIRST; truffle migrate",
     "deploy": "truffle migrate --network rinkeby",
-    "test": "truffle test"
+    "test": "hardhat test",
+    "coverage": "hardhat coverage"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.1",
