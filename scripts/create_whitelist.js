@@ -89,7 +89,7 @@ console.log("");
     const args = encodeURI(JSON.stringify([ token, root, price.toString(), limitPerAddress ]));
 
     // result of running:
-    // truffle exec scripts/upload.mjs WhitelistMerkleTreeExtension --network rinkeby
+    // truffle exec scripts/upload.mjs PresaleListExtension --network rinkeby
     const whitelistHash = 'bafkreidvqvbflsd2ngh6u6kw2fysrf2n5dm7h6dxmlkao7vzlizz2itk7m'
 
     const deploy_url = `https://gate.buildship.dev/deploy/${whitelistHash}?args=${args}`
