@@ -143,7 +143,7 @@ contract("Ameegos Mint Pass – mainnet fork", function (accounts) {
     it("shouldn't be able to mint from user2 directly on nft", async function () {
         await expectRevert(
             nft.mint(1, { from: user2 }),
-            "user is not whitelisted."
+            "user is not whitelisted"
         );
     });
 
