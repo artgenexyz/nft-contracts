@@ -1,12 +1,12 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Test Contracts
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on pull request events but only for the main branch
   push:
-    # empty means all commits
+    branches:
+      - main
+      - core-*
   pull_request:
     branches:
       - main
