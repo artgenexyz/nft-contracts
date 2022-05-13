@@ -8,7 +8,6 @@ const { getGasCost } = require("../utils");
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
-
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
