@@ -8,7 +8,7 @@ const { getGasCost } = require("../utils");
 const NFTFactory = artifacts.require("ArtNFTFactory");
 const ArtNFT = artifacts.require("ArtNFT");
 const NFTExtension = artifacts.require("NFTExtension");
-const WhitelistMerkleTreeExtension = artifacts.require("WhitelistMerkleTreeExtension");
+const PresaleListExtension = artifacts.require("PresaleListExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
