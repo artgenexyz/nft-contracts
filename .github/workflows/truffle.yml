@@ -37,7 +37,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install Dependencies
-        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        # if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm install
 
       - name: Compile contracts
