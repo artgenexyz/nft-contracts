@@ -8,8 +8,7 @@ const ether = 1e18;
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("GaslessNFT", function (accounts, network) {
-  const [ owner, beneficiary ] = accounts;
+contract("GaslessNFT", (accounts) => {
 
   it("should assert true", async function () {
     await GaslessNFT.new();
@@ -69,15 +68,6 @@ contract("GaslessNFT", function (accounts, network) {
     await contract.transferFrom(accounts[0], accounts[1], tokenId, { from: accounts[0] });
     assert.equal(await contract.ownerOf(tokenId), accounts[1]);
   });
-
-  // test that the contract is able to burn a token
-  xit("should burn a token", async function () {
-    const contract = await GaslessNFT.new();
-    const tokenId = await contract.mint({ from: accounts[0] });
-    await contract.burn(tokenId, { from: accounts[0] });
-    assert.equal(await contract.ownerOf(tokenId), 0);
-  });
-
 
   // test that it can mint token and the amount of ether transferred approximates the cost of the transaction
   it("should mint a token and the amount of ether transferred approximates the cost of the transaction [ @skip-on-coverage ]", async function () {
