@@ -8,7 +8,6 @@ const { getGasCost } = require("../utils");
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
-
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
@@ -360,4 +359,17 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
         );
 
     });
+
+    // it should be able to freeze minting and then startSale doesnt work
+    it("should be able to freeze minting and then startSale doesnt work", async () => {
+        await nft.startSale();
+        await nft.freeze();
+
+        try {
+            await nft.startSale();
+        } catch (error) {
+            assert.include(error.message, "Minting is frozen");
+        }
+    });
+
 })

@@ -3,7 +3,11 @@
     "compile": "truffle compile",
     "deploy:local": "echo RUN GANACHE FIRST; truffle migrate",
     "deploy": "truffle migrate --network rinkeby",
-    "test": "truffle test"
+    "hardhat-test": "hardhat test",
+    "hardhat-coverage": "hardhat coverage",
+    "test": "truffle test",
+    "test-ci": "npx ganache --instamine eager --chain.vmErrorsOnRPCResponse true & npm run test -- --compile-none",
+    "coverage": "truffle run coverage"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.1",

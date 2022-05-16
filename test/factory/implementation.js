@@ -9,7 +9,6 @@ const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
-
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
