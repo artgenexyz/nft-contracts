@@ -87,14 +87,9 @@
 
 import { ethers, network } from "hardhat";
 import { expect } from "chai";
-
-import { MetaverseBaseNFT } from "../../typechain-types/contracts/MetaverseBaseNFT";
-
-
-import { MultiRaffleExtension } from "../../typechain-types/contracts/extensions/MultiRaffleExtension";
-import { MultiRaffleExtension__factory } from "../../typechain-types/factories/contracts/extensions/MultiRaffleExtension__factory";
-import { MetaverseBaseNFT__factory } from "../../typechain-types/factories/contracts/MetaverseBaseNFT__factory";
 import { Contract } from "ethers";
+
+import { MultiRaffleExtension, MetaverseBaseNFT, MultiRaffleExtension__factory, MetaverseBaseNFT__factory } from '../../typechain-types'
 
 const { parseEther } = ethers.utils;
 
@@ -128,6 +123,7 @@ const currentTimestamp = () => {
 }
 
 describe("MultiRaffleExtension", function () {
+
     let factories: {
         MetaverseBaseNFT: MetaverseBaseNFT__factory;
         MultiRaffleExtension: MultiRaffleExtension__factory;
@@ -138,8 +134,8 @@ describe("MultiRaffleExtension", function () {
     let link: Contract;
 
     beforeEach(async function () {
-        const MetaverseNFT = await ethers.getContractFactory("MetaverseBaseNFT") as MetaverseBaseNFT__factory;
-        const Raffle = await ethers.getContractFactory("MultiRaffleExtension") as MultiRaffleExtension__factory;
+        const MetaverseNFT = await ethers.getContractFactory("MetaverseBaseNFT")
+        const Raffle = await ethers.getContractFactory("MultiRaffleExtension")
 
         factories = {
             MetaverseBaseNFT: MetaverseNFT,
@@ -147,7 +143,13 @@ describe("MultiRaffleExtension", function () {
         };
 
         nft = await MetaverseNFT.deploy(
-            parseEther("0.1"), 1000, 10, 10, 0, "ipfs://QmMetadataHash/", "NFT", "NFT", false
+            parseEther("0.1"),
+            10, // max supply
+            2, // reserved
+            10, // max per tx
+            0, // royalty
+            "ipfs://QmMetadataHash/", "NFT", "NFT",
+            false,
         );
 
         const ERC20 = await ethers.getContractFactory("MockERC20CurrencyToken");
@@ -160,7 +162,7 @@ describe("MultiRaffleExtension", function () {
         const [owner] = await ethers.getSigners();
 
         const raffleExtension = await factories.MultiRaffleExtension.deploy(
-            owner.address, // nft address
+            nft.address, // nft address
             chainlinkParams[0],
             chainlinkParams[1],
             chainlinkParams[2],
@@ -171,7 +173,7 @@ describe("MultiRaffleExtension", function () {
             6
         );
 
-        expect(await raffleExtension.nft()).to.equal(owner.address);
+        expect(await raffleExtension.nft()).to.equal(nft.address);
     });
 
     // it should deploy and add extension to MetaverseBaseNFT
@@ -212,7 +214,7 @@ describe("MultiRaffleExtension", function () {
             currentTimestamp() - 100,
             currentTimestamp() + 60, // 1 minute raffle
             10, // available supply
-            6
+            5,
         );
 
         await nft.addExtension(raffle.address);
@@ -239,7 +241,7 @@ describe("MultiRaffleExtension", function () {
     });
 
     // it should not mint more than AVAILABLE SUPPLY if number of entries is more than AVAILABLE SUPPLY
-    xit("should not mint more than AVAILABLE SUPPLY if number of entries is more than AVAILABLE SUPPLY", async function () {
+    it("should not mint more than AVAILABLE SUPPLY if number of entries is more than AVAILABLE SUPPLY", async function () {
         const [ owner, alice, bob ] = await ethers.getSigners();
 
         raffle = await factories.MultiRaffleExtension.deploy(
@@ -251,7 +253,7 @@ describe("MultiRaffleExtension", function () {
             currentTimestamp() - 100,
             currentTimestamp() + 200, // 1 minute raffle
             10, // available supply
-            8
+            10,
         );
 
         await nft.addExtension(raffle.address);
@@ -266,15 +268,27 @@ describe("MultiRaffleExtension", function () {
         await network.provider.send("evm_increaseTime", [400])
         await network.provider.send("evm_mine")
 
-        await link.connect(owner).transfer(raffle.address, parseEther("0.5")); // 0.25 LINK per randomness
+        await link.connect(owner).transfer(raffle.address, parseEther("2.5")); // 0.25 LINK per randomness
 
         expect(await link.balanceOf(raffle.address)).to.be.above(parseEther("0"));
         expect(await link.balanceOf(owner.address)).to.be.below(parseEther("10"));
 
-        const reqId = await raffle.callStatic.setClearingEntropy();
-        console.log('calling setClearing', reqId);
+        const _tx = await raffle.setClearingEntropy();
 
-        await raffle.setClearingEntropy();
+        const tx = await _tx.wait();
+
+        // extract logs from tx, event RandomWordsRequested.requestId
+        const logs = tx.logs;
+        expect(logs.length).to.equal(1);
+
+        console.log('logs', logs);
+
+        const randomWordsRequested = logs[0];
+        expect(randomWordsRequested.topics[0]).to.not.be.empty;
+
+        const reqId = randomWordsRequested.topics[0];
+
+        console.log('calling setClearing', reqId);
 
         const VRF_COORDINATOR_ADDRESS = chainlinkParams[2];
 
@@ -284,12 +298,24 @@ describe("MultiRaffleExtension", function () {
             params: [VRF_COORDINATOR_ADDRESS],
         });
 
+        // delay 3 seconds
+        await network.provider.send("evm_increaseTime", [3000])
+        await network.provider.send("evm_mine")
+
+        // top up eth balance for VRF_COORDINATOR_ADDRESS
+        await owner.sendTransaction({
+            to: VRF_COORDINATOR_ADDRESS,
+            value: parseEther("0.1"),
+        });
+
         const signer = await ethers.getSigner(VRF_COORDINATOR_ADDRESS);
 
-        await raffle.connect(signer).rawFulfillRandomness(reqId, "0x1337");
+        await raffle.connect(signer).rawFulfillRandomWords(reqId, ["0xefb16d61046900da527008568620fb9f8420e2f5ed4de3bfbded5035c9362b0e"]);
 
+        console.log('calling clearRaffle');
         await raffle.clearRaffle(7);
 
+        console.log('calling claimRaffle');
         await raffle.connect(alice).claimRaffle([0,1,2,3,4,5,6]);
         await raffle.connect(bob).claimRaffle([7,8,9,10,11]);
 

@@ -37,6 +37,7 @@ interface IMetaverseNFT is IAvatarNFT {
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount);
     function totalSupply() external view returns (uint256);
+    function maxSupply() external view returns (uint256);
 
     // ------ Admin functions ------
     function setRoyaltyReceiver(address receiver) external;

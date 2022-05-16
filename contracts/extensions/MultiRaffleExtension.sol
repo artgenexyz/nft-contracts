@@ -6,9 +6,10 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol"; // OZ: Ownership
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol"; // OZ: ERC721
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol"; // Chainlink VRF
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol"; // Chainlink VRF
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol"; // Chainlink VRF
 
 import "./base/NFTExtension.sol";
 import "../interfaces/INFTExtension.sol";
@@ -16,7 +17,7 @@ import "../interfaces/INFTExtension.sol";
 /// @title MultiRaffle
 /// @author Anish Agnihotri, caffeinum
 /// @notice Multi-winner ERC721 distribution (randomized raffle & metadata), packed as Extension for MetaverseNFT contracts
-contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase, Ownable {
+contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBaseV2, Ownable {
 
     /// ============ Structs ============
 
@@ -32,16 +33,20 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
 
     /// ============ Immutable storage ============
 
+    /// @notice Chainlink VRF v2 Coordinator
+    VRFCoordinatorV2Interface public immutable COORDINATOR;
     /// @notice LINK token
     IERC20 public immutable LINK_TOKEN;
+    /// @notice price per randomness request
+    uint256 public constant LINK_REQUEST_PRICE = 2e18; // Premium	0.25 LINK
     /// @dev Chainlink key hash
     bytes32 internal immutable KEY_HASH;
     /// @notice Cost to mint each NFT (in wei)
     uint256 public immutable MINT_COST;
     /// @notice Start time for raffle
-    uint256 public immutable RAFFLE_START_TIME;
+    uint256 public RAFFLE_START_TIME;
     /// @notice End time for raffle
-    uint256 public immutable RAFFLE_END_TIME;
+    uint256 public RAFFLE_END_TIME;
     /// @notice Available NFT supply
     uint256 public immutable AVAILABLE_SUPPLY;
     /// @notice Maximum mints per address
@@ -93,6 +98,10 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
     /// @param losingTickets Number of losing raffle tickets refunded
     event RaffleClaimed(address indexed user, uint256 winningTickets, uint256 losingTickets);
 
+    /// @notice Emit Chainlink Request ID for debugging
+    /// @param requestId Chainlink Request ID
+    event RandomWordsRequested(uint256 requestId);
+
     /// ============ Constructor ============
 
     /// @notice Creates a new NFT distribution contract
@@ -103,7 +112,7 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
     /// @param _MINT_COST in wei per NFT
     /// @param _RAFFLE_START_TIME in seconds to begin raffle
     /// @param _RAFFLE_END_TIME in seconds to end raffle
-    /// @param _AVAILABLE_SUPPLY total NFTs to sell
+    // / @param _AVAILABLE_SUPPLY total NFTs to sell
     /// @param _MAX_PER_ADDRESS maximum mints allowed per address
     constructor(
         address _NFT,
@@ -116,19 +125,23 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
         uint256 _AVAILABLE_SUPPLY,
         uint256 _MAX_PER_ADDRESS
     ) 
-        VRFConsumerBase(
-            _LINK_VRF_COORDINATOR_ADDRESS,
-            _LINK_ADDRESS
-        )
+        VRFConsumerBaseV2(_LINK_VRF_COORDINATOR_ADDRESS)
         NFTExtension(_NFT)
     {
+        COORDINATOR = VRFCoordinatorV2Interface(_LINK_VRF_COORDINATOR_ADDRESS);
+
         LINK_TOKEN = IERC20(_LINK_ADDRESS);
         KEY_HASH = _LINK_KEY_HASH;
         MINT_COST = _MINT_COST;
+
         RAFFLE_START_TIME = _RAFFLE_START_TIME;
         RAFFLE_END_TIME = _RAFFLE_END_TIME;
+
+        require(_AVAILABLE_SUPPLY <= nft.maxSupply(), "Cannot raffle more tokens that available on base nft");
+
         AVAILABLE_SUPPLY = _AVAILABLE_SUPPLY;
         MAX_PER_ADDRESS = _MAX_PER_ADDRESS;
+
     }
 
     /// ============ Functions ============
@@ -252,39 +265,72 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
     }
 
     /// @notice Sets entropy for clearing via shuffle
-    function setClearingEntropy() external returns (bytes32 requestId) {
+    function setClearingEntropy() external returns (bytes32) {
         // Ensure raffle has ended
+        console.log("Ensure raffle has ended", block.timestamp, RAFFLE_END_TIME);
         require(block.timestamp > RAFFLE_END_TIME, "Raffle still active");
         // Ensure contract has sufficient LINK balance
-        require(LINK_TOKEN.balanceOf(address(this)) >= 2e18, "Insufficient LINK");
+        console.log("Checking LINK balance", LINK_TOKEN.balanceOf(address(this)));
+        require(LINK_TOKEN.balanceOf(address(this)) >= LINK_REQUEST_PRICE, "Insufficient LINK");
         // Ensure raffle requires entropy (entries !< supply)
+        console.log("Ensuring raffle requires entropy", raffleEntries.length, AVAILABLE_SUPPLY);
         require(raffleEntries.length > AVAILABLE_SUPPLY, "Raffle does not need entropy");
         // Ensure raffle requires entropy (entropy not already set)
+        console.log("Ensuring raffle requires entropy", clearingEntropySet);
         require(!clearingEntropySet, "Clearing entropy already set");
 
         console.log("Setting clearing entropy");
 
         // Request randomness from Chainlink VRF
-        return requestRandomness(KEY_HASH, 2e18);
+        // return requestRandomness(KEY_HASH, LINK_REQUEST_PRICE);
+        uint256 requestId = COORDINATOR.requestRandomWords(
+            KEY_HASH,
+            4414, // subscriptionId
+            3, // requestConfirmations
+            200_000, // callbackGasLimit,
+            1 // number of words
+        );
+
+        emit RandomWordsRequested(requestId);
+
+        return bytes32(requestId);
     }
 
     /// @notice Reveals metadata for all NFTs with reveals pending (batch reveal)
-    function revealPendingMetadata() external returns (bytes32 requestId) {
+    function revealPendingMetadata() external returns (bytes32) {
         // Ensure raffle has ended
         // Ensure at least 1 NFT has been minted
         // Ensure at least 1 minted NFT requires metadata
         require(nftCount - nftRevealedCount > 0, "No NFTs pending metadata reveal");
         // Ensure contract has sufficient LINK balance
-        require(LINK_TOKEN.balanceOf(address(this)) >= 2e18, "Insufficient LINK");
+        require(LINK_TOKEN.balanceOf(address(this)) >= LINK_REQUEST_PRICE, "Insufficient LINK");
 
         // Request randomness from Chainlink VRF
-        return requestRandomness(KEY_HASH, 2e18);
+        // return requestRandomness(KEY_HASH, LINK_REQUEST_PRICE);
+        uint256 requestId = COORDINATOR.requestRandomWords(
+            KEY_HASH,
+            4414, // subscriptionId
+            3, // requestConfirmations
+            200_000, // callbackGasLimit,
+            1 // number of words
+        );
+
+        emit RandomWordsRequested(requestId);
+
+        return bytes32(requestId);
     }
 
+    // function fulfillRandomness(bytes32, uint256 randomness) internal override {
     /// @notice Fulfills randomness from Chainlink VRF
     /// param requestId returned id of VRF request
-    /// @param randomness random number from VRF
-    function fulfillRandomness(bytes32, uint256 randomness) internal override {
+    /// @param randomWords random words from VRF
+    function fulfillRandomWords(uint256, /* requestId */ uint256[] memory randomWords) internal override {
+        /// TODO:
+        /// should we use more entropy from random words?
+        /// 500 words * bytes32 allows us to shuffle up to 128,000 combinations
+        /// while 10,000 NFTs can be shuffled in so much different ways:
+        /// https://www.reddit.com/r/ethereum/comments/6xj7qy/how_many_different_shuffles_can_you_get_from_10k/
+
         // If auction is cleared
         // Or, if auction does not need clearing
         if (clearingEntropySet || raffleEntries.length < AVAILABLE_SUPPLY) {
@@ -292,7 +338,7 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
             metadatas.push(Metadata({
                 startIndex: nftRevealedCount + 1,
                 endIndex: nftCount + 1,
-                entropy: randomness
+                entropy: randomWords[0]
             }));
             // Update number of revealed NFTs
             nftRevealedCount = nftCount;
@@ -300,7 +346,7 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
         }
 
         // Else, set entropy
-        entropy = randomness;
+        entropy = randomWords[0];
         // Update entropy set status
         clearingEntropySet = true;
     }
@@ -331,6 +377,12 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
         emit RaffleProceedsClaimed(msg.sender, proceeds);
     }
 
+    function updateRaffleControl (uint256 _startTime, uint256 _endTime) public onlyOwner {
+        RAFFLE_START_TIME = _startTime;
+        RAFFLE_END_TIME = _endTime;
+
+    }
+
     /// ============ Developer-defined functions ============
 
     /// @notice Returns metadata about a token (depending on randomness reveal status)
@@ -359,6 +411,20 @@ contract MultiRaffleExtension is NFTExtension, INFTURIExtension, VRFConsumerBase
         string memory output = string(abi.encodePacked(parts[0], parts[1], parts[2]));
 
         return output;
+    }
+
+    // -------- ERC721 overrides --------
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override (IERC165, NFTExtension)
+        returns (bool)
+    {
+        return interfaceId == type(INFTURIExtension).interfaceId
+            || interfaceId == type(INFTExtension).interfaceId
+            || super.supportsInterface(interfaceId);
     }
 
     /// @notice Converts a uint256 to its string representation
