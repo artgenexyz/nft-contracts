@@ -22,6 +22,7 @@ contract MetaverseNFTFactory is Ownable {
 
     address public immutable proxyImplementation;
     IERC721 public earlyAccessPass;
+    uint256 public maxAllowedAmount = 50 ether; // launch for free if your collection collects less than this amount
 
     // bitmask params
     uint32 constant SHOULD_START_AT_ONE = 1 << 1;
@@ -49,6 +50,11 @@ contract MetaverseNFTFactory is Ownable {
         _;
     }
 
+    modifier checkTotalAmount(uint256 amount) {
+        require(amount < maxAllowedAmount, "MetaverseNFTFactory: Early Access Pass is required");
+        _;
+    }
+
     constructor(address _earlyAccessPass) {
         proxyImplementation = address(new MetaverseNFT());
 
@@ -70,6 +76,10 @@ contract MetaverseNFTFactory is Ownable {
 
     function updateEarlyAccessPass(address _earlyAccessPass) public onlyOwner {
         earlyAccessPass = IERC721(_earlyAccessPass);
+    }
+
+    function updateMaxAllowedAmount(uint256 _maxAllowedAmount) public onlyOwner {
+        maxAllowedAmount = _maxAllowedAmount;
     }
 
     function createNFT(
@@ -177,4 +187,68 @@ contract MetaverseNFTFactory is Ownable {
         );
     }
 
+    function createNFTWithoutAccessPass (
+        uint256 _startPrice,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxTokensPerMint,
+        uint256 _royaltyFee,
+        string memory _uri,
+        string memory _name, string memory _symbol,
+        address payoutReceiver,
+        bool shouldUseJSONExtension,
+        uint16 miscParams
+    ) external checkTotalAmount(_startPrice * _maxSupply) {
+
+        address clone = Clones.clone(proxyImplementation);
+
+        // params is a bitmask of:
+
+        // bool shouldUseJSONExtension = (miscParams & 0x01) == 0x01;
+        // bool startTokenIdAtOne = (miscParams & 0x02) == 0x02;
+        // bool shouldStartSale = (miscParams & 0x04) == 0x04;
+        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+
+        MetaverseNFT(payable(clone)).initialize(
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _maxTokensPerMint,
+            _royaltyFee,
+            _uri,
+            _name, _symbol,
+            miscParams & SHOULD_START_AT_ONE != 0
+        );
+
+        if (shouldUseJSONExtension) {
+            MetaverseNFT(payable(clone)).setPostfixURI(".json");
+        }
+
+        if (miscParams & SHOULD_START_SALE != 0) {
+            MetaverseNFT(payable(clone)).startSale();
+        }
+
+        if (payoutReceiver != address(0)) {
+            MetaverseNFT(payable(clone)).setPayoutReceiver(payoutReceiver);
+        }
+
+        if (miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0) {
+            MetaverseNFT(payable(clone)).lockPayoutChange();
+        }
+
+        MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
+ 
+        emit NFTCreated(
+            clone,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol,
+            shouldUseJSONExtension,
+            miscParams & SHOULD_START_AT_ONE != 0,
+            miscParams & SHOULD_START_SALE != 0,
+            miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
+        );
+    }
 }

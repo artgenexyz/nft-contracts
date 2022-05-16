@@ -71,7 +71,7 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
             // await run("flatten", [ sourcePath, "./tmp/Flattened.sol" ]);
 
             // const sh = `npx truffle-flattener ${sourcePath} | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' > ./tmp/Flattened.sol`;
-            const sh = `npx hardhat flatten "${sourcePath}" | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' > ./tmp/Flattened.sol`;
+            const sh = `npx hardhat flatten "${sourcePath}" > ./tmp/Flattened.sol`;
 
             // run the flattener
             console.log("\nRunning command:", sh);
@@ -96,6 +96,21 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
             if (!flattened) {
                 throw new Error("No flattened contract");
             }
+
+            // from https://github.com/boringcrypto/dictator-dao/blob/a3de9f606d05852eb5cfa811a3f38870ab22800a/hardhat.config.js#L60
+
+            // Remove every line started with "// SPDX-License-Identifier:"
+            flattened = flattened.replace(/SPDX-License-Identifier:/gm, "License-Identifier:")
+
+            flattened = `// SPDX-License-Identifier: MIXED\n\n${flattened}`
+
+            // Remove every line started with "pragma experimental ABIEncoderV2;" except the first one
+            flattened = flattened.replace(/pragma experimental ABIEncoderV2;\n/gm, ((i) => (m: string) => (!i++ ? m : ""))(0))
+
+            flattened = flattened.trim()
+
+            // write it back
+            fs.writeFileSync("./tmp/Flattened.sol", flattened);
 
         } catch (err) {
             // process exit with error message
