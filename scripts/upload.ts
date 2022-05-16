@@ -10,19 +10,19 @@ import { NFTStorage, Blob } from "nft.storage";
 const NFT_STORAGE_API_KEY = process.env.NFT_STORAGE_API_KEY;
 const argv = minimist(process.argv.slice(2));
 
-if (!NFT_STORAGE_API_KEY) {
-    console.error('Please put NFT_STORAGE_API_KEY in .env');
-    process.exit(-1);
-}
-
-const client = new NFTStorage({ token: NFT_STORAGE_API_KEY });
-
 // Uploads a compiled contract to IPFS and returns its hash
 task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 .addPositionalParam("contract", "Contract to deploy")
 .addOptionalParam("args", "Deploy arguments")
 .setAction(async (taskArgs, hre) => {
     try {
+
+        if (!NFT_STORAGE_API_KEY) {
+            console.error('Please put NFT_STORAGE_API_KEY in .env');
+            process.exit(-1);
+        }
+
+        const client = new NFTStorage({ token: NFT_STORAGE_API_KEY });
 
         await hre.run("compile");
 
