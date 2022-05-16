@@ -10,6 +10,8 @@ coverage.json
 
 .coverage_*
 
+cache
+
 test_results
 typechain-types
 
