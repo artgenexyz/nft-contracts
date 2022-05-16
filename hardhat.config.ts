@@ -1,4 +1,5 @@
 import fs from "fs";
+import { stdout } from "process";
 import "dotenv/config";
 import { HardhatUserConfig } from "hardhat/config";
 
@@ -17,6 +18,8 @@ import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
 
+import "./scripts/upload";
+
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
@@ -25,7 +28,7 @@ const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const MNEMONIC = process.env.MNEMONIC;
 
-console.log('Using env variables', {
+stdout.isTTY && console.log('Using env variables', {
     INFURA_KEY: INFURA_KEY ? '✅' : '❌',
     ETHERSCAN_API_KEY: ETHERSCAN_API_KEY ? '✅' : '❌',
     POLYGONSCAN_API_KEY: POLYGONSCAN_API_KEY ? '✅' : '❌',
