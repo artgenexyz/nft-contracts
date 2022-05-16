@@ -310,7 +310,7 @@ describe("MultiRaffleExtension", function () {
 
         const signer = await ethers.getSigner(VRF_COORDINATOR_ADDRESS);
 
-        await raffle.connect(signer).rawFulfillRandomWords(reqId, ["0xefb16d61046900da527008568620fb9f8420e2f5ed4de3bfbded5035c9362b0e"]);
+        await raffle.connect(signer).rawFulfillRandomWords(reqId, [12312312312312]);
 
         console.log('calling clearRaffle');
         await raffle.clearRaffle(7);
