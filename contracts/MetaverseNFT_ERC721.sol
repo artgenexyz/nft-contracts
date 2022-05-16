@@ -7,7 +7,7 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -45,8 +45,8 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseNFT is
-    ERC721AUpgradeable,
+contract MetaverseNFT_ERC721 is
+    ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     IMetaverseNFT // implements IERC2981
@@ -108,7 +108,7 @@ contract MetaverseNFT is
         string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        __ERC721A_init(_name, _symbol);
+        __ERC721_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
 
@@ -140,10 +140,6 @@ contract MetaverseNFT is
         return BASE_URI;
     }
 
-    function _startTokenId() internal view virtual override returns (uint256) {
-        return startAtOne ? 1 : 0;
-    }
-
     function contractURI() public view returns (string memory uri) {
         uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : _baseURI();
     }
@@ -173,7 +169,12 @@ contract MetaverseNFT is
     }
 
     function startTokenId() public view returns (uint256) {
-        return _startTokenId();
+        return startAtOne ? 1 : 0;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        // Only works like this for sequential mint tokens
+        return _tokenIndexCounter.current();
     }
 
     // ----- Admin functions -----
@@ -280,19 +281,16 @@ contract MetaverseNFT is
         bytes32 extraData
     ) internal {
         require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
+            _tokenIndexCounter.current() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        for (uint256 i; i < nTokens; i++) {
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
-        _safeMint(to, nTokens, "");
-
-        if (extraData.length > 0) {
-            for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
-                data[tokenId] = extraData;
-            }
+            _safeMint(to, tokenId);
+            data[tokenId] = extraData;
         }
     }
 
