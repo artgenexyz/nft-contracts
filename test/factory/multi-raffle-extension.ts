@@ -89,6 +89,8 @@ import { ethers, network } from "hardhat";
 import { expect } from "chai";
 
 import { MetaverseBaseNFT } from "../../typechain-types/contracts/MetaverseBaseNFT";
+
+
 import { MultiRaffleExtension } from "../../typechain-types/contracts/extensions/MultiRaffleExtension";
 import { MultiRaffleExtension__factory } from "../../typechain-types/factories/contracts/extensions/MultiRaffleExtension__factory";
 import { MetaverseBaseNFT__factory } from "../../typechain-types/factories/contracts/MetaverseBaseNFT__factory";
@@ -145,7 +147,7 @@ describe("MultiRaffleExtension", function () {
         };
 
         nft = await MetaverseNFT.deploy(
-            parseEther("0.1"), 1000, 10, 10, 0, "ipfs://QmMetadataHash/", "NFT", "NFT"
+            parseEther("0.1"), 1000, 10, 10, 0, "ipfs://QmMetadataHash/", "NFT", "NFT", false
         );
 
         const ERC20 = await ethers.getContractFactory("MockERC20CurrencyToken");
