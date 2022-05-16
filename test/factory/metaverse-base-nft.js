@@ -29,6 +29,7 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
             "ipfs://factory-test/",
             "Test",
             "NFT",
+            false,
         );
     });
 
@@ -321,7 +322,8 @@ contract("MetaverseBaseNFT – Implementation", accounts => {
             20,
             500, // royalty
             "https://metadata.buildship.dev/",
-            "Avatar Collection NFT", "NFT"
+            "Avatar Collection NFT", "NFT",
+            false
         );
 
         await nft.startSale();

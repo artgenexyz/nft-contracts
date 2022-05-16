@@ -39,7 +39,7 @@ const getAirdropTree = (addresses) => {
 }
 
 const createNFTSale = (MetaverseBaseNFT) => {
-    return MetaverseBaseNFT.new(ether("0.1"), 1000, 10, 10, 0, "ipfs://avatar-nft/", "NFT", "NFT")
+    return MetaverseBaseNFT.new(ether("0.1"), 1000, 10, 10, 0, "ipfs://avatar-nft/", "NFT", "NFT", false)
 }
 
 async function mineBlock() {
