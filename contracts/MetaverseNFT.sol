@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.9;
 
 /**
 * @title LICENSE REQUIREMENT
@@ -62,7 +62,6 @@ contract MetaverseNFT is
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
-    uint256 public createdAt;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -106,14 +105,14 @@ contract MetaverseNFT is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol,
+        string memory _name,
+        string memory _symbol,
         bool _startAtOne
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
 
-        createdAt = block.timestamp;
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -354,8 +353,6 @@ contract MetaverseNFT is
     }
 
     function setRoyaltyReceiver(address _receiver) public onlyOwner {
-        // remove because opensea doesn't care about this anyway
-        // require(block.timestamp >= createdAt + 26 weeks, "Only after 6 months of contract creation can the royalty receiver be changed.");
         royaltyReceiver = _receiver;
     }
 
@@ -379,7 +376,7 @@ contract MetaverseNFT is
 
     // ---- Withdraw -----
 
-    function withdraw() public onlyOwner {
+    function withdraw() public virtual onlyOwner {
         uint256 balance = address(this).balance;
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
@@ -390,7 +387,7 @@ contract MetaverseNFT is
         Address.sendValue(dev, balance - amount);
     }
 
-    function withdrawToken(IERC20 token) public onlyOwner {
+    function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
 
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
