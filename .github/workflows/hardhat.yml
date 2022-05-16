@@ -40,6 +40,9 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
+      - name: Generate Typechain
+        run: npm run typechain
+
       - name: Run tests
         run: npm run hardhat-test
 
