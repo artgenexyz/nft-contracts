@@ -55,43 +55,13 @@ contract("MintPass – Extension", (accounts) => {
         assert.equal(price, 1e18.toString());
     }) 
 
-    // should be possible to update maxPerToken
-    xit("should be possible to update maxPerToken", async() => {
-        await extension.updateMaxPerToken('10');
-        let maxPerToken = await extension.maxPerToken.call().then(callback => {
-            return callback.toString();
-        })  
-        assert.equal(maxPerToken, '10');     
-    }) 
-
     // should be possible to update mintPassAddress
     it("should be possible to update mintPassAddress", async() => {
         await extension.updateMintPassAddress(user1, {from: owner});
         let mintPassAddress = await extension.mintPassAddress.call()
 
         assert.equal(mintPassAddress.toString(), user1);
-    }) 
-
-    // should be possible to update nRemainingTokens
-    xit("should be possible to update nRemainingTokens", async () => {
-        await extension.updateRemainingTokens('200', {from: owner});
-
-        let nRemainingTokens = await extension.nRemainingTokens.call()
-
-        assert.equal(nRemainingTokens.toString(), '200');
     })
-
-    // should be possible to increase nRemainingTokens
-    xit("should be possible to increase nRemainingTokens", async () => {
-        await extension.increaseRemainingTokens('200', {from: owner});
-
-        let nRemainingTokens = await extension.nRemainingTokens.call().then(callback => {
-            return callback.toString();
-        });
-
-        assert.equal(nRemainingTokens, '300');
-    })
-
 
     // should be possible to mint
     it("should be possible to mint", async () => {
