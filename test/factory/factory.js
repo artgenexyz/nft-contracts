@@ -1,12 +1,12 @@
 const BigNumber = require("bignumber.js");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { assert, expect } = require("chai");
-const { getGasCost } = require("../utils");
+const { getGasCost, createNFTSale } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const ether = new BigNumber(1e18);
 
@@ -27,11 +27,11 @@ contract("MetaverseNFTFactory", (accounts) => {
     const [owner, user1, user2, user3] = accounts;
 
     beforeEach(async () => {
-        pass = await TemplateNFTv2.new();
+        pass = await createNFTSale(MetaverseBaseNFT);
         factory = await NFTFactory.new(pass.address);
 
-        await pass.claimReserved(1, owner, { from: owner });
-        await pass.claimReserved(1, user1, { from: owner });
+        await pass.claim(1, owner, { from: owner });
+        await pass.claim(1, user1, { from: owner });
     });
 
     // it should deploy successfully

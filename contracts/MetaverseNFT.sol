@@ -7,14 +7,12 @@ pragma solidity ^0.8.9;
 * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
 */
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -48,10 +46,10 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;           
 //            '''                  cc             
 //                                ,'              
-contract MetaverseBaseNFT is
-    ERC721,
-    ReentrancyGuard,
-    Ownable,
+contract MetaverseNFT is
+    ERC721Upgradeable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -100,7 +98,7 @@ contract MetaverseBaseNFT is
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
 
-    constructor(
+    function initialize(
         uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
@@ -110,7 +108,10 @@ contract MetaverseBaseNFT is
         string memory _name,
         string memory _symbol,
         bool _startAtOne
-    ) ERC721(_name, _symbol) {
+    ) public initializer {
+        __ERC721_init(_name, _symbol);
+        __ReentrancyGuard_init();
+        __Ownable_init();
 
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -126,8 +127,15 @@ contract MetaverseBaseNFT is
 
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
-
     }
+
+    // This constructor ensures that this contract can only be used as a master copy
+    // Marking constructor as initializer makes sure that real initializer cannot be called
+    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
+    // on the other hand, it's impossible to call this function in proxy,
+    // so the real initializer is the only initializer
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
 
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
@@ -250,6 +258,7 @@ contract MetaverseBaseNFT is
     // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
     function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive) public onlyOwner {
         isOpenSeaProxyActive = _isOpenSeaProxyActive;
+
     }
 
     // ---- Minting ----
