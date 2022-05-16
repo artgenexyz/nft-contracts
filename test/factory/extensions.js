@@ -4,26 +4,26 @@ const { assert, expect } = require("chai");
 const keccak256 = require("keccak256");
 const delay = require("delay");
 
-const { getGasCost, getAirdropTree, processAddress } = require("../utils");
+const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require("../utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const AvatarNFTv2 = artifacts.require("AvatarNFTv2");
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("AvatarNFTv2 – Extensions", (accounts) => {
+contract("MetaverseBaseNFT – Extensions", (accounts) => {
     let nft;
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await TemplateNFTv2.new();
+        nft = await createNFTSale(MetaverseBaseNFT);
     });
 
     // it should deploy successfully
@@ -173,10 +173,10 @@ contract("AvatarNFTv2 – Extensions", (accounts) => {
     });
 
     // it should allow to mint from ERC20SaleExtension
-    xit ("it should allow to mint from ERC20SaleExtension", async () => {
+    it ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const pass = await TemplateNFTv2.new();
-        await pass.claimReserved(2, owner);
+        const pass = await createNFTSale(MetaverseBaseNFT);
+        await pass.claim(2, owner);
 
         const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
         const metaverseAddr = (await metaverseFactory.createNFT(

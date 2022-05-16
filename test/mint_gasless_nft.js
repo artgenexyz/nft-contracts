@@ -8,25 +8,24 @@ const ether = 1e18;
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("GaslessNFT", function (accounts, network) {
-  const [ owner, beneficiary ] = accounts;
+contract("GaslessNFT", (accounts) => {
 
   it("should assert true", async function () {
-    await GaslessNFT.deployed();
+    await GaslessNFT.new();
     return assert.isTrue(true);
   });
 
   /* test whether the contract is deployed */
   it("should deploy the contract", async function () {
-    const contract = await GaslessNFT.deployed();
+    const contract = await GaslessNFT.new();
     assert.ok(contract.address);
   });
 
   // test that after you flip sale started, saleStarted is true
   it("should flip sale started", async function () {
-    const contract = await GaslessNFT.deployed();
-    await contract.setBeneficiary(beneficiary, {from: owner});
-    await contract.flipSaleStarted();
+    const contract = await GaslessNFT.new();
+    // await contract.setBeneficiary(beneficiary, {from: owner});
+    await contract.startSale();
     const saleStarted = await contract.saleStarted();
     assert.equal(saleStarted, true);
   });
@@ -36,8 +35,9 @@ contract("GaslessNFT", function (accounts, network) {
 
   // test that contract fails to mint a token if you don't supply ETH
   it("should fail to mint a token if you don't supply ETH", async function () {
-    const contract = await GaslessNFT.deployed();
+    const contract = await GaslessNFT.new();
     const nTokens = 1
+    await contract.startSale();
     try {
       const tx = await contract.mint(nTokens, { from: accounts[0], value: 0 });
     }
@@ -49,8 +49,10 @@ contract("GaslessNFT", function (accounts, network) {
 
   // test that minting a token results in success when you supply 0.1 ETH
   it("should mint a token if you supply 0.1 ETH", async function () {
-    const contract = await GaslessNFT.deployed();
+    const contract = await GaslessNFT.new();
     const nTokens = 1;
+  
+    await contract.startSale();
     // set value to 0.1 eth
     const tx = await contract.mint(nTokens, { from: accounts[0], value: 0.1 * ether });
 
@@ -59,26 +61,19 @@ contract("GaslessNFT", function (accounts, network) {
 
   // test that the contract is able to transfer a token
   it("should transfer a token", async function () {
-    const contract = await GaslessNFT.deployed();
+    const contract = await GaslessNFT.new();
     const tokenId = 0;
+    await contract.startSale();
     await contract.mint(1, { from: accounts[0], value: 0.1 * ether });
     await contract.transferFrom(accounts[0], accounts[1], tokenId, { from: accounts[0] });
     assert.equal(await contract.ownerOf(tokenId), accounts[1]);
   });
 
-  // test that the contract is able to burn a token
-  xit("should burn a token", async function () {
-    const contract = await GaslessNFT.deployed();
-    const tokenId = await contract.mint({ from: accounts[0] });
-    await contract.burn(tokenId, { from: accounts[0] });
-    assert.equal(await contract.ownerOf(tokenId), 0);
-  });
-
-
   // test that it can mint token and the amount of ether transferred approximates the cost of the transaction
   it("should mint a token and the amount of ether transferred approximates the cost of the transaction [ @skip-on-coverage ]", async function () {
 
-    const contract = await GaslessNFT.deployed();
+    const contract = await GaslessNFT.new();
+    await contract.startSale();
 
     // get account balance before the transaction and save
     const balanceBefore = await web3.eth.getBalance(accounts[0]);

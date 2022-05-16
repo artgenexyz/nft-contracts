@@ -1,0 +1,60 @@
+name: Hardhat Tests
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events but only for the main branch
+  push:
+    branches:
+      - main
+      - core-*
+  pull_request:
+    branches:
+      - main
+      - core-*
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job
+  test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Cache npm dependencies
+        id: cache-npm-deps
+        uses: actions/cache@v2
+        with:
+          # we cache node_modules directly, it may have downsides, but much faster
+          # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
+          path: ./node_modules
+          key: modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Generate Typechain
+        run: npm run typechain
+
+      - name: Run tests
+        run: npm run hardhat-test
+
+      - name: Run Coverage
+        run: npm run hardhat-coverage
+
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.0
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          # Artifact name
+          name: coverage
+          path: coverage/

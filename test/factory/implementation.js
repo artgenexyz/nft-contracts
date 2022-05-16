@@ -3,13 +3,12 @@ const delay = require("delay");
 const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost, createNFTSale } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
-const TemplateNFTv2 = artifacts.require("TemplateNFTv2");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
-const PresaleListExtension = artifacts.require("PresaleListExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
@@ -22,8 +21,8 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     beforeEach(async () => {
         if (!pass || !factory) {
-            pass = await TemplateNFTv2.new();
-            await pass.claimReserved(2, owner);
+            pass = await createNFTSale(MetaverseBaseNFT);
+            await pass.claim(2, owner);
 
             factory = await NFTFactory.new(pass.address);
         }
@@ -70,21 +69,19 @@ contract("MetaverseNFT – Implementation", accounts => {
             "Sale not started",
         );
     });
-    // it should not be able to start sale when beneficiary is not set
-    xit("should fail to start sale when beneficiary is not set", async () => {
 
-        // start sale
-        // try {
-        //     await nft.startSale({ from: owner });
-        // } catch (error) {
-        //     // check that error message has expected substring 'Beneficiary not set'
-        //     assert.include(error.message, "Beneficiary not set");
-        // }
+    // it should allow to change payout receiver
+    it("should allow to change payout receiver", async () => {
 
-        await expectRevert(
-            nft.startSale({ from: owner }),
-            "Beneficiary not set",
-        );
+        const receiver = await nft.getPayoutReceiver();
+
+        assert.equal(receiver, owner);
+
+        await nft.setPayoutReceiver(user1, { from: owner });
+
+        const receiver2 = await nft.getPayoutReceiver();
+
+        assert.equal(receiver2, user1);
     });
 
     // it should be able to start sale when beneficiary is set
@@ -410,5 +407,17 @@ contract("MetaverseNFT – Implementation", accounts => {
             true,
         );
 
+    });
+
+    // it should be able to freeze minting and then startSale doesnt work
+    it("should be able to freeze minting and then startSale doesnt work", async () => {
+        await nft.startSale();
+        await nft.freeze();
+
+        try {
+            await nft.startSale();
+        } catch (error) {
+            assert.include(error.message, "Minting is frozen");
+        }
     });
 })
