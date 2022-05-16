@@ -16,7 +16,8 @@ contract GaslessNFT is MetaverseBaseNFT {
         0,
         "https://metadata.buildship.dev/api/token/GASFREE/",
         "GaslessClub",
-        "GASFREE"
+        "GASFREE",
+        false
     ) {}
 
     // Same as reference implementation

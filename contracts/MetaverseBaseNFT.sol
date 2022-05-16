@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+/**
+* @title LICENSE REQUIREMENT
+* @dev This contract is licensed under the MIT license.
+* @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
+*/
+
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -18,53 +24,30 @@ import "./interfaces/IMetaverseNFT.sol";
 import "./utils/OpenseaProxy.sol";
 
 
-//      Want to launch your own collection ? Check out https://buildship.dev.
-//
-//                                   zAAAAA#QQQQQ=                                     
-//                                   yN8NNN@@@@@@L                                     
-//                                   jgggggQ@@@@@|                                     
-//                                   ~;!!!!|ccccc~                                     
-//                                   ,~__~~>||L||_                                     
-//                                   ,~__~~>|||||_                                     
-//                                   ,~__~~>|||||_                                     
-//             ``````````````````````',,,,,~;;;;;,``````````````````````               
-//             .'..................''''''''.....''''.................''.               
-//            `'''..'''....''''''.....''''''..''''''''....'''''''....''.               
-//            `'''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.'.               
-//            `.'''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'...`              
-//            `..''!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~''..`              
-//     ```````...''~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~:''..```````        
-//     ..'..........''...'''...'...''''..''..''''...'...'''...''.............''`       
-//     .''..........''.........'.........''.........'.........''.............''`       
-//     .''..';^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv'....`       
-//     .''..,aqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc'..''`       
-//     .''..,|77777777777777777777777777777777777777777777777777777777777^'..''`       
-//     .''..'.''.'''.....'''''.....''.'''....''.'''.....'''''.....''.''''....''`       
-//     .''..''...'''..............................................''''...''..''`       
-//     ``````....''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,''...'```````       
-//           `...'':_______________________________________________,'...'`             
-//           ....'':_______________________________________________,'....`             
-//           .'...':__~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~___,'....`             
-//           .'...':__~~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~~___,'...'`             
-//          `.'..'':___~~!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^;~___~,'...'.             
-// `,,,,,,,,:~~~~~~;!!!!!r=================|iiiiiiiiiiiiiiiii|>>>>>=^^^^^^;;;;;;;;:    
-// `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU?    
-//  ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUw:    
-//  .t555555555yyyyy55555yyyyy555555yyyyy55Dgggggggggggggggggggggggggggggggggggggz     
-//   vNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ@QQQ!     
-//   ,KNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQP`     
-//    |6666666666666666666666666666666666668QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ8;      
-//    `>LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLZUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU6L       
-//     ,LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj.       
-//      !LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX;        
-//      .*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU7`        
-//       _LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUa'         
-//        ^LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX!          
-//        `+LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU>           
-//         '*LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLS6UUUUUUUUUUUUUUUUUUUUUUUUUUUUUz`           
-//          ,|LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSUUUUUUUUUUUUUUUUUUUUUUUUUUUUUj'            
-//           ~LLLLLLLLLLLLLLLLLLLLLLLLLLLLLSU6UUUUUUUUUUUUUUUUUUUUUUUUUUX:             
+//      Want to launch your own collection?
+//        Check out https://buildship.xyz
+
+//                                    ,:loxO0KXXc
+//                               ,cdOKKKOxol:lKWl 
+//                            ;oOXKko:,      ;KNc 
+//                        'ox0X0d:           cNK, 
+//                 ','  ;xXX0x:              dWk  
+//            ,cdO0KKKKKXKo,                ,0Nl  
+//         ;oOXKko:,;kWMNl                  dWO'  
+//      ,o0XKd:'    oNMMK:                 cXX:   
+//   'ckNNk:       ;KMN0c                 cXXl    
+//  'OWMMWKOdl;'    cl;                  oXXc     
+//   ;cclldxOKXKkl,                    ;kNO;      
+//            ;cdk0kl'             ;clxXXo        
+//                ':oxo'         c0WMMMMK;        
+//                    :l:       lNMWXxOWWo        
+//                      ';      :xdc' :XWd        
+//             ,                      cXK;        
+//           ':,                      xXl         
+//           ;:      '               o0c          
+//           ;c;,,,,'               lx;           
+//            '''                  cc             
+//                                ,'              
 contract MetaverseBaseNFT is
     ERC721,
     ReentrancyGuard,
@@ -75,7 +58,7 @@ contract MetaverseBaseNFT is
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdCounter;
+    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -90,10 +73,13 @@ contract MetaverseBaseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
+    address public payoutReceiver = address(0x0);
     address public uriExtension = address(0x0);
 
     bool public isFrozen;
+    bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive = true;
+    bool private startAtOne = false;
 
     /** 
     * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -108,6 +94,7 @@ contract MetaverseBaseNFT is
     string public PROVENANCE_HASH = "";
     string private CONTRACT_URI = "";
     string private BASE_URI;
+    string private URI_POSTFIX = "";
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -120,8 +107,12 @@ contract MetaverseBaseNFT is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
+        string memory _name,
+        string memory _symbol,
+        bool _startAtOne
     ) ERC721(_name, _symbol) {
+
+        startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
         reserved = _nReserved;
@@ -131,7 +122,9 @@ contract MetaverseBaseNFT is
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
 
-        // Need help with uploading metadata? Try https://buildship.dev
+        startAtOne = _startAtOne;
+
+        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
 
     }
@@ -153,12 +146,23 @@ contract MetaverseBaseNFT is
             }
         }
 
-        return super.tokenURI(tokenId);
+        if (bytes(URI_POSTFIX).length > 0) {
+            return string(abi.encodePacked(
+                super.tokenURI(tokenId),
+                URI_POSTFIX
+            ));
+        } else {
+            return super.tokenURI(tokenId);
+        }
+    }
+
+    function startTokenId() public view returns (uint256) {
+        return startAtOne ? 1 : 0;
     }
 
     function totalSupply() public view returns (uint256) {
         // Only works like this for sequential mint tokens
-        return _tokenIdCounter.current();
+        return _tokenIndexCounter.current();
     }
 
     // ----- Admin functions -----
@@ -172,6 +176,10 @@ contract MetaverseBaseNFT is
         CONTRACT_URI = uri;
     }
 
+    function setPostfixURI(string calldata postfix) public onlyOwner {
+        URI_POSTFIX = postfix;
+    }
+
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
     }
@@ -179,6 +187,11 @@ contract MetaverseBaseNFT is
     // Freeze forever, irreversible
     function freeze() public onlyOwner {
         isFrozen = true;
+    }
+
+    // Lock changing withdraw address
+    function lockPayoutChange() public onlyOwner {
+        isPayoutChangeLocked = true;
     }
 
     function isExtensionAdded(address _extension) public view returns (bool) {
@@ -190,6 +203,10 @@ contract MetaverseBaseNFT is
         }
 
         return false;
+    }
+
+    function extensionsLength() public view returns (uint) {
+        return extensions.length;
     }
 
     // Extensions are allowed to mint
@@ -238,11 +255,11 @@ contract MetaverseBaseNFT is
     // ---- Minting ----
 
     function _mintConsecutive(uint256 nTokens, address to, bytes32 extraData) internal {
-        require(_tokenIdCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
+        require(_tokenIndexCounter.current() + nTokens + reserved <= maxSupply, "Not enough Tokens left.");
 
         for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
             _safeMint(to, tokenId);
             data[tokenId] = extraData;
@@ -258,6 +275,11 @@ contract MetaverseBaseNFT is
 
     modifier whenNotFrozen() {
         require(!isFrozen, "Minting is frozen");
+        _;
+    }
+
+    modifier whenNotPayoutChangeLocked() {
+        require(!isPayoutChangeLocked, "Payout change is locked");
         _;
     }
 
@@ -325,10 +347,18 @@ contract MetaverseBaseNFT is
         royaltyReceiver = _receiver;
     }
 
+    function setPayoutReceiver(address _receiver) public onlyOwner whenNotPayoutChangeLocked {
+        payoutReceiver = payable(_receiver);
+    }
+
     function royaltyInfo(uint256, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount) {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
         receiver = royaltyReceiver;
         royaltyAmount = salePrice * royaltyFee / 10000;
+    }
+
+    function getPayoutReceiver() public view returns (address payable receiver) {
+        receiver = payoutReceiver != address(0x0) ? payable(payoutReceiver) : payable(owner());
     }
 
     // ---- Allow royalty deposits from Opensea ----- 
@@ -341,9 +371,10 @@ contract MetaverseBaseNFT is
         uint256 balance = address(this).balance;
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        Address.sendValue(payable(msg.sender), amount);
+        Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
     }
 
@@ -352,14 +383,15 @@ contract MetaverseBaseNFT is
 
         uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
 
+        address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
-        token.safeTransfer(payable(msg.sender), amount);
+        token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.dev";
+        _url = "https://buildship.xyz";
     }
 
     function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {

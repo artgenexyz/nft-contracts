@@ -46,6 +46,12 @@ Sometimes you need to override functionality. We published a `MetaverseBaseNFT` 
 
 It's a copy of `MetaverseNFT`, but uses non-upgradeable versions of ERC721 and Ownable.
 
+Check that the code is identical:
+
+```bash
+colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol
+```
+
 ## INFTExtension
 
 This one is a cherry on top of this architecture! It's a contract that can be connected to MetaverseNFT and mint on their behalf.
