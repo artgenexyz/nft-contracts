@@ -53,37 +53,6 @@ contract("MetaverseNFTFactory", (accounts) => {
             "Sale not started"
         );
 
-        return;
-
-        try {
-        } catch (err) {
-
-            // extract transaction hash from error
-            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
-
-            const tx = await web3.eth.getTransactionReceipt(txHash);
-
-            // check if transaction was reverted
-            assert.equal(
-                await tx.status,
-                false,
-                "Transaction was not reverted"
-            );
-
-            // // check if transaction was reverted with correct reason
-            // assert.equal(
-            //     await tx.logs[0].data,
-            //     "Sale not started",
-            //     "Transaction was not reverted with correct reason"
-            // );
-
-        }
-
-        // await expectRevert(
-        //     original.mint(1, { from: user1, value: ether.times(0.1) }),
-        //     "Sale not started",
-        //     "Minting not failed"
-        // );
     });
 
     // it should measure gas spent on deployment
@@ -212,30 +181,6 @@ contract("MetaverseNFTFactory", (accounts) => {
             "Sale not started"
         )
 
-        return;
-
-        try {
-        } catch (err) {
-
-            // extract transaction hash from error
-            const txHash = err.message.match(/Transaction: (0x\w+)/)[1];
-
-            const tx = await web3.eth.getTransactionReceipt(txHash);
-
-            // check if transaction was reverted
-            assert.equal(
-                await tx.status,
-                false,
-                "Transaction was not reverted"
-            );
-
-            // // check if transaction was reverted with correct reason
-            // assert.equal(
-            //     await tx.logs[0].data,
-            //     "Sale not started",
-            //     "Transaction was not reverted with correct reason"
-            // );
-        }
     });
 
     // it should measure gas spent on deployment
@@ -460,6 +405,55 @@ contract("MetaverseNFTFactory", (accounts) => {
                 { from: user3 },
             ),
             "MetaverseNFTFactory: Early Access Pass is required"
+        );
+    });
+
+    // it should allow to createNFT if you dont own earlyPass if the total amount for sale is less than 50 ether
+    it("should allow to createNFT if you dont own earlyPass if the total amount for sale is less than 50 ether", async () => {
+        const nft = await factory.createNFTWithoutAccessPass(
+            ether.times(0.003),
+            10000,
+            1, // reserved
+            20,
+            0, // royalty fee
+            "factory-test-buy/",
+            "Cheap Test",
+            "LOWNFT",
+            user2, // address payoutReceiver,
+            true, // bool shouldUseJSONExtension,
+            2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+            { from: user1 },
+        );
+
+        const deployedNFT = await MetaverseNFT.at(
+            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
+        );
+
+        assert.equal(
+            await deployedNFT.owner(),
+            user1,
+        );
+
+    });
+
+    // it should not allow to create without access pass if selling 10000 tokens at 0.08 eth
+    it("should not allow to create without access pass if selling 10000 tokens at 0.08 eth", async () => {
+        await expectRevert(
+            factory.createNFTWithoutAccessPass(
+                ether.times(0.08),
+                10000,
+                1, // reserved
+                20,
+                0, // royalty fee
+                "factory-test-buy/",
+                "Cheap Test",
+                "LOWNFT",
+                user2, // address payoutReceiver,
+                true, // bool shouldUseJSONExtension,
+                2 + 4 + 8, // uint16 miscParams is a bitmask of 1,2,4,8
+                { from: user1 },
+            ),
+            "MetaverseNFTFactory: Collection total amount is too high"
         );
     });
 
