@@ -96,18 +96,16 @@ const config: HardhatUserConfig = {
     },
 
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: {
+            mainnet: ETHERSCAN_API_KEY,
+            rinkeby: ETHERSCAN_API_KEY,
+            polygon: POLYGONSCAN_API_KEY,
+            bsc: BSCSCAN_API_KEY,
+            moonbeam: MOONBEAM_API_KEY,
+            moonriver: MOONRIVER_API_KEY,
+            moonbaseAlpha: MOONRIVER_API_KEY,
+        },
     },
-
-    // wrong format?
-    // api_keys: {
-    //     etherscan: ETHERSCAN_API_KEY,
-    //     polygonscan: POLYGONSCAN_API_KEY,
-    //     bscscan: BSCSCAN_API_KEY,
-    //     moonbeam: MOONBEAM_API_KEY,
-    //     moonriver: MOONRIVER_API_KEY,
-    //     moonscan: MOONRIVER_API_KEY,
-    // }
 
 };
 
