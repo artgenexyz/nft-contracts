@@ -7,6 +7,8 @@ import minimist from "minimist";
 
 import { NFTStorage, Blob } from "nft.storage";
 
+import { getLongVersion } from "./solc/version";
+
 const NFT_STORAGE_API_KEY = process.env.NFT_STORAGE_API_KEY;
 const argv = minimist(process.argv.slice(2));
 
@@ -124,6 +126,10 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 
         console.log(`\nDeploying ${contract}`);
 
+        const longVersion = await getLongVersion(hre.config.solidity.compilers[0].version);
+
+        const longVersionString = longVersion.replace(/^v/, "");
+
         const contractInfo = {
             name: contractArtifact.contractName,
             filename: filename,
@@ -135,6 +141,7 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
                     ...hre.config.solidity.compilers[0],
                     compiler: {
                         ...hre.config.solidity.compilers[0],
+                        version: longVersionString,
                     },
                 }),
             },
