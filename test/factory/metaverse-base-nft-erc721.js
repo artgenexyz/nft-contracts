@@ -1,19 +1,19 @@
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
-const { assert, expect } = require("chai");
+const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
 const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC721");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseBaseNFT - Implementation", (accounts) => {
+contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
@@ -378,16 +378,5 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     } catch (error) {
       assert.include(error.message, "Minting is frozen");
     }
-  });
-
-  it("should be able to batch mint", async () => {
-    expect(await nft.claim(3, user1, { from: owner })).to.be.ok;
-    expect((await nft.balanceOf(user1)).toString()).to.be.equal("3");
-    expect(await nft.ownerOf(0)).to.be.equal(user1);
-    expect(await nft.ownerOf(1)).to.be.equal(user1);
-    expect(await nft.ownerOf(2)).to.be.equal(user1);
-
-    expect(await nft.transferFrom(user1, user2, 1, { from: user1 })).to.be.ok;
-    expect(await nft.ownerOf(1)).to.be.equal(user2);
   });
 });

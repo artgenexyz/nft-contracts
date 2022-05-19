@@ -7,19 +7,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MetaverseNFT.sol";
 
 /**
-* MetaverseNFT is a cloneable contract for your NFT collection.
-* It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
-* This is needed to make it possible to create clones that work via delegatecall
-* ! The constructor is replaced with initializer, too
-* This way, deployment costs about 350k gas instead of 4.5M.
-* 1. https://forum.openzeppelin.com/t/how-to-set-implementation-contracts-for-clones/6085/4
-* 2. https://github.com/OpenZeppelin/workshops/tree/master/02-contracts-clone/contracts/2-uniswap
-* 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
-*/
-
+ * MetaverseNFT is a cloneable contract for your NFT collection.
+ * It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
+ * This is needed to make it possible to create clones that work via delegatecall
+ * ! The constructor is replaced with initializer, too
+ * This way, deployment costs about 350k gas instead of 4.5M.
+ * 1. https://forum.openzeppelin.com/t/how-to-set-implementation-contracts-for-clones/6085/4
+ * 2. https://github.com/OpenZeppelin/workshops/tree/master/02-contracts-clone/contracts/2-uniswap
+ * 3. https://docs.openzeppelin.com/contracts/4.x/api/proxy
+ */
 
 contract MetaverseNFTFactory is Ownable {
-
     address public immutable proxyImplementation;
     IERC721 public earlyAccessPass;
     uint256 public maxAllowedAmount = 50 ether; // launch for free if your collection collects less than this amount
@@ -41,17 +39,23 @@ contract MetaverseNFTFactory is Ownable {
         bool shouldStartAtOne,
         bool shouldStartSale,
         bool shouldLockPayoutChange
-
     );
 
     modifier hasAccess(address creator) {
         // check that creator owns NFT
-        require(address(earlyAccessPass) == address(0) || earlyAccessPass.balanceOf(msg.sender) > 0, "MetaverseNFTFactory: Early Access Pass is required");
+        require(
+            address(earlyAccessPass) == address(0) ||
+                earlyAccessPass.balanceOf(msg.sender) > 0,
+            "MetaverseNFTFactory: Early Access Pass is required"
+        );
         _;
     }
 
     modifier checkTotalAmount(uint256 amount) {
-        require(amount < maxAllowedAmount, "MetaverseNFTFactory: Collection total amount is too high");
+        require(
+            amount < maxAllowedAmount,
+            "MetaverseNFTFactory: Collection total amount is too high"
+        );
         _;
     }
 
@@ -78,7 +82,10 @@ contract MetaverseNFTFactory is Ownable {
         earlyAccessPass = IERC721(_earlyAccessPass);
     }
 
-    function updateMaxAllowedAmount(uint256 _maxAllowedAmount) public onlyOwner {
+    function updateMaxAllowedAmount(uint256 _maxAllowedAmount)
+        public
+        onlyOwner
+    {
         maxAllowedAmount = _maxAllowedAmount;
     }
 
@@ -89,9 +96,9 @@ contract MetaverseNFTFactory is Ownable {
         uint256 _maxTokensPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol
+        string memory _name,
+        string memory _symbol
     ) external hasAccess(msg.sender) {
-
         address clone = Clones.clone(proxyImplementation);
 
         MetaverseNFT(payable(clone)).initialize(
@@ -101,7 +108,8 @@ contract MetaverseNFTFactory is Ownable {
             _maxTokensPerMint,
             _royaltyFee,
             _uri,
-            _name, _symbol,
+            _name,
+            _symbol,
             false
         );
 
@@ -119,7 +127,6 @@ contract MetaverseNFTFactory is Ownable {
             false,
             false
         );
-
     }
 
     function createNFTWithSettings(
@@ -129,12 +136,12 @@ contract MetaverseNFTFactory is Ownable {
         uint256 _maxTokensPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol,
+        string memory _name,
+        string memory _symbol,
         address payoutReceiver,
         bool shouldUseJSONExtension,
         uint16 miscParams
     ) external hasAccess(msg.sender) {
-
         address clone = Clones.clone(proxyImplementation);
 
         // params is a bitmask of:
@@ -151,7 +158,8 @@ contract MetaverseNFTFactory is Ownable {
             _maxTokensPerMint,
             _royaltyFee,
             _uri,
-            _name, _symbol,
+            _name,
+            _symbol,
             miscParams & SHOULD_START_AT_ONE != 0
         );
 
@@ -172,7 +180,7 @@ contract MetaverseNFTFactory is Ownable {
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
- 
+
         emit NFTCreated(
             clone,
             _startPrice,
@@ -187,19 +195,19 @@ contract MetaverseNFTFactory is Ownable {
         );
     }
 
-    function createNFTWithoutAccessPass (
+    function createNFTWithoutAccessPass(
         uint256 _startPrice,
         uint256 _maxSupply,
         uint256 _nReserved,
         uint256 _maxTokensPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        string memory _name, string memory _symbol,
+        string memory _name,
+        string memory _symbol,
         address payoutReceiver,
         bool shouldUseJSONExtension,
         uint16 miscParams
     ) external checkTotalAmount(_startPrice * _maxSupply) {
-
         address clone = Clones.clone(proxyImplementation);
 
         // params is a bitmask of:
@@ -216,7 +224,8 @@ contract MetaverseNFTFactory is Ownable {
             _maxTokensPerMint,
             _royaltyFee,
             _uri,
-            _name, _symbol,
+            _name,
+            _symbol,
             miscParams & SHOULD_START_AT_ONE != 0
         );
 
@@ -237,7 +246,7 @@ contract MetaverseNFTFactory is Ownable {
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
- 
+
         emit NFTCreated(
             clone,
             _startPrice,

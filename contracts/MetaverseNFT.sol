@@ -108,10 +108,6 @@ contract MetaverseNFT is
         string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        __ReentrancyGuard_init();
-        __ERC721A_init(_name, _symbol);
-        __Ownable_init();
-
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -126,6 +122,10 @@ contract MetaverseNFT is
 
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        __ReentrancyGuard_init();
+        __ERC721A_init(_name, _symbol);
+        __Ownable_init();
     }
 
     // This constructor ensures that this contract can only be used as a master copy
