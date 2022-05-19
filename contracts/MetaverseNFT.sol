@@ -108,8 +108,8 @@ contract MetaverseNFT is
         string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
+        __ERC721A_init(_name, _symbol);
         __Ownable_init();
 
         startTimestamp = SALE_STARTS_AT_INFINITY;

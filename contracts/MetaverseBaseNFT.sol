@@ -166,15 +166,6 @@ contract MetaverseBaseNFT is
         return _startTokenId();
     }
 
-    function totalSupply()
-        public
-        view
-        override(ERC721A, IMetaverseNFT)
-        returns (uint256)
-    {
-        return super.totalSupply();
-    }
-
     // ----- Admin functions -----
 
     function setBaseURI(string calldata uri) public onlyOwner {
