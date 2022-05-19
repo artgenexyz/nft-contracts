@@ -51,7 +51,7 @@ contract MetaverseNFTFactory is Ownable {
     }
 
     modifier checkTotalAmount(uint256 amount) {
-        require(amount < maxAllowedAmount, "MetaverseNFTFactory: Early Access Pass is required");
+        require(amount < maxAllowedAmount, "MetaverseNFTFactory: Collection total amount is too high");
         _;
     }
 
