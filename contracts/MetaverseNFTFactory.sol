@@ -106,7 +106,7 @@ contract MetaverseNFTFactory is Ownable {
     ) external hasAccess(msg.sender) {
         require(
             _maxTokensPerMint <= maxPerMintLimit,
-            "Overflowed max tokens per mint"
+            "MetaverseNFTFactory: Overflowed max tokens per mint"
         );
         address clone = Clones.clone(proxyImplementation);
 

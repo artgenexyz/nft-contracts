@@ -486,5 +486,43 @@ contract("MetaverseNFTFactory", (accounts) => {
     assert.equal(await deployedNFT.totalSupply(), 10);
   });
 
-  //
+  // it shouldn't be able to mint more than maxPerMintLimt
+  it("should not be able to mint max per mint limit", async () => {
+    await expectRevert(
+      factory.createNFT(
+        ether.times(0.01),
+        10000,
+        1, // reserved
+        60,
+        0, // royalty fee
+        "factory-test-buy/",
+        "Test",
+        "NFT",
+        { from: user1 } // usually doesn't have access
+      ),
+      "MetaverseNFTFactory: Overflowed max tokens per mint"
+    );
+  });
+
+  it("Should not be able to set mint max per mint limit by non-owner", async () => {
+    await expectRevert(
+      factory.setMaxPerMintLimit(100, { from: user1 }),
+      "Ownable: caller is not the owner"
+    );
+  });
+
+  it("Should be able to set mint max per mint limit", async () => {
+    await factory.setMaxPerMintLimit(100, { from: owner });
+    await factory.createNFT(
+      ether.times(0.01),
+      10000,
+      1, // reserved
+      60,
+      0, // royalty fee
+      "factory-test-buy/",
+      "Test",
+      "NFT",
+      { from: user1 } // usually doesn't have access
+    );
+  });
 });
