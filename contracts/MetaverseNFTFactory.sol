@@ -151,6 +151,10 @@ contract MetaverseNFTFactory is Ownable {
         bool shouldUseJSONExtension,
         uint16 miscParams
     ) external hasAccess(msg.sender) {
+        require(
+            _maxTokensPerMint <= maxPerMintLimit,
+            "MetaverseNFTFactory: Overflowed max tokens per mint"
+        );
         address clone = Clones.clone(proxyImplementation);
 
         // params is a bitmask of:
@@ -217,6 +221,10 @@ contract MetaverseNFTFactory is Ownable {
         bool shouldUseJSONExtension,
         uint16 miscParams
     ) external checkTotalAmount(_startPrice * _maxSupply) {
+        require(
+            _maxTokensPerMint <= maxPerMintLimit,
+            "MetaverseNFTFactory: Overflowed max tokens per mint"
+        );
         address clone = Clones.clone(proxyImplementation);
 
         // params is a bitmask of:
