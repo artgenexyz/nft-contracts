@@ -63,6 +63,7 @@ contract MetaverseNFTFactory is Ownable {
 
         emit NFTCreated(
             proxyImplementation,
+            msg.sender,
             0,
             0,
             0,
@@ -110,6 +111,7 @@ contract MetaverseNFTFactory is Ownable {
 
         emit NFTCreated(
             clone,
+            msg.sender,
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -176,6 +178,7 @@ contract MetaverseNFTFactory is Ownable {
  
         emit NFTCreated(
             clone,
+            msg.sender,
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -241,6 +244,7 @@ contract MetaverseNFTFactory is Ownable {
  
         emit NFTCreated(
             clone,
+            msg.sender,
             _startPrice,
             _maxSupply,
             _nReserved,
