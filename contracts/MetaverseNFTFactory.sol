@@ -30,7 +30,8 @@ contract MetaverseNFTFactory is Ownable {
     uint32 constant SHOULD_LOCK_PAYOUT_CHANGE = 1 << 3;
 
     event NFTCreated(
-        address deployedAddress,
+        address indexed deployedAddress,
+        address indexed creator,
         // creation parameters
         uint256 price,
         uint256 maxSupply,
