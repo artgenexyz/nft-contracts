@@ -7,14 +7,12 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "erc721a/contracts/ERC721A.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -47,10 +45,10 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseBaseNFT is
-    ERC721A,
-    ReentrancyGuard,
-    Ownable,
+contract MetaverseNFT_ERC721 is
+    ERC721Upgradeable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -99,7 +97,7 @@ contract MetaverseBaseNFT is
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
 
-    constructor(
+    function initialize(
         uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
@@ -109,7 +107,11 @@ contract MetaverseBaseNFT is
         string memory _name,
         string memory _symbol,
         bool _startAtOne
-    ) ERC721A(_name, _symbol) {
+    ) public initializer {
+        __ERC721_init(_name, _symbol);
+        __ReentrancyGuard_init();
+        __Ownable_init();
+
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -126,12 +128,16 @@ contract MetaverseBaseNFT is
         BASE_URI = _uri;
     }
 
+    // This constructor ensures that this contract can only be used as a master copy
+    // Marking constructor as initializer makes sure that real initializer cannot be called
+    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
+    // on the other hand, it's impossible to call this function in proxy,
+    // so the real initializer is the only initializer
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
-    }
-
-    function _startTokenId() internal view virtual override returns (uint256) {
-        return startAtOne ? 1 : 0;
     }
 
     function contractURI() public view returns (string memory uri) {
@@ -163,7 +169,12 @@ contract MetaverseBaseNFT is
     }
 
     function startTokenId() public view returns (uint256) {
-        return _startTokenId();
+        return startAtOne ? 1 : 0;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        // Only works like this for sequential mint tokens
+        return _tokenIndexCounter.current();
     }
 
     // ----- Admin functions -----
@@ -270,19 +281,16 @@ contract MetaverseBaseNFT is
         bytes32 extraData
     ) internal {
         require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
+            _tokenIndexCounter.current() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        for (uint256 i; i < nTokens; i++) {
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
-        _safeMint(to, nTokens, "");
-
-        if (extraData.length > 0) {
-            for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
-                data[tokenId] = extraData;
-            }
+            _safeMint(to, tokenId);
+            data[tokenId] = extraData;
         }
     }
 
