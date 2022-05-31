@@ -193,7 +193,7 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
 
         await expectRevert(
             ERC20Extension.mint(10, { from: user1 }),
-            "ERC20: transfer amount exceeds allowance"
+            "ERC20: insufficient allowance"
         );
         await expectRevert(
             ERC20Extension.mint(10, { from: user2 }),
