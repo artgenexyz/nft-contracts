@@ -1,7 +1,7 @@
 {
   "name": "@buildship/contracts",
   "homepage": "https://buildship.xyz",
-  "repository": "github:buildship/nft-contracts",
+  "repository": "github:buildship-dev/nft-contracts",
   "scripts": {
     "hardhat-test": "hardhat test",
     "hardhat-coverage": "hardhat coverage",
