@@ -45,6 +45,22 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
+
+
+// struct MetaverseNFTParams {
+//     uint128 price; // 15 bytes is up to 10^18 ETH, 16 bytes is uint128
+//     uint32 maxSupply; // up to 1 billion is 30 bit = 4 bytes = uint32
+//     uint16 nReserved; // up to 65k = 2^10 = 10 bit = 1 byte = uint8
+//     uint16 maxPerMint; // up to 65k
+//     uint16 royaltyFee; // up to 10000 basis points = 2^14 = 16 bit = 2 bytes = uint16
+//     bytes6 extra; // start at one etc
+
+//     // string _uri;
+//     // string _name;
+//     // string _symbol;
+//     // bool _startAtOne;
+// }
+
 contract MetaverseNFT is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
@@ -57,17 +73,17 @@ contract MetaverseNFT is
 
     Counters.Counter private _tokenIndexCounter; // token index counter
 
-    uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint32 public constant SALE_STARTS_AT_INFINITY = 2**32 - 1;
+    uint32 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
-    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
+    uint32 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
-    uint256 public reserved;
-    uint256 public maxSupply;
-    uint256 public maxPerMint;
-    uint256 public price;
+    uint128 public price;
+    uint32 public maxSupply;
+    uint16 public reserved;
+    uint16 public maxPerMint;
 
-    uint256 public royaltyFee;
+    uint16 public royaltyFee;
 
     address public royaltyReceiver;
     address public payoutReceiver = address(0x0);
@@ -98,27 +114,28 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
+        uint128 _price,
+        uint32 _maxSupply,
+        uint16 _nReserved,
+        uint16 _maxPerMint,
+        uint16 _royaltyFee,
         string memory _uri,
         string memory _name,
         string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
+        maxSupply = _maxSupply;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
-        maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
-        royaltyReceiver = address(this);
+        // royaltyReceiver = address(this);
 
-        startAtOne = _startAtOne;
+        if (_startAtOne) {
+            startAtOne = true;
+        }
 
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
@@ -191,7 +208,7 @@ contract MetaverseNFT is
         URI_POSTFIX = postfix;
     }
 
-    function setPrice(uint256 _price) public onlyOwner {
+    function setPrice(uint128 _price) public onlyOwner {
         price = _price;
     }
 
@@ -341,7 +358,7 @@ contract MetaverseNFT is
     }
 
     // Owner can claim free tokens
-    function claim(uint256 nTokens, address to)
+    function claim(uint16 nTokens, address to)
         external
         nonReentrant
         onlyOwner
@@ -365,7 +382,7 @@ contract MetaverseNFT is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp)
+    function updateStartTimestamp(uint32 _startTimestamp)
         public
         onlyOwner
         whenNotFrozen
@@ -374,7 +391,7 @@ contract MetaverseNFT is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
-        startTimestamp = block.timestamp;
+        startTimestamp = uint32(block.timestamp);
     }
 
     function stopSale() public onlyOwner {
@@ -393,7 +410,8 @@ contract MetaverseNFT is
     }
 
     function setRoyaltyFee(uint256 _royaltyFee) public onlyOwner {
-        royaltyFee = _royaltyFee;
+        require(_royaltyFee <= 10000, "Royalty fee must be less than 100%");
+        royaltyFee = uint16(_royaltyFee);
     }
 
     function setRoyaltyReceiver(address _receiver) public onlyOwner {
@@ -414,8 +432,18 @@ contract MetaverseNFT is
         returns (address receiver, uint256 royaltyAmount)
     {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
-        receiver = royaltyReceiver;
+        receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
+    }
+
+    function getRoyaltyReceiver()
+        public
+        view
+        returns (address payable receiver)
+    {
+        receiver = royaltyReceiver != address(0x0)
+            ? payable(royaltyReceiver)
+            : payable(address(this));
     }
 
     function getPayoutReceiver()

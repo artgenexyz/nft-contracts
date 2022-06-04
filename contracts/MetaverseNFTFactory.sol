@@ -112,12 +112,13 @@ contract MetaverseNFTFactory is Ownable {
         );
         address clone = Clones.clone(proxyImplementation);
 
+        // TODO: check if the values are not out of range
         MetaverseNFT(payable(clone)).initialize(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
+            uint128(_startPrice),
+            uint32(_maxSupply),
+            uint16(_nReserved),
+            uint16(_maxTokensPerMint),
+            uint16(_royaltyFee),
             _uri,
             _name,
             _symbol,
@@ -168,11 +169,11 @@ contract MetaverseNFTFactory is Ownable {
         // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
         MetaverseNFT(payable(clone)).initialize(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
+            uint128(_startPrice),
+            uint32(_maxSupply),
+            uint16(_nReserved),
+            uint16(_maxTokensPerMint),
+            uint16(_royaltyFee),
             _uri,
             _name,
             _symbol,
@@ -239,11 +240,11 @@ contract MetaverseNFTFactory is Ownable {
         // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
         MetaverseNFT(payable(clone)).initialize(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
+            uint128(_startPrice),
+            uint32(_maxSupply),
+            uint16(_nReserved),
+            uint16(_maxTokensPerMint),
+            uint16(_royaltyFee),
             _uri,
             _name,
             _symbol,
