@@ -107,7 +107,7 @@ contract MetaverseNFT is
         string memory _name,
         string memory _symbol,
         bool _startAtOne
-    ) public initializer {
+    ) public initializerERC721A initializer {
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -284,7 +284,7 @@ contract MetaverseNFT is
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        uint256 currentTokenIndex = _nextTokenId();
 
         _safeMint(to, nTokens, "");
 

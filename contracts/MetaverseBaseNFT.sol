@@ -274,7 +274,7 @@ contract MetaverseBaseNFT is
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        uint256 currentTokenIndex = _nextTokenId();
 
         _safeMint(to, nTokens, "");
 
