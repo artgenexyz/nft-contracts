@@ -12,6 +12,9 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+
 import "@tenderly/hardhat-tenderly";
 
 import "solidity-coverage";
@@ -30,6 +33,8 @@ const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const MNEMONIC = process.env.MNEMONIC;
 
+const USING_ZKSYNC = !!process.env.ZKSYNC;
+
 stdout.isTTY && console.log('Using env variables', {
     INFURA_KEY: INFURA_KEY ? '✅' : '❌',
     ETHERSCAN_API_KEY: ETHERSCAN_API_KEY ? '✅' : '❌',
@@ -38,6 +43,7 @@ stdout.isTTY && console.log('Using env variables', {
     MOONBEAM_API_KEY: MOONBEAM_API_KEY ? '✅' : '❌',
     MOONRIVER_API_KEY: MOONRIVER_API_KEY ? '✅' : '❌',
     MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
+    USING_ZKSYNC: USING_ZKSYNC ? '✅' : '❌',
 });
 
 const mnemonic = (() => {
@@ -54,6 +60,10 @@ const mnemonic = (() => {
 
 const config: HardhatUserConfig = {
     networks: {
+        hardhat: {
+            // To compile with zksolc, this must be the default network.
+            zksync: USING_ZKSYNC,
+        },
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
             accounts: {
@@ -107,6 +117,26 @@ const config: HardhatUserConfig = {
         },
     },
 
+
+    zksolc: {
+        version: "0.1.0",
+        compilerSource: "docker",
+        settings: {
+            compilerPath: "zksolc",
+            // compilerPath: "docker://zksolc/zksolc:0.1.0",
+            optimizer: {
+                enabled: true,
+            },
+            experimental: {
+                dockerImage: "matterlabs/zksolc",
+            },
+        },
+    },
+    zkSyncDeploy: {
+        zkSyncNetwork: "https://zksync2-testnet.zksync.dev",
+        ethNetwork: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+        // ethNetwork: "goerli", // Can also be the RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
+    },
 };
 
 export default config
