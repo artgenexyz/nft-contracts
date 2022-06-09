@@ -1,5 +1,7 @@
 # NFT Contracts by Buildship
 
+> [Donate on Gitcoin](https://gitcoin.co/grants/5779/buildship) if you like this repo ❤️‍🔥
+
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
 
 Made by https://buildship.xyz. If you can't code, use our simple web-app to deploy!
