@@ -327,6 +327,25 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
             "user2 should have 1 NFT"
         );
 
+        const mintedSupply = await extension.totalSupply();
+        const maxSupply = await extension.maxSupply();
+        const nftMaxSupply = await nft.maxSupply();
+
+        // expect mintedSupply < maxSupply
+        // expect maxSupply == nftMaxSupply
+
+        assert.isBelow(
+            Number(mintedSupply),
+            Number(nftMaxSupply),
+            "nftSupply should be less than maxSupply"
+        );
+
+        assert.equal(
+            nftMaxSupply.toString(),
+            maxSupply.toString(),
+            "nftMaxSupply should be equal to maxSupply"
+        );
+
     });
 
     // it should allow to mint from LimitedSupplyMintingExtension
