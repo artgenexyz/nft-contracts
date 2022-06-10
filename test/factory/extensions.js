@@ -11,7 +11,7 @@ const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const LimitPerWalletExtension = artifacts.require("LimitPerWalletExtension");
+const LimitedSupplyMintingExtension = artifacts.require("LimitedSupplyMintingExtension");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
@@ -297,9 +297,9 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
 
     });
 
-    // it should allow to mint from LimitPerWalletExtension
-    it("should allow to mint from LimitPerWalletExtension", async () => {
-        const extension = await LimitPerWalletExtension.new(
+    // it should allow to mint from LimitedSupplyMintingExtension
+    it("should allow to mint from LimitedSupplyMintingExtension", async () => {
+        const extension = await LimitedSupplyMintingExtension.new(
             nft.address,
             1e16.toString(), // price
             3,
@@ -329,9 +329,9 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
 
     });
 
-    // it should allow to mint from LimitPerWalletExtension
-    it("should not allow to mint more than maxPerWallet from LimitPerWalletExtension", async () => {
-        const extension = await LimitPerWalletExtension.new(
+    // it should allow to mint from LimitedSupplyMintingExtension
+    it("should not allow to mint more than maxPerWallet from LimitedSupplyMintingExtension", async () => {
+        const extension = await LimitedSupplyMintingExtension.new(
             nft.address,
             1e16.toString(), // price
             3, // max per tx
@@ -347,7 +347,7 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
 
         await expectRevert(
             extension.mint(1, { from: user2, value: 1e16.toString() }),
-            "LimitPerWalletExtension: max per wallet reached"
+            "LimitedSupplyMintingExtension: max per wallet reached"
         );
 
     });
