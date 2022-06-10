@@ -44,7 +44,7 @@ jobs:
         # find files that have changed in contracts/**/*.sol
         # and run hh upload $file for them
         id: build-contract
-        run: npm run hardhat -- contracts/MetaverseNFTFactory.sol
+        run: npm run hardhat-upload -- contracts/MetaverseNFTFactory.sol
 
       - name: Post IPFS links
         uses: actions/github-script@v6
