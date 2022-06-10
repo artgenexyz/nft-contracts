@@ -2,10 +2,14 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
+
+interface NFT is IMetaverseNFT {
+    function maxSupply() external view returns (uint256);
+    function totalSupply() external view returns (uint256);
+}
 
 contract LimitedSupplyMintingExtension is NFTExtension, Ownable, SaleControl {
 
@@ -26,21 +30,23 @@ contract LimitedSupplyMintingExtension is NFTExtension, Ownable, SaleControl {
     }
 
     function mint(uint256 nTokens) external whenSaleStarted payable {
-        // super.beforeMint();
-
         require(IERC721(address(nft)).balanceOf(msg.sender) + nTokens <= maxPerWallet, "LimitedSupplyMintingExtension: max per wallet reached");
 
         require(nTokens + totalMinted <= supply, "max supply reached");
         require(nTokens <= maxPerMint, "Too many tokens to mint");
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
-        nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
-
         totalMinted += nTokens;
+
+        nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
     }
 
-    function maxSupply() public returns (uint256) { return nft.maxSupply(); }
+    function maxSupply() public view returns (uint256) {
+        return NFT(address(nft)).maxSupply();
+    }
 
-    function totalSupply() public returns (uint256) { return nft.totalSupply(); }
+    function totalSupply() public view returns (uint256) {
+        return NFT(address(nft)).totalSupply();
+    }
 
 }
