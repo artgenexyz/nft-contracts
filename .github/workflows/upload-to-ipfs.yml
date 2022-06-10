@@ -42,5 +42,5 @@ jobs:
 
       - name: Build contracts and upload to IPFS
         # for each files in contracts/**/*.sol run upload
-        run: for file in contracts/**/*.sol; do npx hardhat upload "$file"; done
+        run: for file in contracts/**/*.sol; do npm run hardhat-upload -- "$file"; done
 
