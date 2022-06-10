@@ -1,4 +1,4 @@
-name: Hardhat Tests
+name: Upload Builds to IPFS
 
 # Controls when the workflow will run
 on:
