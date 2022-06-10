@@ -5,6 +5,7 @@
   "scripts": {
     "hardhat-test": "hardhat test",
     "hardhat-coverage": "hardhat coverage",
+    "hardhat-upload": "hardhat upload",
     "compile": "hardhat compile",
     "typechain": "hardhat typechain",
     "test": "hardhat test",
