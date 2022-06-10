@@ -40,7 +40,23 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - name: Build contracts and upload to IPFS
-        # for each files in contracts/**/*.sol run upload
-        run: for file in contracts/**/*.sol; do npm run hardhat-upload -- "$file"; done
+      - name: Build changed contracts and upload to IPFS
+        # find files that have changed in contracts/**/*.sol
+        # and run hh upload $file for them
+        id: build-contract
+        run: npm run hardhat -- contracts/MetaverseNFTFactory.sol
+
+      - name: Post IPFS links
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `IPFS build:
+
+              ${{steps.build-ipfs.outputs.result}}`
+            })
+
 
