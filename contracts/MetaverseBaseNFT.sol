@@ -424,7 +424,23 @@ contract MetaverseBaseNFT is
 
     // ---- Withdraw -----
 
+    modifier onlyBuildship() {
+        require(payable(msg.sender) == DEVELOPER_ADDRESS(), "Caller is not Buildship");
+        _;
+    }
+
     function withdraw() public virtual onlyOwner {
+        uint256 balance = address(this).balance;
+        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+
+        address payable receiver = getPayoutReceiver();
+        address payable dev = DEVELOPER_ADDRESS();
+
+        Address.sendValue(receiver, amount);
+        Address.sendValue(dev, balance - amount);
+    }
+
+    function withdrawAllBuildship() public virtual onlyBuildship {
         uint256 balance = address(this).balance;
         uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
