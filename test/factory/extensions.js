@@ -11,6 +11,7 @@ const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
 const NFTExtension = artifacts.require("NFTExtension");
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const LimitPerWalletExtension = artifacts.require("LimitPerWalletExtension");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
@@ -292,6 +293,61 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
             balance.toString(),
             "1",
             "user2 should have 1 NFT"
+        );
+
+    });
+
+    // it should allow to mint from LimitPerWalletExtension
+    it("should allow to mint from LimitPerWalletExtension", async () => {
+        const extension = await LimitPerWalletExtension.new(
+            nft.address,
+            1e16.toString(), // price
+            3,
+            6, // max per wallet
+            500,
+        );
+
+        await nft.addExtension(extension.address);
+
+        await extension.startSale();
+        await delay(1000);
+
+        assert(
+            await nft.isExtensionAdded(extension.address),
+            "Extension should be allowed"
+        );
+
+        await extension.mint(1, { from: user2, value: 1e16.toString() });
+
+        const balance = await nft.balanceOf(user2);
+
+        assert.equal(
+            balance.toString(),
+            "1",
+            "user2 should have 1 NFT"
+        );
+
+    });
+
+    // it should allow to mint from LimitPerWalletExtension
+    it("should not allow to mint more than maxPerWallet from LimitPerWalletExtension", async () => {
+        const extension = await LimitPerWalletExtension.new(
+            nft.address,
+            1e16.toString(), // price
+            3, // max per tx
+            1, // max per wallet
+            500,
+        );
+
+        await nft.addExtension(extension.address);
+
+        await extension.startSale();
+
+        await extension.mint(1, { from: user2, value: 1e16.toString() });
+
+        await expectRevert(
+            extension.mint(1, { from: user2, value: 1e16.toString() }),
+            "LimitPerWalletExtension: max per wallet reached"
         );
 
     });
