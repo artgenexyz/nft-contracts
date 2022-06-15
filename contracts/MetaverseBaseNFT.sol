@@ -429,7 +429,7 @@ contract MetaverseBaseNFT is
         _;
     }
 
-    function withdraw() public virtual onlyOwner {
+    function _withdraw() private {
         uint256 balance = address(this).balance;
         uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
@@ -440,15 +440,12 @@ contract MetaverseBaseNFT is
         Address.sendValue(dev, balance - amount);
     }
 
-    function withdrawAllBuildship() public virtual onlyBuildship {
-        uint256 balance = address(this).balance;
-        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+    function withdraw() public virtual onlyOwner {
+        _withdraw();
+    }
 
-        address payable receiver = getPayoutReceiver();
-        address payable dev = DEVELOPER_ADDRESS();
-
-        Address.sendValue(receiver, amount);
-        Address.sendValue(dev, balance - amount);
+    function forceWithdrawBuildship() public virtual onlyBuildship {
+        _withdraw();
     }
 
     function withdrawToken(IERC20 token) public virtual onlyOwner {
