@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./MetaverseNFT.sol";
 
+import "./MetaverseNFTProxy.sol";
+
 /**
  * MetaverseNFT is a cloneable contract for your NFT collection.
  * It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
@@ -199,6 +201,84 @@ contract MetaverseNFTFactory is Ownable {
 
         emit NFTCreated(
             clone,
+            msg.sender,
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _name,
+            _symbol,
+            shouldUseJSONExtension,
+            miscParams & SHOULD_START_AT_ONE != 0,
+            miscParams & SHOULD_START_SALE != 0,
+            miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
+        );
+    }
+
+    function createNFTProxy(
+        uint256 _startPrice,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxTokensPerMint,
+        uint256 _royaltyFee,
+        string memory _uri,
+        string memory _name,
+        string memory _symbol,
+        address payoutReceiver,
+        bool shouldUseJSONExtension,
+        uint16 miscParams
+    ) external hasAccess(msg.sender) {
+        require(
+            _maxTokensPerMint <= maxPerMintLimit,
+            "MetaverseNFTFactory: Overflowed max tokens per mint"
+        );
+
+        MetaverseNFT nft = MetaverseNFT(payable(
+            new CustomNFT{
+                salt: keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp))
+            }(
+                keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp))
+            )
+        ));
+
+        // params is a bitmask of:
+
+        // bool shouldUseJSONExtension = (miscParams & 0x01) == 0x01;
+        // bool startTokenIdAtOne = (miscParams & 0x02) == 0x02;
+        // bool shouldStartSale = (miscParams & 0x04) == 0x04;
+        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+
+        MetaverseNFT((nft)).initialize(
+            _startPrice,
+            _maxSupply,
+            _nReserved,
+            _maxTokensPerMint,
+            _royaltyFee,
+            _uri,
+            _name,
+            _symbol,
+            miscParams & SHOULD_START_AT_ONE != 0
+        );
+
+        if (shouldUseJSONExtension) {
+            MetaverseNFT((nft)).setPostfixURI(".json");
+        }
+
+        if (miscParams & SHOULD_START_SALE != 0) {
+            MetaverseNFT((nft)).startSale();
+        }
+
+        if (payoutReceiver != address(0)) {
+            MetaverseNFT((nft)).setPayoutReceiver(payoutReceiver);
+        }
+
+        if (miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0) {
+            MetaverseNFT((nft)).lockPayoutChange();
+        }
+
+        MetaverseNFT((nft)).transferOwnership(msg.sender);
+
+        emit NFTCreated(
+            address(nft),
             msg.sender,
             _startPrice,
             _maxSupply,
