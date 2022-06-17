@@ -1,3 +1,5 @@
+const { network } = require("hardhat");
+
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert } = require("chai");
@@ -151,6 +153,40 @@ contract("MetaverseNFT – Implementation", accounts => {
             0,
             "NFT Sale Balance should be zero after withdraw"
         )
+    });
+
+    it("should allow buildship to force withdraw", async () => {
+        await nft.startSale({ from: owner });
+
+        await nft.mint(1, { from: user2, value: ether.times(0.03) });
+        await nft.mint(2, { from: user1, value: ether.times(0.03).times(2) });
+
+        // check nft balance is not zero
+        const nftBalance = await web3.eth.getBalance(nft.address);
+        assert.notEqual(nftBalance, 0);
+
+        // it should not allow owner to call forceWithdrawBuildship
+        await expectRevert(
+            nft.forceWithdrawBuildship({ from: owner }),
+            "Caller is not Buildship"
+        );
+
+        const buildship = await nft.DEVELOPER_ADDRESS();
+
+        // send ether to buildship
+        await web3.eth.sendTransaction({
+            from: owner,
+            to: buildship,
+            value: ether.times(0.1)
+        });
+
+        await network.provider.request({ method: "hardhat_impersonateAccount", params: [buildship] })
+
+        await nft.forceWithdrawBuildship({ from: buildship });
+
+        const nftBalanceAfter = await web3.eth.getBalance(nft.address);
+        assert.equal(nftBalanceAfter, 0);
+
     });
 
     // it should be able to mint 10 tokens in one transaction
