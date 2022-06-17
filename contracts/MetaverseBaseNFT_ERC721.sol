@@ -367,15 +367,28 @@ contract MetaverseBaseNFT_ERC721 is
 
     // ---- Withdraw -----
 
-    function withdraw() public virtual onlyOwner {
+    modifier onlyBuildship() {
+        require(payable(msg.sender) == DEVELOPER_ADDRESS(), "Caller is not Buildship");
+        _;
+    }
+
+    function _withdraw() private {
         uint256 balance = address(this).balance;
-        uint256 amount = balance * (10000 - DEVELOPER_FEE) / 10000;
+        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
         address payable dev = DEVELOPER_ADDRESS();
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
+    }
+
+    function withdraw() public virtual onlyOwner {
+        _withdraw();
+    }
+
+    function forceWithdrawBuildship() public virtual onlyBuildship {
+        _withdraw();
     }
 
     function withdrawToken(IERC20 token) public virtual onlyOwner {
