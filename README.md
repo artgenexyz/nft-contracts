@@ -1,5 +1,7 @@
 # NFT Contracts by Buildship
 
+[![Hardhat Tests](https://github.com/buildship-dev/nft-contracts/actions/workflows/hardhat.yml/badge.svg)](https://github.com/buildship-dev/nft-contracts/actions/workflows/hardhat.yml)
+
 > [Donate on Gitcoin](https://gitcoin.co/grants/5779/buildship) if you like this repo ❤️‍🔥
 
 This is a collection of smart-contracts that help you to launch your own 10k-avatar collection like [CryptoPunks](https://www.larvalabs.com/cryptopunks), [Bored Ape Yacht Club](https://boredapeyachtclub.com/) or [Pudgy Penguins](https://www.pudgypenguins.io/).
@@ -93,5 +95,14 @@ It needs network selection to run, but it doesn't matter which you use. You can 
 
 In the end, you get IPFS hash to the uploaded bytecode. Use in on https://gate-rinkeby.buildship.xyz/deploy/bafkreid4l4ru7sngq6fcvpizljo7hpm6dmcwjory4kcrbpbkde2xih75au?args=[]
 
+### Thanks
+
+Thanks to Gitbook.com for providing free access to their platform to host our docs! https://learn.buildship.xyz/
+
+ERC721A for their mint-optimized ERC721 https://erc721a.org/
+
+Our contributors
+
+Buildship users who have given us their trust and used our code on mainnet, already processing >5M$ in total volume and >35,000 NFT minted! https://dune.xyz/caffeinum/buildship_xyz
 
 

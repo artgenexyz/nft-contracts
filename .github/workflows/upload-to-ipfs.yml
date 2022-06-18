@@ -1,4 +1,4 @@
-name: Hardhat Tests
+name: Upload Builds to IPFS
 
 # Controls when the workflow will run
 on:
@@ -18,7 +18,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job
-  hardhat:
+  upload-to-ipfs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -40,21 +40,23 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - name: Generate Typechain
-        run: npm run typechain
+      - name: Build changed contracts and upload to IPFS
+        # find files that have changed in contracts/**/*.sol
+        # and run hh upload $file for them
+        id: build-contract
+        run: npm run hardhat-upload -- contracts/MetaverseNFTFactory.sol
 
-      - name: Run tests
-        run: npm run hardhat-test
-
-      - name: Run Coverage
-        run: npm run hardhat-coverage
-
-      - name: Codecov
-        uses: codecov/codecov-action@v3.1.0
-
-      - name: Upload Coverage Artifacts
-        uses: actions/upload-artifact@v3.0.0
+      - name: Post IPFS links
+        uses: actions/github-script@v6
         with:
-          # Artifact name
-          name: coverage
-          path: coverage/
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `IPFS build:
+
+              ${{steps.build-ipfs.outputs.result}}`
+            })
+
+
