@@ -67,6 +67,8 @@ contract MetaverseNFT_ERC1155 is
     uint256 public maxPerMint;
     uint256 public price;
 
+    mapping (uint256 => uint256) maxSupplyPerTokenId;
+
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
@@ -173,8 +175,16 @@ contract MetaverseNFT_ERC1155 is
     }
 
     function totalSupply() public view returns (uint256) {
-        // Only works like this for sequential mint tokens
-        return _tokenIndexCounter.current();
+        // sum of all token ids
+        uint256 total = 0;
+
+        for (uint256 i = startTokenId(); i < maxSupply; i++) {
+            // if (supply(i)) {
+            //     total += 1;
+            // }
+        }
+
+        return total;
     }
 
     // ----- Admin functions -----
@@ -275,11 +285,78 @@ contract MetaverseNFT_ERC1155 is
 
     // ---- Minting ----
 
+    function _mintRandomTokenId(
+        address to
+    ) internal {
+        // random uint256 from block difficulty and hash
+        uint256 random =
+            uint256(block.difficulty) *
+            uint256(keccak256(abi.encodePacked(block.number))) *
+            uint256(block.timestamp);
+
+        uint256 tokenId = random % maxSupply;
+
+        require(maxSupplyPerTokenId[tokenId] == 0, "");
+
+        _mint(to, tokenId, 1, "");
+    }
+
+    function _mintTokens(
+        address to,
+        uint256 amount
+    ) internal {
+
+        // generate N random tokenIds no more than maxSupply
+
+        uint256 n = amount;
+
+        // use EnumerableSet
+        uint256[] memory randomTokenIds = new uint256[](n);
+
+        for (uint256 i = 0; i < n; i++) {
+            uint256 random = uint256(keccak256(abi.encodePacked(
+                i,
+                uint256(block.difficulty) *
+                uint256(keccak256(abi.encodePacked(block.number))) *
+                uint256(block.timestamp)
+            )));
+
+            randomTokenIds[i] = random % maxSupply;
+        }
+
+        uint256[] memory amounts = new uint256[](n);
+        uint256[] memory ids = new uint256[](n);
+
+        for (uint256 id = 0; id < maxSupply; id++) {
+            // count how many times id in token ids
+
+            uint256 count = 0;
+
+            for (uint256 j = 0; j < n; j++) {
+                if (randomTokenIds[j] == id) {
+                    count++;
+                }
+
+                ids[ randomTokenIds[j] ] += 1;
+            }
+
+            amounts[ id ] = count;
+        }
+
+        for (uint256 j = 0; j < n; j++) {
+            ids[ randomTokenIds[j] ] += 1;
+        }
+
+        _mintBatch(to, randomTokenIds, amounts, "");
+
+    }
+
     function _mintConsecutive(
         uint256 nTokens,
         address to,
         bytes32 extraData
     ) internal {
+        require(extraData == 0x0, "ERC1155 does not support extra data");
         require(
             _tokenIndexCounter.current() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
@@ -290,7 +367,6 @@ contract MetaverseNFT_ERC1155 is
             _tokenIndexCounter.increment();
 
             _mint(to, tokenId, 1, '');
-            data[tokenId] = extraData;
         }
     }
 
