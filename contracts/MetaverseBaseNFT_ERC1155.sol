@@ -7,9 +7,9 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -46,10 +46,10 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseNFT_ERC1155 is
-    ERC1155Upgradeable,
-    ReentrancyGuardUpgradeable,
-    OwnableUpgradeable,
+contract MetaverseBaseNFT_ERC1155 is
+    ERC1155,
+    ReentrancyGuard,
+    Ownable,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -101,7 +101,7 @@ contract MetaverseNFT_ERC1155 is
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
 
-    function initialize(
+    constructor(
         uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
@@ -111,11 +111,7 @@ contract MetaverseNFT_ERC1155 is
         // string memory _name,
         // string memory _symbol,
         bool _startAtOne
-    ) public initializer {
-        __ERC1155_init(_uri);
-        __ReentrancyGuard_init();
-        __Ownable_init();
-
+    ) ERC1155(_uri) {
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -131,14 +127,6 @@ contract MetaverseNFT_ERC1155 is
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
     }
-
-    // This constructor ensures that this contract can only be used as a master copy
-    // Marking constructor as initializer makes sure that real initializer cannot be called
-    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
-    // on the other hand, it's impossible to call this function in proxy,
-    // so the real initializer is the only initializer
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
 
     // function _baseURI() internal view returns (string memory) {
     //     return BASE_URI;
