@@ -10,10 +10,6 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./interfaces/INFTExtension.sol";
-import "./interfaces/IMetaverseNFT.sol";
-import "./utils/OpenseaProxy.sol";
-
 import "./MetaverseNFT.sol";
 
 //      Want to launch your own collection?
@@ -41,77 +37,104 @@ import "./MetaverseNFT.sol";
 //            '''                  cc
 //                                ,'
 
-contract CustomNFT is Proxy {
-    address private constant proxyImplementation = 0xA43220565f2F47565C58bcDf9994b70fdCd279c5;
+contract MetaverseNFTProxy is Proxy, Initializable {
+    address internal constant proxyImplementation =
+        0xA43220565f2F47565C58bcDf9994b70fdCd279c5;
 
-    bytes32 public immutable id;
-
-    event ProxyCreated(bytes32 salt);
-
-    constructor (bytes32 salt) {
-        id = salt;
-
-        emit ProxyCreated(salt);
+    struct Args {
+        string name;
+        string symbol;
+        uint256 maxSupply;
+        uint256 nReserved;
+        // public sale setup:
+        uint256 startPrice;
+        uint256 maxTokensPerMint;
+        // todo: init sale : (should start = true/false)
+        uint256 royaltyFee;
+        // address payoutReceiver,
+        uint16 miscParams; // should claim X
+        string uri;
+        // bool shouldUseJSONExtension
     }
 
-    /*
-    function initialize (
-        uint256 _startPrice,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxTokensPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
-        string memory _name,
-        string memory _symbol,
-        address payoutReceiver,
-        bool shouldUseJSONExtension,
-        uint16 miscParams
-    ) public {
+    // bytes32 public immutable id;
+
+    event MetaverseNFTCreated(
+        bytes32 indexed salt,
+        string _name,
+        string _symbol,
+        uint256 maxSupply
+    );
+
+    constructor(Args memory args) // bool shouldUseJSONExtension
+    {
+        // id = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
+        // bytes32 salt = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
+
+        // emit MetaverseNFTCreated(salt, _name, _symbol, _maxSupply);
 
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
                 MetaverseNFT.initialize.selector,
-                _startPrice,
-                _maxSupply,
-                _nReserved,
-                _maxTokensPerMint,
-                _royaltyFee,
-                _uri,
-                _name,
-                _symbol,
-                miscParams & (1 << 1) != 0
+                args.startPrice,
+                args.maxSupply,
+                args.nReserved,
+                args.maxTokensPerMint,
+                args.royaltyFee,
+                args.uri,
+                args.name,
+                args.symbol,
+                args.miscParams & (1 << 1) != 0
             )
         );
+    }
 
+    function initialize(
+        // init sale : (should start = true/false)
+        // uint256 _startPrice,
+        // uint256 _maxTokensPerMint,
+        // uint256 _royaltyFee,
+        address payoutReceiver,
+        uint16 miscParams,
+        bool shouldUseJSONExtension
+    ) public {
         if (shouldUseJSONExtension) {
-            Address.functionDelegateCall(proxyImplementation,abi.encodeWithSelector(
-                MetaverseNFT.setPostfixURI.selector, ".json"
-            ));
+            Address.functionDelegateCall(
+                proxyImplementation,
+                abi.encodeWithSelector(
+                    MetaverseNFT.setPostfixURI.selector,
+                    ".json"
+                )
+            );
         }
 
         if (miscParams & (1 << 2) != 0) {
-            Address.functionDelegateCall(proxyImplementation,abi.encodeWithSelector(
-                MetaverseNFT.startSale.selector
-            ));
+            Address.functionDelegateCall(
+                proxyImplementation,
+                abi.encodeWithSelector(MetaverseNFT.startSale.selector)
+            );
         }
 
         if (payoutReceiver != address(0)) {
-            Address.functionDelegateCall(proxyImplementation,abi.encodeWithSelector(
-                MetaverseNFT.setPayoutReceiver.selector, (payoutReceiver)
-            ));
+            Address.functionDelegateCall(
+                proxyImplementation,
+                abi.encodeWithSelector(
+                    MetaverseNFT.setPayoutReceiver.selector,
+                    (payoutReceiver)
+                )
+            );
         }
 
         if (miscParams & (1 << 3) != 0) {
-            Address.functionDelegateCall(proxyImplementation,abi.encodeWithSelector(
-                MetaverseNFT.lockPayoutChange.selector
-            ));
+            Address.functionDelegateCall(
+                proxyImplementation,
+                abi.encodeWithSelector(MetaverseNFT.lockPayoutChange.selector)
+            );
         }
     }
-    */
 
-    function _implementation() internal override pure returns (address) {
+    function _implementation() internal pure override returns (address) {
         return address(proxyImplementation);
     }
 }
