@@ -69,7 +69,7 @@ contract MetaverseBaseNFT_ERC1155 is
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
-    // uint256 public _maxSupply;
+    uint256 public maxSupply;
     uint256 public maxPerMint;
     uint256 public price;
 
@@ -84,7 +84,7 @@ contract MetaverseBaseNFT_ERC1155 is
     bool private isOpenSeaProxyActive = true;
     bool private startAtOne = false;
 
-    mapping(uint256 => uint256) public _maxSupply;
+    mapping(uint256 => uint256) public _maxSeriesSupply;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -107,7 +107,7 @@ contract MetaverseBaseNFT_ERC1155 is
 
     constructor(
         uint256 _price,
-        uint256 _maxSupply,
+        uint256 _maxSupply, // only limit ids here, not the full number of NFTs
         uint256 _nReserved,
         uint256 _maxPerMint,
         uint256 _royaltyFee,
@@ -121,7 +121,7 @@ contract MetaverseBaseNFT_ERC1155 is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
-        // _maxSupply = _maxSupply;
+        maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
@@ -167,8 +167,25 @@ contract MetaverseBaseNFT_ERC1155 is
         return startAtOne ? 1 : 0;
     }
 
-    function maxSupply(uint256 id) public view returns (uint256) {
-        return _maxSupply[id];
+    function maxSeriesSupply(uint256 id) public view returns (uint256) {
+        return _maxSeriesSupply[id];
+    }
+
+    function totalSeriesSupply(uint256 id) public view returns (uint256) {
+        return totalSupply(id);
+    }
+
+    function maxSupplyAll() public view returns (uint256) {
+        // TODO: make O(1) by caching on mint?
+
+        // sum of all token ids
+        uint256 total = 0;
+
+        for (uint256 id = startTokenId(); id <= lastTokenId(); id++) {
+            total += maxSeriesSupply(id);
+        }
+
+        return total;
     }
 
     function totalSupplyAll() public view returns (uint256) {
@@ -177,12 +194,8 @@ contract MetaverseBaseNFT_ERC1155 is
         // sum of all token ids
         uint256 total = 0;
 
-        uint256 tokenId = startTokenId();
-
-        while (exists(tokenId)) {
-            total += totalSupply(tokenId);
-
-            tokenId++;
+        for (uint256 id = startTokenId(); id <= lastTokenId(); id++) {
+            total += totalSupply(id);
         }
 
         return total;
@@ -300,18 +313,17 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // TODO: optional push ipfs hash to metadata?
     function importSeries(uint256[] calldata supply) public onlyOwner {
-        // TODO:
-        // require(lastTokenId() + supply.length <= maxSupply.length, "Too many tokens");
+        require(lastTokenId() + supply.length <= maxSupply, "Too many tokens");
 
         for (uint256 i = 0; i < supply.length; i++) {
             uint256 tokenId = nextTokenId();
             uint256 _supply = supply[i];
 
             // require(_supply > 0, "Supply must be greater than 0");
-            require(_maxSupply[tokenId] == 0, "Token already imported");
+            require(_maxSeriesSupply[tokenId] == 0, "Token already imported");
             require(_supply != 0, "Can't import empty series");
 
-            _maxSupply[tokenId] = _supply;
+            _maxSeriesSupply[tokenId] = _supply;
         }
     }
 
@@ -322,7 +334,7 @@ contract MetaverseBaseNFT_ERC1155 is
     ) internal {
         require(amount > 0, "Amount must be greater than 0");
         require(
-            totalSupply(tokenId) + amount <= maxSupply(tokenId),
+            totalSeriesSupply(tokenId) + amount <= maxSeriesSupply(tokenId),
             "Amount exceeds max supply"
         );
         require(
@@ -342,12 +354,18 @@ contract MetaverseBaseNFT_ERC1155 is
         require(ids.length == amounts.length, "Ids and amounts must be same length");
 
         for (uint256 i = 0; i < ids.length; i++) {
+
+            console.log("token id", ids[i]);
+            console.log("Amount requested", amounts[i]);
+            console.log("Total supply", totalSupply(ids[i]));
+            console.log("Max supply", maxSeriesSupply(ids[i]));
+
             require(
                 ids[i] >= startTokenId() && ids[i] <= lastTokenId(),
                 "TokenId out of range"
             );
             require(
-                totalSupply(ids[i]) + amounts[i] <= maxSupply(ids[i]),
+                totalSeriesSupply(ids[i]) + amounts[i] <= maxSeriesSupply(ids[i]),
                 "Amount exceeds max supply"
             );
 
@@ -359,16 +377,16 @@ contract MetaverseBaseNFT_ERC1155 is
 
     function _canMint(uint256 id, uint256 amount) internal returns (bool) {
         require(amount > 0, "Amount must be greater than 0");
-        // require(
-        //     totalSupply(id) + amount <= _maxSupply[id],
-        //     "Amount exceeds max supply"
-        // );
+        require(
+            totalSeriesSupply(id) + amount <= maxSeriesSupply(id),
+            "Amount exceeds max supply"
+        );
         require(
             id >= startTokenId() && id <= lastTokenId(),
             "TokenId out of range"
         );
 
-        return totalSupply(id) + amount <= maxSupply(id);
+        return totalSeriesSupply(id) + amount <= maxSeriesSupply(id);
     }
 
     // function _getRandomTokenIds(uint256 amount) internal returns (uint256[] memory ids) {
@@ -424,12 +442,14 @@ contract MetaverseBaseNFT_ERC1155 is
     // }
 
     function _mintRandomTokens(uint256 amount, address to) internal {
+        require(totalSupplyAll() + amount <= maxSupplyAll(), "Not enough Tokens left");
+
         // generate random token ids sequentially
         // check if can mint each token id
         // mint each token id
 
-        uint256 R_norm = 1024;
-        uint256 R_max = type(uint256).max / 1024;
+        uint256 R_norm = 1024 * 1024;
+        uint256 R_max = type(uint256).max / R_norm;
         uint256 R_left = 0;
         uint256 R_right = R_max;
         uint256 R = R_max / 2;
@@ -446,7 +466,7 @@ contract MetaverseBaseNFT_ERC1155 is
                         i
                     )
                 )
-            ) / 1024;
+            ) / (2*R_norm);
         }
 
         // calc sum
@@ -460,29 +480,22 @@ contract MetaverseBaseNFT_ERC1155 is
             sum = 0;
 
             for (uint256 id = 0; id < k.length; id++) {
-                // if r > R, return random from 0 to m(id) - t(id)
-                k[id] = (maxSupply(id) - totalSupply(id))
-                    * (R > r[id] ? (R - r[id] + 1) : 0)
+                // if R > r, return random from 0 to m(id) - t(id)
+                k[id] = (maxSeriesSupply(id) - totalSeriesSupply(id) + 1)
+                    * (R < r[id] ? 0 : (R - r[id]))
                     / (R_max - r[id]);
 
                 console.log("r  [", id, "]\t=", r[id]);
-                console.log("mt [", id, "]\t=", (maxSupply(id) - totalSupply(id)));
+                console.log("mt [", id, "]\t=", (maxSeriesSupply(id) - totalSeriesSupply(id) + 1));
                 console.log("k  [", id, "]\t=", k[id]);
-
-                unchecked {
-                    // console.log("R-r * 1024 / Rm-r =", (R - r[id]) * 1024 / (R_max - r[id]));
-                }
-
-                // if (k[id] > 0) {
-                //     // console.log("k[", id, "] =", k[id]);
-                // }
+                console.log("");
 
                 sum += k[id];
             }
 
             console.log("\n========================================================\n");
             console.log("Sum =", sum, ", need =", amount);
-            console.log("R\t\t=", R);
+            console.log("R    \t\t=", R);
 
             if (sum == amount) {
                 break;
@@ -494,8 +507,9 @@ contract MetaverseBaseNFT_ERC1155 is
                 R = R_left/2 + R_right/2;
             }
 
-            console.log("Rl, Rr\t=", R_left, R_right);
-            console.log("R     \t=", R);
+            console.log("Rl    \t\t=", R_left);
+            console.log("Rr    \t\t=", R_right);
+            console.log("R     \t\t=", R);
             console.log("\n========================================================\n");
         }
 
@@ -555,14 +569,14 @@ contract MetaverseBaseNFT_ERC1155 is
 
 
 
-                // is valid? if totalSupply <= _maxSupply, then it is valid
+                // is valid? if totalSeriesSupply <= _maxSeriesSupply, then it is valid
             }
         }
 
         uint256[] memory amounts = new uint256[](n);
         // uint256[] memory ids = new uint256[](n);
 
-        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
+        for (uint256 id = startTokenId(); id <= lastTokenId(); id++) {
             // count how many times id in token ids
 
             uint256 count = 0;
@@ -597,7 +611,7 @@ contract MetaverseBaseNFT_ERC1155 is
 
         // TODO: write body
         // require(
-        //     _tokenIndexCounter.current() + nTokens + reserved <= _maxSupply,
+        //     _tokenIndexCounter.current() + nTokens + reserved <= _maxSeriesSupply,
         //     "Not enough Tokens left."
         // );
 

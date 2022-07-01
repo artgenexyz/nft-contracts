@@ -403,6 +403,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     await nft2.startSale();
 
+    await nft2.importSeries(Array(5).fill(5));
+
     await nft2.mint(10, { from: owner, value: ether.times(0.3) });
 
     assert.notEqual(await nft2.balanceOf(owner, 0), 10);
