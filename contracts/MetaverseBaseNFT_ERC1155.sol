@@ -7,7 +7,10 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -46,8 +49,9 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
+// ERC1155,
 contract MetaverseBaseNFT_ERC1155 is
-    ERC1155,
+    ERC1155Supply,
     ReentrancyGuard,
     Ownable,
     IMetaverseNFT // implements IERC2981
@@ -65,11 +69,9 @@ contract MetaverseBaseNFT_ERC1155 is
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
-    uint256 public maxSupply;
+    // uint256 public _maxSupply;
     uint256 public maxPerMint;
     uint256 public price;
-
-    mapping (uint256 => uint256) maxSupplyPerTokenId;
 
     uint256 public royaltyFee;
 
@@ -81,6 +83,8 @@ contract MetaverseBaseNFT_ERC1155 is
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive = true;
     bool private startAtOne = false;
+
+    mapping(uint256 => uint256) public _maxSupply;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -117,7 +121,7 @@ contract MetaverseBaseNFT_ERC1155 is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
-        maxSupply = _maxSupply;
+        // _maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
@@ -140,16 +144,9 @@ contract MetaverseBaseNFT_ERC1155 is
         return uri(_tokenId);
     }
 
-    function uri(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function uri(uint256 tokenId) public view override returns (string memory) {
         if (uriExtension != address(0)) {
-            string memory u = INFTURIExtension(uriExtension).tokenURI(
-                tokenId
-            );
+            string memory u = INFTURIExtension(uriExtension).tokenURI(tokenId);
 
             if (bytes(u).length > 0) {
                 return u;
@@ -158,10 +155,11 @@ contract MetaverseBaseNFT_ERC1155 is
 
         if (bytes(URI_POSTFIX).length > 0) {
             return
-                string(abi.encodePacked(BASE_URI, tokenId.toString(), URI_POSTFIX));
+                string(
+                    abi.encodePacked(BASE_URI, tokenId.toString(), URI_POSTFIX)
+                );
         } else {
-            return
-                string(abi.encodePacked(BASE_URI, tokenId.toString()));
+            return string(abi.encodePacked(BASE_URI, tokenId.toString()));
         }
     }
 
@@ -169,14 +167,22 @@ contract MetaverseBaseNFT_ERC1155 is
         return startAtOne ? 1 : 0;
     }
 
-    function totalSupply() public view returns (uint256) {
+    function maxSupply(uint256 id) public view returns (uint256) {
+        return _maxSupply[id];
+    }
+
+    function totalSupplyAll() public view returns (uint256) {
+        // TODO: make O(1) by caching on mint?
+
         // sum of all token ids
         uint256 total = 0;
 
-        for (uint256 i = startTokenId(); i < maxSupply; i++) {
-            // if (supply(i)) {
-            //     total += 1;
-            // }
+        uint256 tokenId = startTokenId();
+
+        while (exists(tokenId)) {
+            total += totalSupply(tokenId);
+
+            tokenId++;
         }
 
         return total;
@@ -280,28 +286,250 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // ---- Minting ----
 
-    // function _mintRandomTokenId(
-    //     address to
-    // ) internal {
-    //     // random uint256 from block difficulty and hash
-    //     uint256 random =
-    //         uint256(block.difficulty) *
-    //         uint256(keccak256(abi.encodePacked(block.number))) *
-    //         uint256(block.timestamp);
+    function lastTokenId() public view returns (uint256) {
+        return startTokenId() + _tokenIndexCounter.current();
+    }
 
-    //     uint256 tokenId = random % maxSupply;
+    function nextTokenId() public returns (uint256 id) {
+        _tokenIndexCounter.increment();
 
-    //     require(maxSupplyPerTokenId[tokenId] == 0, "");
+        return _tokenIndexCounter.current() - 1;
 
-    //     _mint(to, tokenId, 1, "");
-    // }
+        // return id;
+    }
+
+    // TODO: optional push ipfs hash to metadata?
+    function importSeries(uint256[] calldata supply) public onlyOwner {
+        // TODO:
+        // require(lastTokenId() + supply.length <= maxSupply.length, "Too many tokens");
+
+        for (uint256 i = 0; i < supply.length; i++) {
+            uint256 tokenId = nextTokenId();
+            uint256 _supply = supply[i];
+
+            // require(_supply > 0, "Supply must be greater than 0");
+            require(_maxSupply[tokenId] == 0, "Token already imported");
+            require(_supply != 0, "Can't import empty series");
+
+            _maxSupply[tokenId] = _supply;
+        }
+    }
 
     function _mintTokens(
-        uint256 amount,
-        address to
+        address to,
+        uint256 tokenId,
+        uint256 amount
     ) internal {
+        require(amount > 0, "Amount must be greater than 0");
+        require(
+            totalSupply(tokenId) + amount <= maxSupply(tokenId),
+            "Amount exceeds max supply"
+        );
+        require(
+            tokenId >= startTokenId() && tokenId <= lastTokenId(),
+            "TokenId out of range"
+        );
 
-        // generate N random tokenIds no more than maxSupply
+        // Mint the tokens
+        _mint(to, tokenId, amount, "");
+    }
+
+    function _mintTokens(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) internal {
+        require(ids.length == amounts.length, "Ids and amounts must be same length");
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(
+                ids[i] >= startTokenId() && ids[i] <= lastTokenId(),
+                "TokenId out of range"
+            );
+            require(
+                totalSupply(ids[i]) + amounts[i] <= maxSupply(ids[i]),
+                "Amount exceeds max supply"
+            );
+
+            // _mintTokens(to, ids[i], amount[i]);
+        }
+
+        _mintBatch(to, ids, amounts, "");
+    }
+
+    function _canMint(uint256 id, uint256 amount) internal returns (bool) {
+        require(amount > 0, "Amount must be greater than 0");
+        // require(
+        //     totalSupply(id) + amount <= _maxSupply[id],
+        //     "Amount exceeds max supply"
+        // );
+        require(
+            id >= startTokenId() && id <= lastTokenId(),
+            "TokenId out of range"
+        );
+
+        return totalSupply(id) + amount <= maxSupply(id);
+    }
+
+    // function _getRandomTokenIds(uint256 amount) internal returns (uint256[] memory ids) {
+    //     // for each token id, generate a random number A(tokenId)
+    //     // calculate minted tokens for each tokenId if (A(tokenId) - B) / C
+    //     // change B using binary search until sum of all minted tokens is exactly amount
+
+    //     uint256 C = 1000;
+    //     uint256[] memory A = new uint256[](lastTokenId());
+
+    //     for (uint256 tokenId = startTokenId(); tokenId <= lastTokenId(); tokenId++) {
+    //         A[tokenId] = uint256(
+    //             keccak256(
+    //                 abi.encodePacked(
+    //                     block.difficulty,
+    //                     blockhash(block.number - 1),
+    //                     tokenId
+    //                 )
+    //             )
+    //         );
+    //     }
+
+    //     uint256 B = 500;
+
+    //     while (true) {
+    //         uint256 sum = 0;
+    //         // uint256[] memory ids = new uint256[](amount);
+
+    //         for (uint256 tokenId = startTokenId(); tokenId <= lastTokenId(); tokenId++) {
+    //             uint256 minted = (A[tokenId] - B) / C;
+
+    //             sum += minted;
+    //         }
+
+    //         if (sum > amount) {
+    //             B = B / 2;
+    //             continue;
+    //             // minted--;
+    //             // sum--;
+    //         }
+
+    //         ids[tokenId - startTokenId()] = minted;
+
+    //         if (sum == amount) {
+    //             return ids;
+    //         }
+
+    //         B += (amount - sum) / 2;
+    //     }
+
+
+
+    // }
+
+    function _mintRandomTokens(uint256 amount, address to) internal {
+        // generate random token ids sequentially
+        // check if can mint each token id
+        // mint each token id
+
+        uint256 R_norm = 1024;
+        uint256 R_max = type(uint256).max / 1024;
+        uint256 R_left = 0;
+        uint256 R_right = R_max;
+        uint256 R = R_max / 2;
+
+        uint256[] memory r = new uint256[](lastTokenId() - startTokenId() + 1);
+        uint256[] memory k = new uint256[](lastTokenId() - startTokenId() + 1);
+
+        for (uint256 i = 0; i < r.length; i++) {
+            r[i] = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.difficulty,
+                        blockhash(block.number - 1),
+                        i
+                    )
+                )
+            ) / 1024;
+        }
+
+        // calc sum
+
+        uint256 sum;
+
+        // if sum != amount, binary search R until sum = amount
+
+        while (true) {
+
+            sum = 0;
+
+            for (uint256 id = 0; id < k.length; id++) {
+                // if r > R, return random from 0 to m(id) - t(id)
+                k[id] = (maxSupply(id) - totalSupply(id))
+                    * (R > r[id] ? (R - r[id] + 1) : 0)
+                    / (R_max - r[id]);
+
+                console.log("r  [", id, "]\t=", r[id]);
+                console.log("mt [", id, "]\t=", (maxSupply(id) - totalSupply(id)));
+                console.log("k  [", id, "]\t=", k[id]);
+
+                unchecked {
+                    // console.log("R-r * 1024 / Rm-r =", (R - r[id]) * 1024 / (R_max - r[id]));
+                }
+
+                // if (k[id] > 0) {
+                //     // console.log("k[", id, "] =", k[id]);
+                // }
+
+                sum += k[id];
+            }
+
+            console.log("\n========================================================\n");
+            console.log("Sum =", sum, ", need =", amount);
+            console.log("R\t\t=", R);
+
+            if (sum == amount) {
+                break;
+            } else if (sum > amount) {
+                R_right = R;
+                R = R_left/2 + R_right/2;
+            } else {
+                R_left = R;
+                R = R_left/2 + R_right/2;
+            }
+
+            console.log("Rl, Rr\t=", R_left, R_right);
+            console.log("R     \t=", R);
+            console.log("\n========================================================\n");
+        }
+
+
+        uint256 l = 0;
+
+        for (uint256 id = 0; id < k.length; id++) {
+            if (k[id] > 0) {
+                l++;
+            }
+        }
+
+        uint256[] memory ids = new uint256[](l);
+        uint256[] memory amounts = new uint256[](l);
+
+        l = 0;
+
+        for (uint256 id = 0; id < k.length; id++) {
+            if (k[id] > 0) {
+                // "push"
+                ids[l] = id;
+                amounts[l] = k[id];
+                l++;
+            }
+        }
+
+        _mintTokens(to, ids, amounts);
+
+    }
+
+    function ____mintTokens(uint256 amount, address to) internal {
+        // generate N random tokenIds no more than lastTokenId()
+
+        return _mintRandomTokens(amount, to);
 
         uint256 n = amount;
 
@@ -310,38 +538,47 @@ contract MetaverseBaseNFT_ERC1155 is
 
         for (uint256 i = 0; i < n; i++) {
             unchecked {
-                uint256 random = uint256(keccak256(abi.encodePacked(
-                    i,
-                    uint256(block.difficulty) *
-                    uint256(keccak256(abi.encodePacked(block.number))) *
-                    uint256(block.timestamp)
-                )));
+                uint256 random = uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            i,
+                            uint256(block.difficulty) *
+                                uint256(
+                                    keccak256(abi.encodePacked(block.number))
+                                ) *
+                                uint256(block.timestamp)
+                        )
+                    )
+                );
 
-               randomTokenIds[i] = random % maxSupply;
+                randomTokenIds[i] = random % lastTokenId();
+
+
+
+                // is valid? if totalSupply <= _maxSupply, then it is valid
             }
-
         }
 
         uint256[] memory amounts = new uint256[](n);
         // uint256[] memory ids = new uint256[](n);
 
-        // for (uint256 id = 0; id < maxSupply; id++) {
-        //     // count how many times id in token ids
+        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
+            // count how many times id in token ids
 
-        //     uint256 count = 0;
+            uint256 count = 0;
 
-        //     for (uint256 j = 0; j < n; j++) {
-        //         if (randomTokenIds[j] == id) {
-        //             count++;
-        //         }
+            for (uint256 j = 0; j < n; j++) {
+                if (randomTokenIds[j] == id) {
+                    count++;
+                }
 
-        //         // ids.push(randomTokenIds[j]);
+                // ids.push(randomTokenIds[j]);
 
-        //         ids[ j ] = randomTokenIds[j];
-        //     }
+                // ids[ j ] = randomTokenIds[j];
+            }
 
-        //     amounts[ id ] = count;
-        // }
+            amounts[ id ] = count;
+        }
 
         for (uint256 j = 0; j < n; j++) {
             // ids[ randomTokenIds[j] ] += 1;
@@ -349,7 +586,6 @@ contract MetaverseBaseNFT_ERC1155 is
         }
 
         _mintBatch(to, randomTokenIds, amounts, "");
-
     }
 
     function _mintConsecutive(
@@ -358,17 +594,19 @@ contract MetaverseBaseNFT_ERC1155 is
         bytes32 extraData
     ) internal {
         require(extraData == 0x0, "ERC1155 does not support extra data");
-        require(
-            _tokenIndexCounter.current() + nTokens + reserved <= maxSupply,
-            "Not enough Tokens left."
-        );
 
-        for (uint256 i; i < nTokens; i++) {
-            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
-            _tokenIndexCounter.increment();
+        // TODO: write body
+        // require(
+        //     _tokenIndexCounter.current() + nTokens + reserved <= _maxSupply,
+        //     "Not enough Tokens left."
+        // );
 
-            _mint(to, tokenId, 1, '');
-        }
+        // for (uint256 i; i < nTokens; i++) {
+        //     uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+        //     _tokenIndexCounter.increment();
+
+        //     _mint(to, tokenId, 1, "");
+        // }
     }
 
     // ---- Mint control ----
@@ -413,7 +651,8 @@ contract MetaverseBaseNFT_ERC1155 is
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
         // _mintConsecutive(nTokens, msg.sender, 0x0);
-        _mintTokens(nTokens, msg.sender);
+        // _mintTokens(nTokens, msg.sender);
+        _mintRandomTokens(nTokens, msg.sender);
     }
 
     // Owner can claim free tokens
@@ -427,7 +666,8 @@ contract MetaverseBaseNFT_ERC1155 is
         reserved = reserved - nTokens;
 
         // _mintConsecutive(nTokens, to, 0x0);
-        _mintTokens(nTokens, to);
+        // _mintTokens(nTokens, to);
+        _mintRandomTokens(nTokens, to);
     }
 
     // ---- Mint via extension
@@ -438,7 +678,7 @@ contract MetaverseBaseNFT_ERC1155 is
         bytes32
     ) external payable onlyExtension nonReentrant {
         // _mintConsecutive(nTokens, to, extraData);
-        _mintTokens(nTokens, to);
+        _mintRandomTokens(nTokens, to);
     }
 
     // ---- Sale control ----

@@ -30,6 +30,12 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       // "NFT",
       false
     );
+
+    await nft.importSeries([100,20,100]);
+    // token id = 0: 100 items
+    // token id = 1: 20 items
+    // token id = 2: 100 items
+
   });
 
   // it should deploy successfully
@@ -314,7 +320,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
       "1000000000000000",
-      200,
+      100,
       40,
       20,
       500, // royalty
@@ -324,20 +330,23 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
+    await nft.importSeries(Array(20).fill(5));
+
     await nft.startSale();
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
 
-    // try minting 20 * 20 tokens, which is more than the max allowed (200)
+    // try minting 100 + 10 tokens, which is more than the max allowed (100)
+
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+
     try {
-      await Promise.all(
-        Array(20)
-          .fill()
-          .map(() =>
-            nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
-          )
-      );
+      await nft.mint(10, { from: owner, value: ether.times(0.0001).times(20) });
     } catch (error) {
       assert.include(error.message, "Not enough Tokens left");
     }
