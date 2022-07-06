@@ -65,6 +65,7 @@ contract MetaverseNFT is
     uint256 public reserved;
     uint256 public maxSupply;
     uint256 public maxPerMint;
+    uint256 public maxPerWallet;
     uint256 public price;
 
     uint256 public royaltyFee;
@@ -330,6 +331,14 @@ contract MetaverseNFT is
         nonReentrant
         whenSaleStarted
     {
+        // setting it to 0 means no limit
+        if (maxPerWallet > 0) {
+            require(
+                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                "max per wallet reached"
+            );
+        }
+
         require(
             nTokens <= maxPerMint,
             "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
@@ -361,6 +370,20 @@ contract MetaverseNFT is
         bytes32 extraData
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
+    }
+
+    // ---- Mint configuration
+
+    function updateMaxPerMint(
+        uint256 _maxPerMint
+    ) external onlyOwner nonReentrant {
+        maxPerMint = _maxPerMint;
+    }
+
+    function updateMaxPerWallet(
+        uint256 _maxPerWallet
+    ) external onlyOwner nonReentrant {
+        maxPerWallet = _maxPerWallet;
     }
 
     // ---- Sale control ----
