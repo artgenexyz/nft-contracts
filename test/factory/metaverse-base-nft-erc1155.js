@@ -417,4 +417,55 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
   });
 
+  // it should mint 100 tokens one by one and measure gas for each
+  it("should mint 100 tokens one by one and measure gas for each", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      40,
+      20,
+      500, // royalty
+      "https://metadata.buildship.dev/",
+      false
+    );
+
+    await nft2.startSale();
+
+    await nft2.importSeries(Array(10).fill(10));
+
+    const gasCost = [];
+
+    for (let i = 0; i < 5; i++) {
+      const tx = await nft2.mint(10, { from: owner, value: ether.times(0.1) });
+
+      gasCost.push(...Array(10).fill(new BigNumber(tx.receipt.gasUsed).div(10)));
+    }
+
+    for (let i = 0; i < 25; i++) {
+      const tx = await nft2.mint(2, { from: owner, value: ether.times(0.1) });
+
+      gasCost.push(...Array(2).fill(new BigNumber(tx.receipt.gasUsed).div(2)));
+    }
+
+    const gasCostAvg = gasCost.reduce((a, b) => b.plus(a), 0).div(gasCost.length);
+
+    // print gas costs in a table 10x10 for each of the transactions
+    // gasCost[i * 10 + j]
+    console.log(`
+      | ${gasCost[0]} | ${gasCost[1]} | ${gasCost[2]} | ${gasCost[3]} | ${gasCost[4]} | ${gasCost[5]} | ${gasCost[6]} | ${gasCost[7]} | ${gasCost[8]} | ${gasCost[9]} |
+      | ${gasCost[10]} | ${gasCost[11]} | ${gasCost[12]} | ${gasCost[13]} | ${gasCost[14]} | ${gasCost[15]} | ${gasCost[16]} | ${gasCost[17]} | ${gasCost[18]} | ${gasCost[19]} |
+      | ${gasCost[20]} | ${gasCost[21]} | ${gasCost[22]} | ${gasCost[23]} | ${gasCost[24]} | ${gasCost[25]} | ${gasCost[26]} | ${gasCost[27]} | ${gasCost[28]} | ${gasCost[29]} |
+      | ${gasCost[30]} | ${gasCost[31]} | ${gasCost[32]} | ${gasCost[33]} | ${gasCost[34]} | ${gasCost[35]} | ${gasCost[36]} | ${gasCost[37]} | ${gasCost[38]} | ${gasCost[39]} |
+      | ${gasCost[40]} | ${gasCost[41]} | ${gasCost[42]} | ${gasCost[43]} | ${gasCost[44]} | ${gasCost[45]} | ${gasCost[46]} | ${gasCost[47]} | ${gasCost[48]} | ${gasCost[49]} |
+
+      Average gas cost: ${gasCostAvg}
+
+      Minting by 2 tokens per tx:
+
+      | ${gasCost[50]} | ${gasCost[51]} | ${gasCost[52]} | ${gasCost[53]} | ${gasCost[54]} | ${gasCost[55]} | ${gasCost[56]} | ${gasCost[57]} | ${gasCost[58]} | ${gasCost[59]} |
+      | ${gasCost[60]} | ${gasCost[61]} | ${gasCost[62]} | ${gasCost[63]} | ${gasCost[64]} | ${gasCost[65]} | ${gasCost[66]} | ${gasCost[67]} | ${gasCost[68]} | ${gasCost[69]} |
+      | ${gasCost[70]} | ${gasCost[71]} | ${gasCost[72]} | ${gasCost[73]} | ${gasCost[74]}
+    `);
+  })
+
 });
