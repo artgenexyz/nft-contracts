@@ -61,6 +61,7 @@ contract MetaverseBaseNFT is
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -352,20 +353,6 @@ contract MetaverseBaseNFT is
         _mintConsecutive(nTokens, to, 0x0);
     }
 
-    // ---- Mint configuration
-
-    function updateMaxPerMint(
-        uint256 _maxPerMint
-    ) external onlyOwner nonReentrant {
-        maxPerMint = _maxPerMint;
-    }
-
-    function updateMaxPerWallet(
-        uint256 _maxPerWallet
-    ) external onlyOwner nonReentrant {
-        maxPerWallet = _maxPerWallet;
-    }
-
     // ---- Mint via extension
 
     function mintExternal(
@@ -374,6 +361,21 @@ contract MetaverseBaseNFT is
         bytes32 extraData
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
+    }
+
+    // ---- Mint configuration
+
+    function updateMaxPerMint(
+        uint256 _maxPerMint
+    ) external onlyOwner nonReentrant {
+        require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
+        maxPerMint = _maxPerMint;
+    }
+
+    function updateMaxPerWallet(
+        uint256 _maxPerWallet
+    ) external onlyOwner nonReentrant {
+        maxPerWallet = _maxPerWallet;
     }
 
     // ---- Sale control ----

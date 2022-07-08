@@ -59,6 +59,7 @@ contract MetaverseNFT is
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -124,8 +125,8 @@ contract MetaverseNFT is
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
 
-        __ReentrancyGuard_init();
         __ERC721A_init(_name, _symbol);
+        __ReentrancyGuard_init();
         __Ownable_init();
     }
 
@@ -377,6 +378,7 @@ contract MetaverseNFT is
     function updateMaxPerMint(
         uint256 _maxPerMint
     ) external onlyOwner nonReentrant {
+        require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
         maxPerMint = _maxPerMint;
     }
 
