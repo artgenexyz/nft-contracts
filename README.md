@@ -76,6 +76,14 @@ Then, to test your code:
 npx hardhat test
 ```
 
+### Checking different versions of MetaverseNFT:
+
+```bash
+colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol --context=1
+colordiff contracts/MetaverseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
+colordiff contracts/MetaverseBaseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
+```
+
 ### Deploy to production
 
 You can deploy using Hardhat. Refer to Hardhat scripts and console guides for deployment.
