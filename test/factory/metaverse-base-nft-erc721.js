@@ -424,4 +424,15 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
     assert.equal(await nft.balanceOf(user2), 0);
   });
 
+  // it should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT
+  it("should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT", async () => {
+    await nft.updateMaxPerMint(10);
+    assert.equal(await nft.maxPerMint(), 10);
+
+    expectRevert(
+      nft.updateMaxPerMint(100),
+      "Too many tokens per mint",
+    );
+  });
+
 });
