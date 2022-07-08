@@ -21,7 +21,7 @@ contract MetaverseNFTFactory is Ownable {
     address public immutable proxyImplementation;
     IERC721 public earlyAccessPass;
     uint256 public maxAllowedAmount = 50 ether; // launch for free if your collection collects less than this amount
-    uint256 public maxPerMintLimit = 50;
+    uint256 public maxPerMintLimit;
 
     // bitmask params
     uint32 constant SHOULD_START_AT_ONE = 1 << 1;
@@ -65,6 +65,8 @@ contract MetaverseNFTFactory is Ownable {
         proxyImplementation = address(new MetaverseNFT());
 
         earlyAccessPass = IERC721(_earlyAccessPass);
+
+        maxPerMintLimit = MetaverseNFT(payable(proxyImplementation)).MAX_PER_MINT_LIMIT();
 
         emit NFTCreated(
             proxyImplementation,

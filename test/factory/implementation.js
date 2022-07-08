@@ -456,4 +456,60 @@ contract("MetaverseNFT – Implementation", accounts => {
             assert.include(error.message, "Minting is frozen");
         }
     });
+
+    // it should be able to set maxPerWallet
+    it("should be able to set maxPerWallet", async () => {
+        await nft.updateMaxPerWallet(10);
+        assert.equal(await nft.maxPerWallet(), 10);
+    })
+
+    // it should not be able to mint more than maxPerWallet if set
+    it("should not be able to mint more than maxPerWallet if set", async () => {
+        await nft.updateMaxPerWallet(10);
+        await nft.startSale();
+
+        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+
+        try {
+            await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+        } catch (error) {
+            assert.include(error.message, "You cannot mint more than maxPerWallet tokens for one address!");
+        }
+    });
+
+    // it should be able to mint more than maxPerWallet if user transfers
+    it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
+        await nft.updateMaxPerWallet(10);
+        await nft.startSale();
+
+        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+
+        // temporary transfer token ids 0,1 to second address
+        await nft.transferFrom(user1, user2, 0, { from: user1 });
+        await nft.transferFrom(user1, user2, 1, { from: user1 });
+
+        // minting 4 + 4 + 4 tokens for user1+user2
+        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+
+        // transfer back original tokens
+        await nft.transferFrom(user2, user1, 0, { from: user2 });
+        await nft.transferFrom(user2, user1, 1, { from: user2 });
+
+        assert.equal(await nft.balanceOf(user1), 12);
+        assert.equal(await nft.balanceOf(user2), 0);
+    });
+
+    // it should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT
+    it("should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT", async () => {
+        await nft.updateMaxPerMint(10);
+        assert.equal(await nft.maxPerMint(), 10);
+
+        expectRevert(
+            nft.updateMaxPerMint(100),
+            "Too many tokens per mint",
+        );
+    });
+
 })
