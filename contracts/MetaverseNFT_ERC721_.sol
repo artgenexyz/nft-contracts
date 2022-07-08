@@ -7,19 +7,19 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+// import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+// import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+// import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./interfaces/INFTExtension.sol";
-import "./interfaces/IMetaverseNFT.sol";
-import "./utils/OpenseaProxy.sol";
+// import "./interfaces/INFTExtension.sol";
+// import "./interfaces/IMetaverseNFT.sol";
+// import "./utils/OpenseaProxy.sol";
 
 import "./behaviour/SaleControlUpgradeable.sol";
 import "./behaviour/PriceControlUpgradeable.sol";
@@ -53,8 +53,8 @@ import "./behaviour/URIControlUpgradeable.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseNFT is
-    ERC721AUpgradeable,
+contract MetaverseNFT1 is
+    ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     OpenseaControlUpgradeable,
@@ -65,6 +65,10 @@ contract MetaverseNFT is
     ExtensionControlUpgradeable,
     PayoutControlUpgradeable
 {
+
+    using Counters for Counters.Counter;
+
+    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 public maxSupply;
     uint256 public reserved;
@@ -87,15 +91,6 @@ contract MetaverseNFT is
         string memory _symbol,
         bool _startAtOne
     ) public initializer {
-        __SaleControlUpgradeable_init();
-        __OpenseaControlUpgradeable_init();
-        __PriceControlUpgradeable_init(_price, _maxPerMint);
-        __PayoutControlUpgradeable_init();
-
-        __ReentrancyGuard_init();
-        __Ownable_init();
-        __ERC721A_init(_name, _symbol);
-
         maxSupply = _maxSupply;
         reserved = _nReserved;
 
@@ -109,6 +104,10 @@ contract MetaverseNFT is
 
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        __ReentrancyGuard_init();
+        __ERC721_init(_name, _symbol);
+        __Ownable_init();
     }
 
     // This constructor ensures that this contract can only be used as a master copy
@@ -132,8 +131,10 @@ contract MetaverseNFT is
         }
 
         return withPostfix(super.tokenURI(tokenId));
+
         // if (bytes(URI_POSTFIX).length > 0) {
-        //     return string(abi.encodePacked(super.tokenURI(tokenId), URI_POSTFIX));
+        //     return
+        //         string(abi.encodePacked(super.tokenURI(tokenId), URI_POSTFIX));
         // } else {
         //     return super.tokenURI(tokenId);
         // }
@@ -143,7 +144,7 @@ contract MetaverseNFT is
         return BASE_URI;
     }
 
-    function _startTokenId() internal view virtual override returns (uint256) {
+    function _startTokenId() internal view virtual returns (uint256) {
         return startAtOne ? 1 : 0;
     }
 
@@ -159,19 +160,16 @@ contract MetaverseNFT is
         bytes32 extraData
     ) internal {
         require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
+            _tokenIndexCounter.current() + nTokens + reserved <= maxSupply,
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        for (uint256 i; i < nTokens; i++) {
+            uint256 tokenId = _tokenIndexCounter.current() + startTokenId();
+            _tokenIndexCounter.increment();
 
-        _safeMint(to, nTokens, "");
-
-        if (extraData.length > 0) {
-            for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
-                data[tokenId] = extraData;
-            }
+            _safeMint(to, tokenId);
+            data[tokenId] = extraData;
         }
     }
 
@@ -183,9 +181,14 @@ contract MetaverseNFT is
         payable
         nonReentrant
         whenSaleStarted
-        checkMaxPerMint(nTokens)
-        checkPrice(nTokens)
     {
+        require(
+            nTokens <= maxPerMint,
+            "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
+        );
+
+        require(nTokens * price <= msg.value, "Inconsistent amount sent!");
+
         _mintConsecutive(nTokens, msg.sender, 0x0);
     }
 
@@ -217,7 +220,7 @@ contract MetaverseNFT is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(IERC165, ERC721AUpgradeable)
+        override(IERC165, ERC721Upgradeable)
         returns (bool)
     {
         return

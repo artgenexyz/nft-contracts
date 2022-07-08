@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
+
+import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+import "./MembershipNFT.sol";
+
+// import "@openzeppelin/contracts/utils/Address.sol";
+// import "@openzeppelin/contracts/utils/Counters.sol";
+// import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+
+// import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+// import "./interfaces/INFTExtension.sol";
+// import "./interfaces/IMetaverseNFT.sol";
+// import "./utils/OpenseaProxy.sol";
+
+//      Want to launch your own collection?
+//        Check out https://buildship.xyz
+
+//                                    ,:loxO0KXXc
+//                               ,cdOKKKOxol:lKWl
+//                            ;oOXKko:,      ;KNc
+//                        'ox0X0d:           cNK,
+//                 ','  ;xXX0x:              dWk
+//            ,cdO0KKKKKXKo,                ,0Nl
+//         ;oOXKko:,;kWMNl                  dWO'
+//      ,o0XKd:'    oNMMK:                 cXX:
+//   'ckNNk:       ;KMN0c                 cXXl
+//  'OWMMWKOdl;'    cl;                  oXXc
+//   ;cclldxOKXKkl,                    ;kNO;
+//            ;cdk0kl'             ;clxXXo
+//                ':oxo'         c0WMMMMK;
+//                    :l:       lNMWXxOWWo
+//                      ';      :xdc' :XWd
+//             ,                      cXK;
+//           ':,                      xXl
+//           ;:      '               o0c
+//           ;c;,,,,'               lx;
+//            '''                  cc
+//                                ,'
+contract MetaverseBaseNFT is
+    MembershipNFT,
+    ERC721A,
+    ReentrancyGuard,
+    Ownable,
+    IERC2981
+{
+    function startTokenId() public view returns (uint256) {
+        return _startTokenId();
+    }
+
+    function _mintConsecutive(
+        uint256 nTokens,
+        address to,
+        bytes32 extraData
+    ) internal override {
+        require(
+            _totalMinted() + nTokens + reserved <= maxSupply,
+            "Not enough Tokens left."
+        );
+
+        uint256 currentTokenIndex = _currentIndex;
+
+        _safeMint(to, nTokens, "");
+
+        if (extraData.length > 0) {
+            for (uint256 i; i < nTokens; i++) {
+                uint256 tokenId = currentTokenIndex + i;
+                data[tokenId] = extraData;
+            }
+        }
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        if (uriExtension != address(0)) {
+            string memory uri = INFTURIExtension(uriExtension).tokenURI(
+                tokenId
+            );
+
+            if (bytes(uri).length > 0) {
+                return uri;
+            }
+        }
+
+        if (bytes(URI_POSTFIX).length > 0) {
+            return
+                string(abi.encodePacked(super.tokenURI(tokenId), URI_POSTFIX));
+        } else {
+            return super.tokenURI(tokenId);
+        }
+    }
+}
+

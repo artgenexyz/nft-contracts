@@ -58,6 +58,7 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     // it should fail to mint when sale is not started
     it("should fail to mint when sale is not started", async () => {
+        assert.isFalse(await nft.saleStarted(), "sale should not be started");
 
         // try {
         //     await nft.mint(1, { from: accounts[1], value: ether.times(0.03) });
