@@ -13,10 +13,16 @@ contract MockTokenURIExtension is INFTURIExtension, ERC165 {
         nft = IMetaverseNFT(_nft);
     }
 
-    function supportsInterface(bytes4 interfaceId) public override(IERC165, ERC165) view returns (bool) {
-        return interfaceId == type(INFTURIExtension).interfaceId
-            || interfaceId == type(INFTExtension).interfaceId
-            || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(IERC165, ERC165)
+        returns (bool)
+    {
+        return
+            interfaceId == type(INFTURIExtension).interfaceId ||
+            interfaceId == type(INFTExtension).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     function tokenURI(uint256) public pure returns (string memory uri) {

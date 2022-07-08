@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // TODO: update as AvatarNFT, here only few new methods compared to that
 // TODO: add tests for this
 contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
-
     uint256 public constant maxSupply = 10000;
     uint256 private _price = 0.03 ether;
     uint256 private _reserved = 250;
@@ -28,15 +27,16 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
     function _baseURI() internal pure override returns (string memory) {
         return "https://metadata.buildship.dev/api/token/hodl/";
     }
-    
+
     function contractURI() public pure returns (string memory) {
         return "https://metadata.buildship.dev/api/token/hodl/";
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -50,12 +50,15 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
     }
 
     function onERC721Received(
-        address, 
-        address, 
-        uint256, 
+        address,
+        address,
+        uint256,
         bytes calldata
-    ) external pure override(IERC721Receiver) returns(bytes4) {
-        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    ) external pure override(IERC721Receiver) returns (bytes4) {
+        return
+            bytes4(
+                keccak256("onERC721Received(address,address,uint256,bytes)")
+            );
         // return bytes4(keccak256(abi.encodePacked(IERC721Receiver.onERC721Received.selector)));
     }
 
@@ -72,7 +75,7 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         }
     }
 
-    function saleStarted() public view returns(bool) {
+    function saleStarted() public view returns (bool) {
         return _saleStarted;
     }
 
@@ -81,7 +84,7 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         _price = _newPrice;
     }
 
-    function getPrice() public view returns (uint256){
+    function getPrice() public view returns (uint256) {
         return _price;
     }
 
@@ -95,17 +98,24 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
     }
 
     // Helper to list all the tokens of a wallet
-    function walletOfOwner(address _owner) public view returns(uint256[] memory) {
+    function walletOfOwner(address _owner)
+        public
+        view
+        returns (uint256[] memory)
+    {
         uint256 tokenCount = balanceOf(_owner);
 
         uint256[] memory tokensId = new uint256[](tokenCount);
-        for(uint256 i; i < tokenCount; i++){
+        for (uint256 i; i < tokenCount; i++) {
             tokensId[i] = tokenOfOwnerByIndex(_owner, i);
         }
         return tokensId;
     }
 
-    function claimReserved(uint256 _number, address _receiver) external onlyOwner {
+    function claimReserved(uint256 _number, address _receiver)
+        external
+        onlyOwner
+    {
         require(_number <= _reserved, "That would exceed the max reserved.");
 
         uint256 _tokenId = totalSupply();
@@ -120,8 +130,10 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         require(startingIndex == 0, "Starting index is already set");
 
         // BlockHash only works for the most 256 recent blocks.
-        uint256 _block_shift = uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp)));
-        _block_shift =  1 + (_block_shift % 255);
+        uint256 _block_shift = uint256(
+            keccak256(abi.encodePacked(block.difficulty, block.timestamp))
+        );
+        _block_shift = 1 + (_block_shift % 255);
 
         // This shouldn't happen, but just in case the blockchain gets a reboot?
         if (block.number < _block_shift) {
@@ -129,7 +141,7 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         }
 
         uint256 _block_ref = block.number - _block_shift;
-        startingIndex = uint(blockhash(_block_ref)) % maxSupply;
+        startingIndex = uint256(blockhash(_block_ref)) % maxSupply;
 
         // Prevent default sequence
         if (startingIndex == 0) {
@@ -158,7 +170,11 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
     //     }
     // }
 
-    function burnAndMintOne(ERC721 token, uint256 tokenId) external payable whenSaleStarted {
+    function burnAndMintOne(ERC721 token, uint256 tokenId)
+        external
+        payable
+        whenSaleStarted
+    {
         uint256 supply = totalSupply();
         require(supply < maxSupply - _reserved, "Not enough Tokens left.");
         require(_price <= msg.value, "Inconsistent amount sent!");
@@ -169,7 +185,11 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         _safeMint(msg.sender, supply + 1);
     }
 
-    function burnAndMintAll(ERC721Enumerable token) external payable whenSaleStarted {
+    function burnAndMintAll(ERC721Enumerable token)
+        external
+        payable
+        whenSaleStarted
+    {
         // Call token.setApprovalForAll first!
 
         uint256 supply = totalSupply();
@@ -178,7 +198,10 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
         require(nTokens > 0, "You should mint at least 1 Token!");
         require(nTokens * _price <= msg.value, "Inconsistent amount sent!");
         require(nTokens < 50, "You cannot mint more than 50 Tokens at once!");
-        require(supply + nTokens <= maxSupply - _reserved, "Not enough Tokens left.");
+        require(
+            supply + nTokens <= maxSupply - _reserved,
+            "Not enough Tokens left."
+        );
 
         // require(_nbTokens == nAllTokens, "You need to mint exactly how many you have");
 
@@ -187,9 +210,8 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
 
             token.safeTransferFrom(msg.sender, address(this), tokenId);
             _safeMint(msg.sender, supply + i);
-            
+
             // TODO: store burned token address and id
         }
-
     }
 }

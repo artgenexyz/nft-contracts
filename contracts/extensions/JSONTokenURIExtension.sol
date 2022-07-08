@@ -8,7 +8,6 @@ import "../interfaces/INFTExtension.sol";
 import "./base/NFTExtension.sol";
 
 contract JSONTokenURIExtension is NFTExtension, INFTURIExtension {
-
     // IMetaverseNFT public immutable nft;
 
     string public suffix;
@@ -18,8 +17,15 @@ contract JSONTokenURIExtension is NFTExtension, INFTURIExtension {
         suffix = _suffix;
     }
 
-    function supportsInterface(bytes4 interfaceId) public override(IERC165, NFTExtension) view returns (bool) {
-        return interfaceId == type(INFTURIExtension).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(IERC165, NFTExtension)
+        returns (bool)
+    {
+        return
+            interfaceId == type(INFTURIExtension).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     function tokenURI(uint256) public view returns (string memory uri) {

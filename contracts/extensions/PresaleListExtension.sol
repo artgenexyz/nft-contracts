@@ -9,15 +9,19 @@ import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
 
 contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
-
     uint256 public price;
     uint256 public maxPerAddress;
 
     bytes32 public whitelistRoot;
 
-    mapping (address => uint256) public claimedByAddress;
+    mapping(address => uint256) public claimedByAddress;
 
-    constructor(address _nft, bytes32 _whitelistRoot, uint256 _price, uint256 _maxPerAddress) NFTExtension(_nft) SaleControl() {
+    constructor(
+        address _nft,
+        bytes32 _whitelistRoot,
+        uint256 _price,
+        uint256 _maxPerAddress
+    ) NFTExtension(_nft) SaleControl() {
         stopSale();
 
         price = _price;
@@ -37,24 +41,35 @@ contract PresaleListExtension is NFTExtension, Ownable, SaleControl {
         whitelistRoot = _whitelistRoot;
     }
 
-    function mint(uint256 nTokens, bytes32[] memory proof) external whenSaleStarted payable {
+    function mint(uint256 nTokens, bytes32[] memory proof)
+        external
+        payable
+        whenSaleStarted
+    {
+        require(
+            isWhitelisted(whitelistRoot, msg.sender, proof),
+            "Not whitelisted"
+        );
 
-        require(isWhitelisted(whitelistRoot, msg.sender, proof), "Not whitelisted");
-
-        require(claimedByAddress[msg.sender] + nTokens <= maxPerAddress, "Cannot claim more per address");
+        require(
+            claimedByAddress[msg.sender] + nTokens <= maxPerAddress,
+            "Cannot claim more per address"
+        );
 
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
         claimedByAddress[msg.sender] += nTokens;
 
-        nft.mintExternal{ value: msg.value }(nTokens, msg.sender, bytes32(0x0));
-
+        nft.mintExternal{value: msg.value}(nTokens, msg.sender, bytes32(0x0));
     }
 
-    function isWhitelisted(bytes32 root, address receiver, bytes32[] memory proof) public pure returns (bool) {
+    function isWhitelisted(
+        bytes32 root,
+        address receiver,
+        bytes32[] memory proof
+    ) public pure returns (bool) {
         bytes32 leaf = keccak256(abi.encodePacked(receiver));
 
         return MerkleProof.verify(proof, root, leaf);
     }
-
 }

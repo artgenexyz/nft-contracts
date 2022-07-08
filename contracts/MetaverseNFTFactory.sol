@@ -66,7 +66,8 @@ contract MetaverseNFTFactory is Ownable {
 
         earlyAccessPass = IERC721(_earlyAccessPass);
 
-        maxPerMintLimit = MetaverseNFT(payable(proxyImplementation)).MAX_PER_MINT_LIMIT();
+        maxPerMintLimit = MetaverseNFT(payable(proxyImplementation))
+            .MAX_PER_MINT_LIMIT();
 
         emit NFTCreated(
             proxyImplementation,
