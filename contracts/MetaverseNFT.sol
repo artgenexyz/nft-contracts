@@ -334,6 +334,7 @@ contract MetaverseNFT is
             nTokens <= maxPerMint,
             "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
         );
+
         require(tx.origin == msg.sender, "Minting from smart contract is not allowed");
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");

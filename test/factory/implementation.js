@@ -12,6 +12,7 @@ const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
+const MockProxyMinter = artifacts.require("MockProxyMinter");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const ether = new BigNumber(1e18);
@@ -456,4 +457,24 @@ contract("MetaverseNFT – Implementation", accounts => {
             assert.include(error.message, "Minting is frozen");
         }
     });
+
+    // it should not allow to mint from smart-contract
+    it("should not allow to mint from smart-contract", async () => {
+        await nft.startSale();
+
+        await nft.mint(1, { from: user1, value: ether });
+
+        assert.equal(await nft.balanceOf(user1), 1);
+
+        const minter = await MockProxyMinter.new(nft.address);
+
+        assert.equal(await minter.nft(), nft.address, "nft is not set correctly");
+
+        try {
+            await minter.mint({ from: user1, value: ether });
+        } catch (error) {
+            assert.include(error.message, "Minting from smart contract is not allowed");
+        }
+    });
+
 })
