@@ -187,6 +187,12 @@ contract MetaverseBaseNFT is
         price = _price;
     }
 
+    function reduceMaxSupply(uint256 _maxSupply) public onlyOwner {
+        require(_totalMinted() + reserved <= _maxSupply, "maxSupply is too low, already minted more (+ reserved)");
+
+        maxSupply = _maxSupply;
+    }
+
     // Freeze forever, irreversible
     function freeze() public onlyOwner {
         isFrozen = true;
