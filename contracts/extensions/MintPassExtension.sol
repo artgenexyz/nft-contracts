@@ -9,72 +9,77 @@ import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
 
 contract MintPassExtension is NFTExtension, Ownable, SaleControl {
-  uint256 public price;
+    uint256 public price;
 
-  // Number of remaining tokens
-  uint256 public nRemainingTokens;
+    // Number of remaining tokens
+    uint256 public nRemainingTokens;
 
-  // The address of ERC721 contract that is used for mint pass
-  address public mintPassAddress;
+    // The address of ERC721 contract that is used for mint pass
+    address public mintPassAddress;
 
-  // For used tokenIds in the mint pass
-  mapping(uint256 => bool) public usedTokenIds;
+    // For used tokenIds in the mint pass
+    mapping(uint256 => bool) public usedTokenIds;
 
-  constructor(
-    address _nft,
-    address _mintPassAddress,
-    uint256 _price,
-    uint256 _maxPerExtension
-  ) NFTExtension(_nft) SaleControl() {
-    stopSale();
+    constructor(
+        address _nft,
+        address _mintPassAddress,
+        uint256 _price,
+        uint256 _maxPerExtension
+    ) NFTExtension(_nft) SaleControl() {
+        stopSale();
 
-    price = _price;
-    mintPassAddress = _mintPassAddress;
+        price = _price;
+        mintPassAddress = _mintPassAddress;
 
-    // At the begining, the number of tokens is max per extension
-    nRemainingTokens = _maxPerExtension;
-  }
-
-  function updatePrice(uint256 _price) public onlyOwner {
-    price = _price;
-  }
-
-  function updateMintPassAddress(address _mintPassAddress) public onlyOwner {
-    mintPassAddress = _mintPassAddress;
-  }
-
-  function mint(uint256[] memory mintPassTokenIds)
-    public
-    payable
-    whenSaleStarted
-  {
-
-    require(
-      nRemainingTokens >= mintPassTokenIds.length,
-      "The number of remaining tokens is less than nTokens"
-    );
-
-    require(msg.value >= mintPassTokenIds.length * price, "Not enough ETH to mint");
-
-    for (uint256 i = 0; i < mintPassTokenIds.length; i++) {
-      uint256 mintPassTokenId = mintPassTokenIds[i];
-
-      require(
-        usedTokenIds[mintPassTokenId] == false,
-        "This tokenId has already been used"
-      );
-
-      require(
-        ERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender,
-        "Does not have the mint pass"
-      );
-
-      usedTokenIds[mintPassTokenId] = true;
+        // At the begining, the number of tokens is max per extension
+        nRemainingTokens = _maxPerExtension;
     }
 
-    nRemainingTokens -= mintPassTokenIds.length;
+    function updatePrice(uint256 _price) public onlyOwner {
+        price = _price;
+    }
 
-    nft.mintExternal{ value: msg.value }(mintPassTokenIds.length, msg.sender, bytes32(0x0));
-  }
+    function updateMintPassAddress(address _mintPassAddress) public onlyOwner {
+        mintPassAddress = _mintPassAddress;
+    }
 
+    function mint(uint256[] memory mintPassTokenIds)
+        public
+        payable
+        whenSaleStarted
+    {
+        require(
+            nRemainingTokens >= mintPassTokenIds.length,
+            "The number of remaining tokens is less than nTokens"
+        );
+
+        require(
+            msg.value >= mintPassTokenIds.length * price,
+            "Not enough ETH to mint"
+        );
+
+        for (uint256 i = 0; i < mintPassTokenIds.length; i++) {
+            uint256 mintPassTokenId = mintPassTokenIds[i];
+
+            require(
+                usedTokenIds[mintPassTokenId] == false,
+                "This tokenId has already been used"
+            );
+
+            require(
+                ERC721(mintPassAddress).ownerOf(mintPassTokenId) == msg.sender,
+                "Does not have the mint pass"
+            );
+
+            usedTokenIds[mintPassTokenId] = true;
+        }
+
+        nRemainingTokens -= mintPassTokenIds.length;
+
+        nft.mintExternal{value: msg.value}(
+            mintPassTokenIds.length,
+            msg.sender,
+            bytes32(0x0)
+        );
+    }
 }

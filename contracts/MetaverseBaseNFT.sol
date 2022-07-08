@@ -365,16 +365,20 @@ contract MetaverseBaseNFT is
 
     // ---- Mint configuration
 
-    function updateMaxPerMint(
-        uint256 _maxPerMint
-    ) external onlyOwner nonReentrant {
+    function updateMaxPerMint(uint256 _maxPerMint)
+        external
+        onlyOwner
+        nonReentrant
+    {
         require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
         maxPerMint = _maxPerMint;
     }
 
-    function updateMaxPerWallet(
-        uint256 _maxPerWallet
-    ) external onlyOwner nonReentrant {
+    function updateMaxPerWallet(uint256 _maxPerWallet)
+        external
+        onlyOwner
+        nonReentrant
+    {
         maxPerWallet = _maxPerWallet;
     }
 
@@ -450,7 +454,10 @@ contract MetaverseBaseNFT is
     // ---- Withdraw -----
 
     modifier onlyBuildship() {
-        require(payable(msg.sender) == DEVELOPER_ADDRESS(), "Caller is not Buildship");
+        require(
+            payable(msg.sender) == DEVELOPER_ADDRESS(),
+            "Caller is not Buildship"
+        );
         _;
     }
 

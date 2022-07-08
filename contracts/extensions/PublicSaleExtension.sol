@@ -7,11 +7,14 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "./base/NFTExtension.sol";
 
 contract PublicSaleExtension is NFTExtension, Ownable, Pausable {
-
     uint256 public price;
     uint256 public maxPerMint;
 
-    constructor(address _nft, uint256 _price, uint256 _maxPerMint) NFTExtension(_nft) {
+    constructor(
+        address _nft,
+        uint256 _price,
+        uint256 _maxPerMint
+    ) NFTExtension(_nft) {
         _pause();
         // sale stopped by default
 
@@ -19,16 +22,16 @@ contract PublicSaleExtension is NFTExtension, Ownable, Pausable {
         maxPerMint = _maxPerMint;
     }
 
-    function mint(uint256 nTokens) external whenNotPaused payable {
+    function mint(uint256 nTokens) external payable whenNotPaused {
         super.beforeMint();
 
         require(nTokens <= maxPerMint, "Too many tokens to mint");
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
-        nft.mintExternal{ value: msg.value }(nTokens, msg.sender, 0x0);
+        nft.mintExternal{value: msg.value}(nTokens, msg.sender, 0x0);
     }
 
-    function flipSaleStarted () public onlyOwner {
+    function flipSaleStarted() public onlyOwner {
         if (paused()) {
             _unpause();
         } else {
