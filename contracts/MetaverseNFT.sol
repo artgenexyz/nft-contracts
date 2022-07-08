@@ -335,7 +335,7 @@ contract MetaverseNFT is
         if (maxPerWallet > 0) {
             require(
                 balanceOf(msg.sender) + nTokens <= maxPerWallet,
-                "max per wallet reached"
+                "You cannot mint more than maxPerWallet tokens for one address!"
             );
         }
 

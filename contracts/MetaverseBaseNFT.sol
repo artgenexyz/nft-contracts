@@ -67,6 +67,7 @@ contract MetaverseBaseNFT is
     uint256 public reserved;
     uint256 public maxSupply;
     uint256 public maxPerMint;
+    uint256 public maxPerWallet;
     uint256 public price;
 
     uint256 public royaltyFee;
@@ -320,6 +321,14 @@ contract MetaverseBaseNFT is
         nonReentrant
         whenSaleStarted
     {
+        // setting it to 0 means no limit
+        if (maxPerWallet > 0) {
+            require(
+                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                "You cannot mint more than maxPerWallet tokens for one address!"
+            );
+        }
+
         require(
             nTokens <= maxPerMint,
             "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
@@ -341,6 +350,20 @@ contract MetaverseBaseNFT is
         reserved = reserved - nTokens;
 
         _mintConsecutive(nTokens, to, 0x0);
+    }
+
+    // ---- Mint configuration
+
+    function updateMaxPerMint(
+        uint256 _maxPerMint
+    ) external onlyOwner nonReentrant {
+        maxPerMint = _maxPerMint;
+    }
+
+    function updateMaxPerWallet(
+        uint256 _maxPerWallet
+    ) external onlyOwner nonReentrant {
+        maxPerWallet = _maxPerWallet;
     }
 
     // ---- Mint via extension
