@@ -10,9 +10,11 @@ pragma solidity ^0.8.9;
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -59,12 +61,14 @@ contract MetaverseNFT is
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
     uint256 public maxSupply;
     uint256 public maxPerMint;
+    uint256 public maxPerWallet;
     uint256 public price;
 
     uint256 public royaltyFee;
@@ -123,8 +127,8 @@ contract MetaverseNFT is
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
 
-        __ReentrancyGuard_init();
         __ERC721A_init(_name, _symbol);
+        __ReentrancyGuard_init();
         __Ownable_init();
     }
 
@@ -330,6 +334,14 @@ contract MetaverseNFT is
         nonReentrant
         whenSaleStarted
     {
+        // setting it to 0 means no limit
+        if (maxPerWallet > 0) {
+            require(
+                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                "You cannot mint more than maxPerWallet tokens for one address!"
+            );
+        }
+
         require(
             nTokens <= maxPerMint,
             "You cannot mint more than MAX_TOKENS_PER_MINT tokens at once!"
@@ -361,6 +373,25 @@ contract MetaverseNFT is
         bytes32 extraData
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to, extraData);
+    }
+
+    // ---- Mint configuration
+
+    function updateMaxPerMint(uint256 _maxPerMint)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
+        maxPerMint = _maxPerMint;
+    }
+
+    function updateMaxPerWallet(uint256 _maxPerWallet)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        maxPerWallet = _maxPerWallet;
     }
 
     // ---- Sale control ----
@@ -434,7 +465,15 @@ contract MetaverseNFT is
 
     // ---- Withdraw -----
 
-    function withdraw() public virtual onlyOwner {
+    modifier onlyBuildship() {
+        require(
+            payable(msg.sender) == DEVELOPER_ADDRESS(),
+            "Caller is not Buildship"
+        );
+        _;
+    }
+
+    function _withdraw() private {
         uint256 balance = address(this).balance;
         uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
 
@@ -443,6 +482,14 @@ contract MetaverseNFT is
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
+    }
+
+    function withdraw() public virtual onlyOwner {
+        _withdraw();
+    }
+
+    function forceWithdrawBuildship() public virtual onlyBuildship {
+        _withdraw();
     }
 
     function withdrawToken(IERC20 token) public virtual onlyOwner {
