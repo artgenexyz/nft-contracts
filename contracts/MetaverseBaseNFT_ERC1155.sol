@@ -689,10 +689,18 @@ contract MetaverseBaseNFT_ERC1155 is
     function mintExternal(
         uint256 nTokens,
         address to,
-        bytes32
+        bytes32 _data
     ) external payable onlyExtension nonReentrant {
-        // _mintConsecutive(nTokens, to, extraData);
-        _mintRandomTokens(nTokens, to);
+        // if data is 0xffffff...ff, then it is a request for a N random tokens
+        // else it's a request for a specific token id
+
+        if (uint256(_data) == type(uint256).max) {
+            _mintRandomTokens(nTokens, to);
+        } else {
+            uint256 id = uint256(_data);
+            _mint(to, id, nTokens, "");
+        }
+
     }
 
     // ---- Sale control ----

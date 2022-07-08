@@ -51,11 +51,11 @@ import "../MetaverseBaseNFT_ERC1155.sol";
 contract Wilderness is MetaverseBaseNFT_ERC1155 {
     constructor () MetaverseBaseNFT_ERC1155(
         0.2 ether,
-        8000,
+        88,
         10,
         1,
         500,
-        "https://metadata.buildship.xyz/api/dummy-metadata-for/bafybeibw7u4v7ns67jp4uuwu6kgcrpxntw7fxvr5qpyuvn3kde5iionkhu/",
+        "ipfs://QmTAz43p4NLkr4jFNqxPtU8xz5nAT3x6hcKQEX6JAwiJkF/",
         true
     ) {}
 

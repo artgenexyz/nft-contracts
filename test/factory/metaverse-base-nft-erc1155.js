@@ -10,6 +10,7 @@ const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const OffchainAllowListExtension = artifacts.require("OffchainAllowListExtension");
 
 const ether = new BigNumber(1e18);
 
@@ -31,7 +32,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft.importSeries([100,20,100]);
+    await nft.importSeries([100, 20, 100]);
     // token id = 0: 100 items
     // token id = 1: 20 items
     // token id = 2: 100 items
@@ -467,5 +468,63 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       | ${gasCost[70]} | ${gasCost[71]} | ${gasCost[72]} | ${gasCost[73]} | ${gasCost[74]}
     `);
   })
+
+  // it should be able to use normal extensions to mint erc1155
+  it("should be able to use LimitAmountSaleExtension to mint erc1155", async () => {
+    const extension = await LimitAmountSaleExtension.new(
+      nft.address,
+      ether.times(0.001),
+      10,
+      1000,
+      { from: owner }
+    );
+
+    await nft.addExtension(extension.address, { from: owner });
+
+    // mint token
+    await extension.startSale();
+    await extension.mint(2, { from: owner, value: ether.times(0.005) });
+    await extension.mint(10, { from: owner, value: ether.times(0.01) });
+
+    // check tokenURI
+    const tokenURI = await nft.tokenURI(0);
+    assert.equal(tokenURI, "ipfs://factory-test/0");
+  });
+
+  // it should be able to use normal extensions to mint erc1155
+  it("should be able to use OffchainAllowListExtension to mint erc1155", async () => {
+    const extension = await OffchainAllowListExtension.new(
+      nft.address,
+      owner,
+      0, // price
+    );
+
+    await nft.addExtension(extension.address, { from: owner });
+
+    // receiver, maxAmount, data (token id)
+    const hash = [user1, 999, 12].map(x => web3.utils.asciiToHex(x.toString()));
+
+    // keccak256(abi.encodePacked(receiver, maxAmount, data))
+
+    const hashHex = "0x" + web3.utils.sha3(web3.utils.soliditySha3(...hash)).slice(2);
+
+    // sign message from owner
+    const signature = await web3.eth.sign(hashHex, owner);
+
+    // mint token
+    await extension.startSale();
+    await extension.mint(2, 999, 12, signature, { from: user1 });
+
+    // check balanceof token id = 12 for user1
+    const balance = await nft.balanceOf(user1, 12);
+    assert.equal(balance, 2);
+
+    await extension.mint(5, 999, 10, signature, { from: user1, value: ether.times(0.005) });
+
+    // check balanceof token id = 10 for user1
+    const balance2 = await nft.balanceOf(user1, 10);
+    assert.equal(balance2, 5);
+
+  });
 
 });
