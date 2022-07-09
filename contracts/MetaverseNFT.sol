@@ -536,16 +536,9 @@ contract MetaverseNFT is
         override
         returns (bool)
     {
-        // Get a reference to OpenSea's proxy registry contract by instantiating
-        // the contract using the already existing address.
-        ProxyRegistry proxyRegistry = ProxyRegistry(
-            0xa5409ec958C83C3f309868babACA7c86DCB077c1
-        );
+        address OPENSEA_CONDUIT = 0x1E0049783F008A0085193E00003D00cd54003c71;
 
-        if (
-            isOpenSeaProxyActive &&
-            address(proxyRegistry.proxies(owner)) == operator
-        ) {
+        if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
 
