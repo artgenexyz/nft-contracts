@@ -313,7 +313,7 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // TODO: optional push ipfs hash to metadata?
     function importSeries(uint256[] calldata supply) public onlyOwner {
-        require(lastTokenId() + supply.length <= maxSupply, "Too many tokens");
+        require(lastTokenId() + supply.length - startTokenId() <= maxSupply, "Too many tokens");
 
         for (uint256 i = 0; i < supply.length; i++) {
             uint256 tokenId = nextTokenId();
