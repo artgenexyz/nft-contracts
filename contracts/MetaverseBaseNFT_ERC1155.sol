@@ -21,9 +21,29 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "@divergencetech/ethier/contracts/random/NextShuffler.sol";
+import "@divergencetech/ethier/contracts/random/PRNG.sol";
+import "@divergencetech/ethier/contracts/random/CSPRNG.sol";
+
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IMetaverseNFT.sol";
 import "./utils/OpenseaProxy.sol";
+
+
+contract NextShufflerPublic is NextShuffler {
+    using PRNG for PRNG.Source;
+
+    PRNG.Source public immutable src;
+
+    constructor (PRNG.Source _src, uint256 numToShuffle) NextShuffler(numToShuffle) {
+        src = _src;
+    }
+
+    function next() public returns (uint256) {
+        return _next(src);
+    }
+
+}
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -54,14 +74,20 @@ contract MetaverseBaseNFT_ERC1155 is
     ERC1155Supply,
     ReentrancyGuard,
     Ownable,
+    // NextShuffler,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
     using Strings for uint256;
+    using PRNG for PRNG.Source;
 
     Counters.Counter private _tokenIndexCounter; // token index counter
+
+    // PRNG.Source private source;
+    NextShufflerPublic private shuffler;
+    // CSPRNG.Source private source;
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -135,6 +161,41 @@ contract MetaverseBaseNFT_ERC1155 is
     // function _baseURI() internal view returns (string memory) {
     //     return BASE_URI;
     // }
+
+    // ----- Fisher Yates
+
+    // getting a random number in the interval [a;b)
+    function _random(uint256 a, uint256 b) private view returns (uint256) {
+        // TODO: remove stub
+        // return shuffler.src.readLessThan(b - a) + a;
+        return 100;
+    }
+
+    mapping(uint256 => uint256) private _fyAlreadySeen; // defaults to zero, so stores indexes from 1
+
+    function fyGetMapping(uint256 ridx) private view returns (uint256) {
+        uint256 m = _fyAlreadySeen[ridx];
+        if (m != 0) return m - 1;
+        return ridx;
+    }
+    function fySetMapping(uint256 ridx, uint256 idx) private {
+        _fyAlreadySeen[ridx] = idx + 1;
+    }
+
+    function mintOneNft() private {
+
+        // getting a random number in the interval [totalSupply(); maxNfts>
+        // where totalSupply() is the current amount of NFTs already minted
+        uint256 ridx = _random(totalSupplyAll(), maxSupplyAll());
+        uint256 tokenId = fyGetMapping(ridx);
+        uint256 oldTokenId = fyGetMapping(totalSupplyAll());
+
+        fySetMapping(ridx, oldTokenId);
+
+        _mint(msg.sender, tokenId, 1, "");
+    }
+
+
 
     function contractURI() public view returns (string memory _uri) {
         _uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : BASE_URI;
@@ -218,6 +279,18 @@ contract MetaverseBaseNFT_ERC1155 is
 
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
+    }
+
+    function setSource(bytes32 seed) public onlyOwner {
+        require(address(shuffler) == address(0), "Already set");
+
+        // (, uint256 remain) = source.state();
+
+        // require(remain == 0, "Already started mint");
+
+        PRNG.Source source = PRNG.newSource(seed);
+        shuffler = new NextShufflerPublic( source, maxSupplyAll() );
+
     }
 
     // Freeze forever, irreversible
@@ -355,10 +428,14 @@ contract MetaverseBaseNFT_ERC1155 is
 
         for (uint256 i = 0; i < ids.length; i++) {
 
-            console.log("token id", ids[i]);
-            console.log("Amount requested", amounts[i]);
-            console.log("Total supply", totalSupply(ids[i]));
-            console.log("Max supply", maxSeriesSupply(ids[i]));
+            // console.log("Token ID", ids[i]);
+            // console.log("Amount requested", amounts[i]);
+            // console.log("Total supply", totalSeriesSupply(ids[i]));
+            // console.log("Max supply", maxSeriesSupply(ids[i]));
+
+            console.log(string(abi.encodePacked(
+                ids[i].toString(), " => ", totalSeriesSupply(ids[i]).toString(), "/", maxSeriesSupply(ids[i]).toString(), " + ", amounts[i].toString()
+            )));
 
             require(
                 ids[i] >= startTokenId() && ids[i] <= lastTokenId(),
@@ -441,7 +518,50 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // }
 
+    function _tokenIdSeed2TokenId(uint256 seed) public view returns (uint256) {
+        uint256 index = 0;
+        uint256 lastIndex;
+
+        for (uint256 tokenId = startTokenId(); tokenId <= lastTokenId(); tokenId++) {
+            lastIndex = index + maxSeriesSupply(tokenId) - 1;
+
+            if (seed <= lastIndex && seed >= index) {
+                return tokenId;
+            }
+
+            index = lastIndex + 1;
+        }
+
+        console.log("Last Index", index);
+        console.log("Seed", seed);
+
+        revert("Not found");
+        // id = 0;
+    }
+
     function _mintRandomTokens(uint256 amount, address to) internal {
+        require(totalSupplyAll() + amount <= maxSupplyAll(), "Not enough Tokens left");
+
+        uint256 tokenIdSeed;
+        uint256 tokenId;
+
+        uint256[] memory ids = new uint256[](amount);
+        uint256[] memory amounts = new uint256[](amount);
+
+        for (uint256 i; i < amount; i++) {
+            tokenIdSeed = shuffler.next();
+
+            // token id is 
+            tokenId = _tokenIdSeed2TokenId(tokenIdSeed);
+
+            ids[i] = tokenId;
+            amounts[i] = 1;
+        }
+
+        _mintTokens(to, ids, amounts);
+    }
+
+    function _mintRandomTokens3(uint256 amount, address to) internal {
         require(totalSupplyAll() + amount <= maxSupplyAll(), "Not enough Tokens left");
 
         // generate random token ids sequentially
@@ -714,6 +834,8 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
+        require(address(shuffler) != address(0), "Set source before startSale");
+
         startTimestamp = block.timestamp;
     }
 
