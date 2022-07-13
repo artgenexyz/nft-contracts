@@ -50,11 +50,11 @@ import "../MetaverseBaseNFT_ERC1155.sol";
 
 contract Wilderness is MetaverseBaseNFT_ERC1155 {
     constructor () MetaverseBaseNFT_ERC1155(
-        0.2 ether,
-        88,
-        10,
-        1,
-        500,
+        0.2 ether, // public mint price
+        88, // max supply
+        10, // reserved
+        20, // max per mint
+        500, // royalties
         "ipfs://QmTAz43p4NLkr4jFNqxPtU8xz5nAT3x6hcKQEX6JAwiJkF/",
         true
     ) {}
