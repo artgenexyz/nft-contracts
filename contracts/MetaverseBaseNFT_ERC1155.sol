@@ -376,7 +376,7 @@ contract MetaverseBaseNFT_ERC1155 is
         return startTokenId() + _tokenIndexCounter.current();
     }
 
-    function nextTokenId() public returns (uint256 id) {
+    function nextTokenId() internal returns (uint256 id) {
         _tokenIndexCounter.increment();
 
         return _tokenIndexCounter.current() - 1;
