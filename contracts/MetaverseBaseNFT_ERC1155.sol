@@ -33,13 +33,19 @@ import "./utils/OpenseaProxy.sol";
 contract NextShufflerPublic is NextShuffler {
     using PRNG for PRNG.Source;
 
-    PRNG.Source public immutable src;
+    PRNG.Source public src = PRNG.newSource(0);
 
-    constructor (PRNG.Source _src, uint256 numToShuffle) NextShuffler(numToShuffle) {
+    constructor () NextShuffler(0) {}
+
+    function _setSource(PRNG.Source _src) internal {
         src = _src;
     }
 
-    function next() public returns (uint256) {
+    function _setNum(uint256 _num) internal {
+        numToShuffle = _num;
+    }
+
+    function next() internal returns (uint256) {
         return _next(src);
     }
 
@@ -75,6 +81,7 @@ contract MetaverseBaseNFT_ERC1155 is
     ReentrancyGuard,
     Ownable,
     // NextShuffler,
+    NextShufflerPublic,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -86,7 +93,7 @@ contract MetaverseBaseNFT_ERC1155 is
     Counters.Counter private _tokenIndexCounter; // token index counter
 
     // PRNG.Source private source;
-    NextShufflerPublic private shuffler;
+    // NextShufflerPublic private shuffler;
     // CSPRNG.Source private source;
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
@@ -282,14 +289,16 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function setSource(bytes32 seed) public onlyOwner {
-        require(address(shuffler) == address(0), "Already set");
+        require(numToShuffle == 0, "Can't change source after seed has been set");
 
         // (, uint256 remain) = source.state();
 
         // require(remain == 0, "Already started mint");
 
         PRNG.Source source = PRNG.newSource(seed);
-        shuffler = new NextShufflerPublic( source, maxSupplyAll() );
+
+        _setNum( maxSupplyAll() );
+        _setSource(source);
 
     }
 
@@ -548,17 +557,30 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256[] memory ids = new uint256[](amount);
         uint256[] memory amounts = new uint256[](amount);
 
-        for (uint256 i; i < amount; i++) {
-            tokenIdSeed = shuffler.next();
+        for (uint256 i = 0; i < amount; i++) {
+            tokenIdSeed = next();
 
-            // token id is 
+            // token id is fetched from the random offset
             tokenId = _tokenIdSeed2TokenId(tokenIdSeed);
+
+            // TODO: what's wrong?
+            console.log(string(abi.encodePacked(
+                "Mint: ", tokenId.toString(), " => ", totalSeriesSupply(tokenId).toString(), "/", maxSeriesSupply(tokenId).toString(), " + ", "1"
+            )));
+
+            _mint(to, tokenId, 1, "");
 
             ids[i] = tokenId;
             amounts[i] = 1;
         }
 
-        _mintTokens(to, ids, amounts);
+        // print array info for ids[i]:
+        console.log(string(abi.encodePacked(
+            "[", ids[0].toString(), ",", ids[1].toString(), ",", ids[2].toString(), "]"
+        )));
+
+        // _mintTokens(to, ids, amounts);
+
     }
 
     function _mintRandomTokens3(uint256 amount, address to) internal {
@@ -834,7 +856,7 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
-        require(address(shuffler) != address(0), "Set source before startSale");
+        require(numToShuffle != 0, "You should set source before startSale");
 
         startTimestamp = block.timestamp;
     }

@@ -420,17 +420,29 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
 
+    // print seed
+    console.log('using seed', randomSeed);
+
     await nft2.setSource(randomSeed);
     await nft2.startSale();
 
-    await nft2.mint(10, { from: owner, value: ether.times(0.3) });
+    const tx = await nft2.mint(10, { from: owner, value: ether.times(0.3) });
+
+    // print event ShuffledWith
+    console.log('tx logs', tx.logs);
+
+    tx.logs.map(log => {
+      if (log.event === "ShuffledWith") {
+        console.log('ShuffledWith(', log.args.current, log.args.with, ')');
+      }
+    })
 
     assert.notEqual(await nft2.balanceOf(owner, 0), 10);
+    assert.notEqual(await nft2.balanceOf(owner, 0), 0);
 
     await nft2.mint(10, { from: owner, value: ether.times(0.3) });
 
     assert.notEqual(await nft2.balanceOf(owner, 0), 20);
-
 
 
   });
