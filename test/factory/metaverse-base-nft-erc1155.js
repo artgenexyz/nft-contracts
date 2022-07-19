@@ -433,7 +433,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     tx.logs.map(log => {
       if (log.event === "ShuffledWith") {
-        console.log('ShuffledWith(', log.args.current, log.args.with, ')');
+        console.log('ShuffledWith(', log.args.current.toString(), log.args.with.toString(), ')');
       }
     })
 

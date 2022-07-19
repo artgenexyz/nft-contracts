@@ -554,10 +554,17 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256 tokenIdSeed;
         uint256 tokenId;
 
+        console.log("amount", amount);
+
         uint256[] memory ids = new uint256[](amount);
         uint256[] memory amounts = new uint256[](amount);
 
         for (uint256 i = 0; i < amount; i++) {
+            // 88 series
+            // 100 tokens in each
+
+            // next = [0, 88 * 100)
+
             tokenIdSeed = next();
 
             // token id is fetched from the random offset
@@ -568,16 +575,21 @@ contract MetaverseBaseNFT_ERC1155 is
                 "Mint: ", tokenId.toString(), " => ", totalSeriesSupply(tokenId).toString(), "/", maxSeriesSupply(tokenId).toString(), " + ", "1"
             )));
 
+            // TODO: use array
             _mint(to, tokenId, 1, "");
 
             ids[i] = tokenId;
             amounts[i] = 1;
         }
 
-        // print array info for ids[i]:
-        console.log(string(abi.encodePacked(
-            "[", ids[0].toString(), ",", ids[1].toString(), ",", ids[2].toString(), "]"
-        )));
+        // unchecked {
+        //     // print array info for ids[i]:
+        //     console.log(string(abi.encodePacked(
+        //         "[", ids[0].toString(), ",", ids[1].toString(), ",", ids[2].toString(), "]"
+        //     )));
+        // }
+
+        console.log('ids', ids.length, amounts.length);
 
         // _mintTokens(to, ids, amounts);
 
