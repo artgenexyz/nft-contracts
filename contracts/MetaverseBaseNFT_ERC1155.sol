@@ -165,6 +165,14 @@ contract MetaverseBaseNFT_ERC1155 is
         BASE_URI = _uri;
     }
 
+    function name() public pure returns (string memory) {
+        return "Buildship MetaverseNFT";
+    }
+
+    function symbol() public pure returns (string memory) {
+        return "ERC1155";
+    }
+
     function startTokenId() public view returns (uint256) {
         return startAtOne ? 1 : 0;
     }
