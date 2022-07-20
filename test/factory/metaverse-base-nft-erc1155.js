@@ -26,7 +26,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   beforeEach(async () => {
     nft = await MetaverseBaseNFT.new(
       ether.times(0.03),
-      1000,
+      5,
       3, // reserved
       20, // per tx
       500, // 5%
@@ -36,7 +36,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft.importSeries([100, 20, 100]);
+    await nft.importSeries([100, 20, 100, 20, 100]);
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -46,6 +46,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // token id = 0: 100 items
     // token id = 1: 20 items
     // token id = 2: 100 items
+    // token id = 3: 20 items
+    // token id = 4: 100 items
 
   });
 
@@ -331,7 +333,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
       "1000000000000000",
-      100,
+      20,
       40,
       20,
       500, // royalty
@@ -409,7 +411,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   it("should be able to create new contract, mint 10 tokens, and balanceOf(tokenId=0) should not be 10", async () => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
-      200,
+      5,
       40,
       20,
       500, // royalty
@@ -431,7 +433,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const tx = await nft2.mint(10, { from: owner, value: ether.times(0.3) });
 
     // print event ShuffledWith
-    console.log('tx logs', tx.logs);
+    // console.log('tx logs', tx.logs);
 
     tx.logs.map(log => {
       if (log.event === "ShuffledWith") {
@@ -439,8 +441,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       }
     })
 
-    assert.notEqual(await nft2.balanceOf(owner, 0), 10);
-    assert.notEqual(await nft2.balanceOf(owner, 0), 0);
+    expect(await nft2.balanceOf(owner, 0)).to.be.bignumber.not.equal("10");
+    expect(await nft2.balanceOf(owner, 0)).to.be.bignumber.not.equal("0");
 
     await nft2.mint(10, { from: owner, value: ether.times(0.3) });
 

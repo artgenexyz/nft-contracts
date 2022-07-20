@@ -28,28 +28,7 @@ import "@divergencetech/ethier/contracts/random/CSPRNG.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IMetaverseNFT.sol";
 import "./utils/OpenseaProxy.sol";
-
-
-contract NextShufflerPublic is NextShuffler {
-    using PRNG for PRNG.Source;
-
-    PRNG.Source public src = PRNG.newSource(0);
-
-    constructor () NextShuffler(0) {}
-
-    function _setSource(PRNG.Source _src) internal {
-        src = _src;
-    }
-
-    function _setNum(uint256 _num) internal {
-        numToShuffle = _num;
-    }
-
-    function next() internal returns (uint256) {
-        return _next(src);
-    }
-
-}
+import "./utils/NextShufflerLazyInit.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -80,8 +59,7 @@ contract MetaverseBaseNFT_ERC1155 is
     ERC1155Supply,
     ReentrancyGuard,
     Ownable,
-    // NextShuffler,
-    NextShufflerPublic,
+    NextShufflerLazyInit,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -91,10 +69,7 @@ contract MetaverseBaseNFT_ERC1155 is
     using PRNG for PRNG.Source;
 
     Counters.Counter private _nextTokenIndex; // token index counter
-
-    // PRNG.Source private source;
-    // NextShufflerPublic private shuffler;
-    // CSPRNG.Source private source;
+    uint256[2] private _nextShufflerSourceStore;
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -258,17 +233,14 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function setSource(bytes32 seed) public onlyOwner {
-        require(numToShuffle == 0, "Can't change source after seed has been set");
+        require( maxSupplyAll() != 0, "First import all series" );
+        require( numToShuffle == 0, "Can't change source after seed has been set");
 
-        // (, uint256 remain) = source.state();
+        PRNG.Source src = PRNG.newSource(seed);
 
-        // require(remain == 0, "Already started mint");
+        src.store(_nextShufflerSourceStore);
 
-        PRNG.Source source = PRNG.newSource(seed);
-
-        _setNum( maxSupplyAll() );
-        _setSource(source);
-
+        _setNumToShuffle( maxSupplyAll() );
     }
 
     // Freeze forever, irreversible
@@ -472,13 +444,15 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256[] memory ids = new uint256[](amount);
         uint256[] memory amounts = new uint256[](amount);
 
+        PRNG.Source src = PRNG.loadSource(_nextShufflerSourceStore);
+
         for (uint256 i = 0; i < amount; i++) {
             // 88 series
             // 100 tokens in each
 
             // next = [0, 88 * 100)
 
-            tokenIdSeed = next();
+            tokenIdSeed = _next(src);
 
             // token id is fetched from the random offset
             tokenId = _tokenIdSeed2TokenId(tokenIdSeed);
@@ -494,6 +468,8 @@ contract MetaverseBaseNFT_ERC1155 is
             ids[i] = tokenId;
             amounts[i] = 1;
         }
+
+        src.store(_nextShufflerSourceStore);
 
         // unchecked {
         //     // print array info for ids[i]:
@@ -606,6 +582,8 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
+        require( startTokenId() + maxSupply == nextTokenId(), "First import all series" );
+
         require(numToShuffle != 0, "You should set source before startSale");
 
         startTimestamp = block.timestamp;
