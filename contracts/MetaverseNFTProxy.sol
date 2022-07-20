@@ -134,6 +134,10 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         }
     }
 
+    function implementation() public pure returns (address) {
+        return address(proxyImplementation);
+    }
+
     function _implementation() internal pure override returns (address) {
         return address(proxyImplementation);
     }
