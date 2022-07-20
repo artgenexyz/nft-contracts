@@ -32,6 +32,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -90,6 +92,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       50,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -139,6 +143,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       300,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 

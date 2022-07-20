@@ -109,6 +109,9 @@ contract MetaverseBaseNFT_ERC1155 is
     string private BASE_URI;
     string private URI_POSTFIX = "";
 
+    string public name;
+    string public symbol;
+
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
@@ -120,8 +123,8 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256 _maxPerMint,
         uint256 _royaltyFee,
         string memory _uri,
-        // string memory _name,
-        // string memory _symbol,
+        string memory _name,
+        string memory _symbol,
         bool _startAtOne
     ) ERC1155(_uri) {
         startTimestamp = SALE_STARTS_AT_INFINITY;
@@ -136,16 +139,11 @@ contract MetaverseBaseNFT_ERC1155 is
 
         startAtOne = _startAtOne;
 
+        name = _name;
+        symbol = _symbol;
+
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
-    }
-
-    function name() public pure returns (string memory) {
-        return "Buildship MetaverseNFT";
-    }
-
-    function symbol() public pure returns (string memory) {
-        return "ERC1155";
     }
 
     function startTokenId() public view returns (uint256) {

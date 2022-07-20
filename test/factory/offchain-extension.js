@@ -29,8 +29,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20, // per tx
       500, // 5%
       "ipfs://factory-test/",
-      // "Test",
-      // "NFT",
+      "Test",
+      "NFT",
       false
     );
 

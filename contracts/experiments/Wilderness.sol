@@ -59,6 +59,8 @@ contract Wilderness is MetaverseBaseNFT_ERC1155 {
         20, // max per mint
         500, // royalties
         "ipfs://QmTAz43p4NLkr4jFNqxPtU8xz5nAT3x6hcKQEX6JAwiJkF/",
+        "Wilderness to Blockchain", // token name
+        "WTB", // token symbol
         true
     ) {}
 

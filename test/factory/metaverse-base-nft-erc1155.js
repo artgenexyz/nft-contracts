@@ -31,8 +31,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20, // per tx
       500, // 5%
       "ipfs://factory-test/",
-      // "Test",
-      // "NFT",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -336,10 +336,10 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       40,
       20,
-      500, // royalty
-      "https://metadata.buildship.dev/",
-      // "Avatar Collection NFT",
-      // "NFT",
+    500, // royalty
+    "https://metadata.buildship.dev/",
+    "Buildship NFT",
+    "NFT",
       false
     );
 
@@ -416,6 +416,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -460,6 +462,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -519,6 +523,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       false
     );
 
@@ -572,6 +578,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
       true
     );
 
