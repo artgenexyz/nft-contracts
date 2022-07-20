@@ -21,9 +21,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "@divergencetech/ethier/contracts/random/NextShuffler.sol";
 import "@divergencetech/ethier/contracts/random/PRNG.sol";
-import "@divergencetech/ethier/contracts/random/CSPRNG.sol";
 
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IMetaverseNFT.sol";
@@ -231,14 +229,14 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function setSource(bytes32 seed) public onlyOwner {
-        require( maxSupplyAll() != 0, "First import all series" );
-        require( numToShuffle == 0, "Can't change source after seed has been set");
+        require( startTokenId() + maxSupply == nextTokenId(), "First import all series" );
+        require( !isNumToShuffleSet(), "Can't change source after seed has been set");
+
+        _setNumToShuffle( maxSupplyAll() );
 
         PRNG.Source src = PRNG.newSource(seed);
 
         src.store(_nextShufflerSourceStore);
-
-        _setNumToShuffle( maxSupplyAll() );
     }
 
     // Freeze forever, irreversible
@@ -582,7 +580,7 @@ contract MetaverseBaseNFT_ERC1155 is
     function startSale() public onlyOwner whenNotFrozen {
         require( startTokenId() + maxSupply == nextTokenId(), "First import all series" );
 
-        require(numToShuffle != 0, "You should set source before startSale");
+        require( isNumToShuffleSet(), "You should set source before startSale");
 
         startTimestamp = block.timestamp;
     }
