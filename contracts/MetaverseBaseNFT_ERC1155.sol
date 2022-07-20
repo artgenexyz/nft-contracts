@@ -218,7 +218,7 @@ contract MetaverseBaseNFT_ERC1155 is
         // sum of all token ids
         uint256 total = 0;
 
-        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
+        for (uint256 id = startTokenId(); id < nextTokenId(); id++) {
             total += maxSeriesSupply(id);
         }
 
@@ -231,7 +231,7 @@ contract MetaverseBaseNFT_ERC1155 is
         // sum of all token ids
         uint256 total = 0;
 
-        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
+        for (uint256 id = startTokenId(); id < nextTokenId(); id++) {
             total += totalSeriesSupply(id);
         }
 
@@ -350,12 +350,12 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // ---- Minting ----
 
-    function lastTokenId() public view returns (uint256) {
+    function nextTokenId() public view returns (uint256) {
         // actually next to last
         return startTokenId() + _nextTokenIndex.current();
     }
 
-    function nextTokenId() internal returns (uint256 id) {
+    function getNextTokenId() internal returns (uint256 id) {
         id = _nextTokenIndex.current();
 
         _nextTokenIndex.increment();
@@ -371,10 +371,10 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // TODO: optional push ipfs hash to metadata?
     function importSeries(uint256[] calldata supply) public onlyOwner {
-        require(lastTokenId() + supply.length - 1 - startTokenId() <= maxSupply, "Too many tokens");
+        require(nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply, "Too many tokens");
 
         for (uint256 i = 0; i < supply.length; i++) {
-            uint256 tokenId = startTokenId() + nextTokenId();
+            uint256 tokenId = startTokenId() + getNextTokenId();
             uint256 _supply = supply[i];
 
             // require(_supply > 0, "Supply must be greater than 0");
@@ -396,7 +396,7 @@ contract MetaverseBaseNFT_ERC1155 is
             "Amount exceeds max supply"
         );
         require(
-            tokenId >= startTokenId() && tokenId < lastTokenId(),
+            tokenId >= startTokenId() && tokenId < nextTokenId(),
             "TokenId out of range"
         );
 
@@ -423,7 +423,7 @@ contract MetaverseBaseNFT_ERC1155 is
             )));
 
             require(
-                ids[i] >= startTokenId() && ids[i] < lastTokenId(),
+                ids[i] >= startTokenId() && ids[i] < nextTokenId(),
                 "TokenId out of range"
             );
             require(
@@ -442,7 +442,7 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256 index = 0;
         uint256 lastIndex;
 
-        for (uint256 tokenId = startTokenId(); tokenId < lastTokenId(); tokenId++) {
+        for (uint256 tokenId = startTokenId(); tokenId < nextTokenId(); tokenId++) {
             lastIndex = index + maxSeriesSupply(tokenId) - 1;
 
             if (seed <= lastIndex && seed >= index) {
@@ -455,7 +455,7 @@ contract MetaverseBaseNFT_ERC1155 is
         console.log("Last Index", index);
         console.log("Seed", seed);
         console.log("Max supply", maxSupplyAll());
-        console.log("Last token Id", lastTokenId());
+        console.log("Last token Id", nextTokenId());
 
         revert("Not found");
         // id = 0;
