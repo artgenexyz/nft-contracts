@@ -90,7 +90,7 @@ contract MetaverseBaseNFT_ERC1155 is
     using Strings for uint256;
     using PRNG for PRNG.Source;
 
-    Counters.Counter private _tokenIndexCounter; // token index counter
+    Counters.Counter private _nextTokenIndex; // token index counter
 
     // PRNG.Source private source;
     // NextShufflerPublic private shuffler;
@@ -117,7 +117,7 @@ contract MetaverseBaseNFT_ERC1155 is
     bool private isOpenSeaProxyActive = true;
     bool private startAtOne = false;
 
-    mapping(uint256 => uint256) public _maxSeriesSupply;
+    mapping(uint256 => uint256) internal _maxSeriesSupply;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -218,7 +218,7 @@ contract MetaverseBaseNFT_ERC1155 is
         // sum of all token ids
         uint256 total = 0;
 
-        for (uint256 id = startTokenId(); id <= lastTokenId(); id++) {
+        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
             total += maxSeriesSupply(id);
         }
 
@@ -231,8 +231,8 @@ contract MetaverseBaseNFT_ERC1155 is
         // sum of all token ids
         uint256 total = 0;
 
-        for (uint256 id = startTokenId(); id <= lastTokenId(); id++) {
-            total += totalSupply(id);
+        for (uint256 id = startTokenId(); id < lastTokenId(); id++) {
+            total += totalSeriesSupply(id);
         }
 
         return total;
@@ -351,23 +351,30 @@ contract MetaverseBaseNFT_ERC1155 is
     // ---- Minting ----
 
     function lastTokenId() public view returns (uint256) {
-        return startTokenId() + _tokenIndexCounter.current();
+        // actually next to last
+        return startTokenId() + _nextTokenIndex.current();
     }
 
     function nextTokenId() internal returns (uint256 id) {
-        _tokenIndexCounter.increment();
+        id = _nextTokenIndex.current();
 
-        return _tokenIndexCounter.current() - 1;
+        _nextTokenIndex.increment();
+
+        // return _nextTokenIndex.current() - 1;
 
         // return id;
     }
 
+    function tokenIdSeed2TokenId(uint256 seed) public view returns (uint256) {
+        return _tokenIdSeed2TokenId(seed);
+    }
+
     // TODO: optional push ipfs hash to metadata?
     function importSeries(uint256[] calldata supply) public onlyOwner {
-        require(lastTokenId() + supply.length - startTokenId() <= maxSupply, "Too many tokens");
+        require(lastTokenId() + supply.length - 1 - startTokenId() <= maxSupply, "Too many tokens");
 
         for (uint256 i = 0; i < supply.length; i++) {
-            uint256 tokenId = nextTokenId();
+            uint256 tokenId = startTokenId() + nextTokenId();
             uint256 _supply = supply[i];
 
             // require(_supply > 0, "Supply must be greater than 0");
@@ -389,7 +396,7 @@ contract MetaverseBaseNFT_ERC1155 is
             "Amount exceeds max supply"
         );
         require(
-            tokenId >= startTokenId() && tokenId <= lastTokenId(),
+            tokenId >= startTokenId() && tokenId < lastTokenId(),
             "TokenId out of range"
         );
 
@@ -416,7 +423,7 @@ contract MetaverseBaseNFT_ERC1155 is
             )));
 
             require(
-                ids[i] >= startTokenId() && ids[i] <= lastTokenId(),
+                ids[i] >= startTokenId() && ids[i] < lastTokenId(),
                 "TokenId out of range"
             );
             require(
@@ -431,10 +438,11 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function _tokenIdSeed2TokenId(uint256 seed) internal view returns (uint256) {
+
         uint256 index = 0;
         uint256 lastIndex;
 
-        for (uint256 tokenId = startTokenId(); tokenId <= lastTokenId(); tokenId++) {
+        for (uint256 tokenId = startTokenId(); tokenId < lastTokenId(); tokenId++) {
             lastIndex = index + maxSeriesSupply(tokenId) - 1;
 
             if (seed <= lastIndex && seed >= index) {
@@ -446,6 +454,8 @@ contract MetaverseBaseNFT_ERC1155 is
 
         console.log("Last Index", index);
         console.log("Seed", seed);
+        console.log("Max supply", maxSupplyAll());
+        console.log("Last token Id", lastTokenId());
 
         revert("Not found");
         // id = 0;
@@ -475,11 +485,11 @@ contract MetaverseBaseNFT_ERC1155 is
 
             // TODO: what's wrong?
             console.log(string(abi.encodePacked(
-                "Mint: ", tokenId.toString(), " => ", totalSeriesSupply(tokenId).toString(), "/", maxSeriesSupply(tokenId).toString(), " + ", "1"
+                "Mint: [", tokenIdSeed.toString(), "] ~", tokenId.toString(), " => ", totalSeriesSupply(tokenId).toString(), "/", maxSeriesSupply(tokenId).toString(), " + ", "1"
             )));
 
             // TODO: use array
-            _mint(to, tokenId, 1, "");
+            _mintTokens(to, tokenId, 1);
 
             ids[i] = tokenId;
             amounts[i] = 1;

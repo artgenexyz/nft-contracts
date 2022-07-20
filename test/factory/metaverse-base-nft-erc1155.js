@@ -1,6 +1,6 @@
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 const { ethers, hre, web3 } = require("hardhat");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -11,6 +11,8 @@ const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const OffchainAllowListExtension = artifacts.require("OffchainAllowListExtension");
+
+const SERIES = [420, 10, 33, 69, 10, 111, 69, 69, 420, 33, 420, 420, 69, 69, 33, 33, 33, 69, 69, 111, 111, 33, 33, 33, 69, 33, 33, 10, 69, 33, 111, 69, 10, 69, 420, 33, 69, 33, 111, 33, 33, 420, 10, 10, 420, 420, 111, 33, 33, 69, 33, 69, 33, 69, 33, 10, 69, 420, 33, 111, 33, 33, 10, 69, 111, 69, 33, 33, 69, 69, 33, 420, 33, 33, 69, 420, 69, 33, 69, 33, 33, 33, 33, 33, 33, 69, 69, 420];
 
 const ether = new BigNumber(1e18);
 
@@ -464,6 +466,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
 
+    console.log('random seed', randomSeed);
+
     await nft2.setSource(randomSeed);
 
     await nft2.startSale();
@@ -501,6 +505,117 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       | ${gasCost[60]} | ${gasCost[61]} | ${gasCost[62]} | ${gasCost[63]} | ${gasCost[64]} | ${gasCost[65]} | ${gasCost[66]} | ${gasCost[67]} | ${gasCost[68]} | ${gasCost[69]} |
       | ${gasCost[70]} | ${gasCost[71]} | ${gasCost[72]} | ${gasCost[73]} | ${gasCost[74]}
     `);
+  });
+
+  // it should return correct values in _tokenIdSeed2TokenId
+
+  it("should return correct values in tokenSeed2TokenId", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      40,
+      20,
+      500, // royalty
+      "https://metadata.buildship.dev/",
+      false
+    );
+
+    await nft2.importSeries(Array(10).fill(10));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    const tokenIds = [];
+
+    for (let i = 0; i < 100; i++) {
+      const tokenId = await nft2.tokenIdSeed2TokenId(i);
+
+      tokenIds[i] = tokenId;
+    }
+
+    const startTokenId = await nft2.startTokenId();
+
+    // print array in a table 10x10 with tabs between values
+    console.log(`===== token ids =====`);
+    console.log(tokenIds.join("\t"));
+
+    // expect startTokenId to be 0
+    expect(startTokenId).to.be.bignumber.eq("0");
+
+    // 0,1,2,3,4,5,6,7,8,9 => startTokenId = 0
+    // 10,11,12... => 1
+    expect( await nft2.tokenIdSeed2TokenId(0) ).to.be.bignumber.equal("0");
+
+    assert.equal(await nft2.tokenIdSeed2TokenId(10), 1);
+    assert.equal(await nft2.tokenIdSeed2TokenId(11), 1);
+
+    assert.equal(await nft2.tokenIdSeed2TokenId(99), 9);
+
+    // expect 100 revert not found
+    expectRevert(nft2.tokenIdSeed2TokenId(100), "Not found");
+
+  })
+
+  it("should return correct values in tokenSeed2TokenId", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      40,
+      20,
+      500, // royalty
+      "https://metadata.buildship.dev/",
+      true
+    );
+
+    await nft2.importSeries(Array(10).fill(10));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    const tokenIds = [];
+
+    // for (let i = 0; i < 99; i++) {
+    //   const tokenId = await nft2.tokenIdSeed2TokenId(i);
+
+    //   tokenIds[i] = tokenId;
+    // }
+
+    const startTokenId = await nft2.startTokenId();
+
+    // print array in a table 10x10 with tabs between values
+    console.log(`===== token ids =====`);
+    console.log(tokenIds.map((x, i) => `${i}: ${x}`).join("\t\t"));
+
+    // expect startTokenId to be 1
+    expect(startTokenId).to.be.bignumber.equal( "1" );
+
+    // 0,1,2,3,4,5,6,7,8,9 => startTokenId = 0
+    // 10,11,12... => 1
+    expect(await nft2.tokenIdSeed2TokenId(0)).to.be.bignumber.equal(startTokenId);
+    expect(await nft2.tokenIdSeed2TokenId(9)).to.be.bignumber.equal(startTokenId);
+
+    assert.equal(await nft2.tokenIdSeed2TokenId(10), 2);
+    assert.equal(await nft2.tokenIdSeed2TokenId(11), 2);
+    assert.equal(await nft2.tokenIdSeed2TokenId(80), 9);
+    assert.equal(await nft2.tokenIdSeed2TokenId(89), 9);
+    assert.equal(await nft2.tokenIdSeed2TokenId(98), 10);
+    assert.equal(await nft2.tokenIdSeed2TokenId(99), 10);
+
+    // expect 100 revert not found
+    expectRevert(nft2.tokenIdSeed2TokenId(100), "Not found");
+
   })
 
 
