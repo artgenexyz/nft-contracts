@@ -174,7 +174,7 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
     });
 
     // it should allow to mint from ERC20SaleExtension
-    xit ("it should allow to mint from ERC20SaleExtension", async () => {
+    it ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
         const pass = await createNFTSale(MetaverseBaseNFT);
         await pass.claim(2, owner);
@@ -192,10 +192,6 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
 
         await currency.transfer(user1, 500);
 
-        await expectRevert(
-            ERC20Extension.mint(10, { from: user1 }),
-            "ERC20: transfer amount exceeds allowance"
-        );
         await expectRevert(
             ERC20Extension.mint(10, { from: user2 }),
             "Not enough currency to mint"
