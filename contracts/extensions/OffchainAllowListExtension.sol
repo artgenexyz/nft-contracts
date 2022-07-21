@@ -36,22 +36,24 @@ contract OffchainAllowListExtension is NFTExtension, Ownable, SaleControl {
     function mint(
         uint256 nTokens,
         uint256 maxAllowedAmount,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
+        // uint256[] calldata ids,
+        // uint256[] calldata amounts,
+        bytes32 data,
         bytes memory signature
     ) external payable whenSaleStarted {
         console.log(
             // "SOLIDITY args",
             nTokens,
-            maxAllowedAmount,
-            iToHex(abi.encodePacked(ids)),
-            iToHex(abi.encodePacked(amounts))
+            maxAllowedAmount
+            // ,
+            // iToHex(abi.encodePacked(ids)),
+            // iToHex(abi.encodePacked(amounts))
         );
 
-        require(ids.length == amounts.length, "Inconsistent array lengths");
+        // require(ids.length == amounts.length, "Inconsistent array lengths");
 
         require(
-            isWhitelisted(signature, msg.sender, maxAllowedAmount, ids, amounts),
+            isWhitelisted(signature, msg.sender, maxAllowedAmount, data),
             "Not whitelisted"
         );
 
@@ -64,10 +66,7 @@ contract OffchainAllowListExtension is NFTExtension, Ownable, SaleControl {
 
         claimedByAddress[msg.sender] += nTokens;
 
-        for (uint256 i; i < ids.length; i++) {
-            // TODO: batched mints?
-            nft.mintExternal{value: msg.value}(amounts[i], msg.sender, bytes32(ids[i]));
-        }
+        nft.mintExternal{value: msg.value}(nTokens, msg.sender, data);
     }
 
     function bytesToString(bytes memory byteCode)
@@ -138,22 +137,22 @@ contract OffchainAllowListExtension is NFTExtension, Ownable, SaleControl {
         address receiver,
         uint256 amount,
 
-        uint256[] calldata ids,
-        uint256[] calldata amounts
+        // uint256[] calldata ids,
+        // uint256[] calldata amounts
 
-        // bytes32 data
+        bytes32 data
     ) public view returns (bool) {
         console.log(
             "SOLIDITY raw",
-            iToHex(abi.encodePacked(receiver, bytes32(amount), ids, amounts))
+            iToHex(abi.encodePacked(receiver, bytes32(amount), data))
         );
 
         bytes32 hash = keccak256(
-            abi.encodePacked(receiver, bytes32(amount), ids, amounts)
+            abi.encodePacked(receiver, bytes32(amount))
         );
 
         bytes32 digest = ECDSA.toEthSignedMessageHash(
-            keccak256(abi.encodePacked(receiver, bytes32(amount), ids, amounts))
+            keccak256(abi.encodePacked(receiver, bytes32(amount), data))
         );
 
         // usedDigest = true

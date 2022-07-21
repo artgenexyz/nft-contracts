@@ -7,6 +7,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { getGasCost } = require("../utils");
 
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
+const MetaverseBaseNFTERC721A = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -16,7 +17,7 @@ const ether = new BigNumber(1e18);
 
 const { arrayify, hexZeroPad } = ethers.utils; 
 
-contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
+contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
@@ -89,8 +90,20 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   }
 
   // it should be able to use normal extensions to mint erc1155
-  xit("should be able to use OffchainAllowListExtension to mint erc1155", async () => {
+  it("should be able to use OffchainAllowListExtension to mint", async () => {
     const [ admin ] = await ethers.getSigners();
+
+    const nft = await MetaverseBaseNFT.new(
+      ether.times(0.03),
+      1000,
+      3, // reserved
+      20, // per tx
+      500, // 5%
+      "ipfs://factory-test/",
+      "Test",
+      "NFT",
+      false
+    )
 
     const extension = await OffchainAllowListExtension.new(
       nft.address,
@@ -133,8 +146,19 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     // process.exit(0);
 
-    await extension.mint(5, 999, web3.utils.encodePacked(10), signature, { from: user1, value: ether.times(0.005) });
+    const sig2 = await (() => {
+        // receiver, maxAmount, data (token id)
+        const hash = [user1, 999, 10] // .map(x => x.toString()));
 
+        // keccak256(abi.encodePacked(receiver, maxAmount, data))
+
+        const hashHex = web3.utils.keccak256(web3.utils.encodePacked(...hash));
+
+        // sign message from owner
+        return web3.eth.sign((hashHex), owner);
+    })()
+
+    await extension.mint(5, 999, web3.utils.encodePacked(10), sig2, { from: user1, value: ether.times(0.005) });
     // check balanceof token id = 10 for user1
     const balance2 = await nft.balanceOf(user1, 10);
     assert.equal(balance2, 5);
