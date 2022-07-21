@@ -550,6 +550,16 @@ contract MetaverseBaseNFT_ERC1155 is
 
     }
 
+    // ---- Mint configuration
+
+    function updateMaxPerMint(uint256 _maxPerMint)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        maxPerMint = _maxPerMint;
+    }
+
     // ---- Sale control ----
 
     function updateStartTimestamp(uint256 _startTimestamp)
