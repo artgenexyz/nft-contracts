@@ -229,10 +229,16 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function setSource(bytes32 seed) public onlyOwner {
-        require( startTokenId() + maxSupply == nextTokenId(), "First import all series" );
-        require( !isNumToShuffleSet(), "Can't change source after seed has been set");
+        require(
+            startTokenId() + maxSupply == nextTokenId(),
+            "First import all series"
+        );
+        require(
+            !isNumToShuffleSet(),
+            "Can't change source after seed has been set"
+        );
 
-        _setNumToShuffle( maxSupplyAll() );
+        _setNumToShuffle(maxSupplyAll());
 
         PRNG.Source src = PRNG.newSource(seed);
 
@@ -339,7 +345,10 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // TODO: optional push ipfs hash to metadata?
     function importSeries(uint256[] calldata supply) public onlyOwner {
-        require(nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply, "Too many tokens");
+        require(
+            nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply,
+            "Too many tokens"
+        );
 
         for (uint256 i = 0; i < supply.length; i++) {
             uint256 tokenId = startTokenId() + getNextTokenId();
@@ -377,25 +386,38 @@ contract MetaverseBaseNFT_ERC1155 is
         uint256[] memory ids,
         uint256[] memory amounts
     ) internal {
-        require(ids.length == amounts.length, "Ids and amounts must be same length");
+        require(
+            ids.length == amounts.length,
+            "Ids and amounts must be same length"
+        );
 
         for (uint256 i = 0; i < ids.length; i++) {
-
             // console.log("Token ID", ids[i]);
             // console.log("Amount requested", amounts[i]);
             // console.log("Total supply", totalSeriesSupply(ids[i]));
             // console.log("Max supply", maxSeriesSupply(ids[i]));
 
-            console.log(string(abi.encodePacked(
-                ids[i].toString(), " => ", totalSeriesSupply(ids[i]).toString(), "/", maxSeriesSupply(ids[i]).toString(), " + ", amounts[i].toString()
-            )));
+            console.log(
+                string(
+                    abi.encodePacked(
+                        ids[i].toString(),
+                        " => ",
+                        totalSeriesSupply(ids[i]).toString(),
+                        "/",
+                        maxSeriesSupply(ids[i]).toString(),
+                        " + ",
+                        amounts[i].toString()
+                    )
+                )
+            );
 
             require(
                 ids[i] >= startTokenId() && ids[i] < nextTokenId(),
                 "TokenId out of range"
             );
             require(
-                totalSeriesSupply(ids[i]) + amounts[i] <= maxSeriesSupply(ids[i]),
+                totalSeriesSupply(ids[i]) + amounts[i] <=
+                    maxSeriesSupply(ids[i]),
                 "Amount exceeds max supply"
             );
 
@@ -405,12 +427,19 @@ contract MetaverseBaseNFT_ERC1155 is
         _mintBatch(to, ids, amounts, "");
     }
 
-    function _tokenIdSeed2TokenId(uint256 seed) internal view returns (uint256) {
-
+    function _tokenIdSeed2TokenId(uint256 seed)
+        internal
+        view
+        returns (uint256)
+    {
         uint256 index = 0;
         uint256 lastIndex;
 
-        for (uint256 tokenId = startTokenId(); tokenId < nextTokenId(); tokenId++) {
+        for (
+            uint256 tokenId = startTokenId();
+            tokenId < nextTokenId();
+            tokenId++
+        ) {
             lastIndex = index + maxSeriesSupply(tokenId) - 1;
 
             if (seed <= lastIndex && seed >= index) {
@@ -430,7 +459,10 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function _mintRandomTokens(uint256 amount, address to) internal {
-        require(totalSupplyAll() + amount <= maxSupplyAll(), "Not enough Tokens left");
+        require(
+            totalSupplyAll() + amount <= maxSupplyAll(),
+            "Not enough Tokens left"
+        );
 
         uint256 tokenIdSeed;
         uint256 tokenId;
@@ -451,16 +483,27 @@ contract MetaverseBaseNFT_ERC1155 is
             tokenId = _tokenIdSeed2TokenId(tokenIdSeed);
 
             // TODO: what's wrong?
-            console.log(string(abi.encodePacked(
-                "Mint: [", tokenIdSeed.toString(), "] ~", tokenId.toString(), " => ", totalSeriesSupply(tokenId).toString(), "/", maxSeriesSupply(tokenId).toString(), " + ", "1"
-            )));
+            console.log(
+                string(
+                    abi.encodePacked(
+                        "Mint: [",
+                        tokenIdSeed.toString(),
+                        "] ~",
+                        tokenId.toString(),
+                        " => ",
+                        totalSeriesSupply(tokenId).toString(),
+                        "/",
+                        maxSeriesSupply(tokenId).toString(),
+                        " + ",
+                        "1"
+                    )
+                )
+            );
 
             _mintTokens(to, tokenId, 1);
-
         }
 
         src.store(_nextShufflerSourceStore);
-
     }
 
     function _mintConsecutive(
@@ -547,7 +590,6 @@ contract MetaverseBaseNFT_ERC1155 is
             uint256 id = uint256(_data);
             _mint(to, id, nTokens, "");
         }
-
     }
 
     // ---- Mint configuration
@@ -571,9 +613,12 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
-        require( startTokenId() + maxSupply == nextTokenId(), "First import all series" );
+        require(
+            startTokenId() + maxSupply == nextTokenId(),
+            "First import all series"
+        );
 
-        require( isNumToShuffleSet(), "You should set source before startSale");
+        require(isNumToShuffleSet(), "You should set source before startSale");
 
         startTimestamp = block.timestamp;
     }
