@@ -25,11 +25,11 @@ contract BurnNFT is ERC721, ERC721Enumerable, IERC721Receiver, Ownable {
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        return "https://metadata.buildship.dev/api/token/hodl/";
+        return "https://metadata.buildship.xyz/api/token/hodl/";
     }
 
     function contractURI() public pure returns (string memory) {
-        return "https://metadata.buildship.dev/api/token/hodl/";
+        return "https://metadata.buildship.xyz/api/token/hodl/";
     }
 
     function _beforeTokenTransfer(
