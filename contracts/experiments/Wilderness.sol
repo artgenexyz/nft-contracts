@@ -64,6 +64,21 @@ contract Wilderness is MetaverseBaseNFT_ERC1155 {
         "WtoB", // token symbol
         true // start token id from 1
     ) {
+        createTokenSeries(
+            _createDynamicArray88(
+                [ 420,10,33,69,10,111,69,69,420,33,420,420,69,69,33,33,33,69,69,111,111,33,33,33,69,33,33,10,69,33,111,69,10,69,420,33,69,33,111,33,33,420,10,10,420,420,111,33,33,69,33,69,33,69,33,10,69,420,33,111,33,33,10,69,111,69,33,33,69,69,33,420,33,33,69,420,69,33,69,33,33,33,33,33,33,69,69,420 ]
+            )
+        );
+    }
+
+    function _createDynamicArray88(uint16[88] memory fix) internal pure returns (uint256[] memory dyn) {
+        dyn = new uint256[](88);
+
+        for (uint i = 0; i < 88; i++) {
+            dyn[i] = fix[i];
+        }
+
+        return dyn;
     }
 
 }
