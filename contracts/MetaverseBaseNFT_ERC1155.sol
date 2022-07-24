@@ -7,8 +7,6 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "hardhat/console.sol";
-
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -24,6 +22,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@divergencetech/ethier/contracts/random/PRNG.sol";
+
+import "hardhat/console.sol";
 
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IMetaverseNFT.sol";
@@ -191,8 +191,6 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function maxSupplyAll() public view returns (uint256) {
-        // TODO: make O(1) by caching on mint?
-
         // sum of all token ids
         uint256 total = 0;
 
@@ -204,8 +202,6 @@ contract MetaverseBaseNFT_ERC1155 is
     }
 
     function totalSupplyAll() public view returns (uint256) {
-        // TODO: make O(1) by caching on mint?
-
         // sum of all token ids
         uint256 total = 0;
 
@@ -458,23 +454,6 @@ contract MetaverseBaseNFT_ERC1155 is
             // token id is fetched from the random offset
             tokenId = _tokenOffset2TokenId(tokenOffset);
 
-            // console.log(
-            //     string(
-            //         abi.encodePacked(
-            //             "Mint: [",
-            //             tokenOffset.toString(),
-            //             "] ~",
-            //             tokenId.toString(),
-            //             " => ",
-            //             totalSeriesSupply(tokenId).toString(),
-            //             "/",
-            //             maxSeriesSupply(tokenId).toString(),
-            //             " + ",
-            //             "1"
-            //         )
-            //     )
-            // );
-
             _mintTokens(to, tokenId, 1);
         }
 
@@ -564,7 +543,7 @@ contract MetaverseBaseNFT_ERC1155 is
         } else {
             uint256 offset = uint256(_data) - 0xff;
             uint256 id = offset + startTokenId();
-            _mint(to, id, nTokens, "");
+            _mintTokens(to, id, nTokens);
         }
     }
 
