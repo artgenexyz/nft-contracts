@@ -53,15 +53,17 @@ import "../MetaverseBaseNFT_ERC1155.sol";
 
 contract Wilderness is MetaverseBaseNFT_ERC1155 {
     constructor () MetaverseBaseNFT_ERC1155(
-        0.2 ether, // public mint price
+        0 ether, // public mint price
         88, // max supply
-        10, // reserved
-        20, // max per mint
-        500, // royalties
-        "ipfs://QmTAz43p4NLkr4jFNqxPtU8xz5nAT3x6hcKQEX6JAwiJkF/",
+        1, // reserved for admin for testing
+        1, // max per mint
+        1000, // royalties
+        // hidden metadata
+        "ipfs://bafybeialzno2az7tiei2enotshnkymsbnm7n4rg22h4oruopkzxsy6zq3q/",
         "Wilderness to Blockchain", // token name
-        "WTB", // token symbol
-        true
-    ) {}
+        "WtoB", // token symbol
+        true // start token id from 1
+    ) {
+    }
 
 }
