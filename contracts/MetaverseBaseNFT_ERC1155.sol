@@ -552,13 +552,16 @@ contract MetaverseBaseNFT_ERC1155 is
         address to,
         bytes32 _data
     ) external payable onlyExtension nonReentrant {
-        // if data is 0xffffff...ff, then it is a request for a N random tokens
+        // if data is 0x0, then it is a request for a N random tokens
         // else it's a request for a specific token id
+        // but data is (offset + 0xff) for the token id
+        // where token id = offset + startTokenId()
 
-        if (uint256(_data) == type(uint256).max) {
+        if (_data == 0x0) {
             _mintRandomTokens(nTokens, to);
         } else {
-            uint256 id = uint256(_data);
+            uint256 offset = uint256(_data) - 0xff;
+            uint256 id = offset + startTokenId();
             _mint(to, id, nTokens, "");
         }
     }
