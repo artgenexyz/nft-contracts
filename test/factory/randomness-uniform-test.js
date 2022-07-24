@@ -28,7 +28,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
       10,
-      40,
+      10,
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
@@ -50,13 +50,15 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     const gasCost = [];
 
+    // await nft2.claim(beneficiary, 10, { from: owner });
+
     for (let i = 0; i < 5; i++) {
       const tx = await nft2.mint(10, { from: owner, value: ether.times(0.1) });
 
       gasCost.push(...Array(10).fill(new BigNumber(tx.receipt.gasUsed).div(10)));
     }
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 20; i++) {
       const tx = await nft2.mint(2, { from: owner, value: ether.times(0.1) });
 
       gasCost.push(...Array(2).fill(new BigNumber(tx.receipt.gasUsed).div(2)));
