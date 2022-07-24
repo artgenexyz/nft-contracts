@@ -8,7 +8,7 @@ abstract contract SaleControlUpgradeable is OwnableUpgradeable {
 
     uint256 public startTimestamp;
 
-    function __SaleControl_init() initializer public {
+    function initialize() internal onlyInitializing {
         __Ownable_init();
 
         startTimestamp = __SALE_NEVER_STARTS;

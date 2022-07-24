@@ -9,7 +9,7 @@ import "../../../interfaces/IMetaverseNFT.sol";
 contract NFTExtensionUpgradeable is INFTExtension, ERC165Upgradeable {
     IMetaverseNFT public nft;
 
-    function __NFTExtension_init(address _nft) public initializer {
+    function initialize(address _nft) internal onlyInitializing {
         __ERC165_init();
 
         nft = IMetaverseNFT(_nft);

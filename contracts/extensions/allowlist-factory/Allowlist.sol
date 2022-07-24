@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
@@ -18,16 +17,17 @@ contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
 
     mapping(address => uint256) public claimedByAddress;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
     function initialize(
         address _nft,
         bytes32 _whitelistRoot,
         uint256 _price,
         uint256 _maxPerAddress
-    ) public initializer {
-        __NFTExtension_init(_nft);
-        __SaleControl_init();
-
-        stopSale();
+    ) initializer public {
+        NFTExtensionUpgradeable.initialize(_nft);
+        SaleControlUpgradeable.initialize();
 
         price = _price;
         maxPerAddress = _maxPerAddress;
