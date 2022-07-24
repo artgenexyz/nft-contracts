@@ -91,7 +91,8 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
   }
 
   // it should be able to use normal extensions to mint erc1155
-  it("should be able to use OffchainAllowListExtension to mint", async () => {
+  // TODO: turn back on when we gonna use it
+  xit("should be able to use OffchainAllowListExtension to mint", async () => {
     const [ admin ] = await ethers.getSigners();
 
     const nft = await MetaverseBaseNFT.new(
