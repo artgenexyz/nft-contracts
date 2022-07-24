@@ -369,7 +369,7 @@ contract MetaverseBaseNFT_ERC1155 is
         return _tokenOffset2TokenId(seed);
     }
 
-    function createTokens(uint256[] calldata supply) public onlyOwner {
+    function createTokenSeries(uint256[] memory supply) public onlyOwner {
         require(
             nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply,
             "Too many tokens"
@@ -443,6 +443,8 @@ contract MetaverseBaseNFT_ERC1155 is
             "Not enough Tokens left"
         );
 
+        require(isRandomnessSourceSet(), "Randomness source not set");
+
         uint256 tokenOffset;
         uint256 tokenId;
 
@@ -456,22 +458,22 @@ contract MetaverseBaseNFT_ERC1155 is
             // token id is fetched from the random offset
             tokenId = _tokenOffset2TokenId(tokenOffset);
 
-            console.log(
-                string(
-                    abi.encodePacked(
-                        "Mint: [",
-                        tokenOffset.toString(),
-                        "] ~",
-                        tokenId.toString(),
-                        " => ",
-                        totalSeriesSupply(tokenId).toString(),
-                        "/",
-                        maxSeriesSupply(tokenId).toString(),
-                        " + ",
-                        "1"
-                    )
-                )
-            );
+            // console.log(
+            //     string(
+            //         abi.encodePacked(
+            //             "Mint: [",
+            //             tokenOffset.toString(),
+            //             "] ~",
+            //             tokenId.toString(),
+            //             " => ",
+            //             totalSeriesSupply(tokenId).toString(),
+            //             "/",
+            //             maxSeriesSupply(tokenId).toString(),
+            //             " + ",
+            //             "1"
+            //         )
+            //     )
+            // );
 
             _mintTokens(to, tokenId, 1);
         }
@@ -597,7 +599,7 @@ contract MetaverseBaseNFT_ERC1155 is
     function startSale() public onlyOwner whenNotFrozen {
         require(
             startTokenId() + maxSupply == nextTokenId(),
-            "First import all series"
+            "First create all token series"
         );
 
         require(isRandomnessSourceSet(), "You should set source before startSale");

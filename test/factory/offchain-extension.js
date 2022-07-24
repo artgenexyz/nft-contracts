@@ -35,7 +35,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
       false
     );
 
-    await nft.createTokens([100, 20, 100]);
+    await nft.createTokenSeries(Array(1000).fill(3));
     // token id = 0: 100 items
     // token id = 1: 20 items
     // token id = 2: 100 items
@@ -55,6 +55,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
     await nft.addExtension(extension.address, { from: owner });
 
     // mint token
+    await nft.setRandomnessSource("0x0");
     await extension.startSale();
     await extension.mint(2, { from: owner, value: ether.times(0.005) });
     await extension.mint(10, { from: owner, value: ether.times(0.01) });
@@ -114,7 +115,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
     await nft.addExtension(extension.address, { from: owner });
 
     // receiver, maxAmount, data (token id)
-    const hash = [user1, 999, 12] // .map(x => x.toString()));
+    const hash = [user1, 999, 12+256] // .map(x => x.toString()));
 
     // keccak256(abi.encodePacked(receiver, maxAmount, data))
 
@@ -135,10 +136,12 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
     console.log("JS sig", signature);
     console.log("");
 
+    await nft.createTokenSeries(Array(1000).fill(1));
+    await nft.setRandomnessSource("0x0");
     // mint token
     await extension.startSale();
 
-    await extension.mint(2, 999, web3.utils.encodePacked(12), signature, { value: ether.times(0.005), from: user1 });
+    await extension.mint(2, 999, web3.utils.encodePacked(12+1+256), signature, { value: ether.times(0.005), from: user1 });
 
     // check balanceof token id = 12 for user1
     const balance = await nft.balanceOf(user1, 12);
@@ -148,7 +151,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
 
     const sig2 = await (() => {
         // receiver, maxAmount, data (token id)
-        const hash = [user1, 999, 10] // .map(x => x.toString()));
+        const hash = [user1, 999, 10+256] // .map(x => x.toString()));
 
         // keccak256(abi.encodePacked(receiver, maxAmount, data))
 
@@ -158,7 +161,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
         return web3.eth.sign((hashHex), owner);
     })()
 
-    await extension.mint(5, 999, web3.utils.encodePacked(10), sig2, { from: user1, value: ether.times(0.005) });
+    await extension.mint(5, 999, web3.utils.encodePacked(10+256), sig2, { from: user1, value: ether.times(0.005) });
     // check balanceof token id = 10 for user1
     const balance2 = await nft.balanceOf(user1, 10);
     assert.equal(balance2, 5);

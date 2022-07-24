@@ -36,7 +36,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft.createTokens([100, 20, 100, 20, 100]);
+    await nft.createTokenSeries([100, 20, 100, 20, 100]);
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -343,7 +343,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft.createTokens(Array(20).fill(5));
+    await nft.createTokenSeries(Array(20).fill(5));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -421,7 +421,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.createTokens(Array(5).fill(5));
+    await nft2.createTokenSeries(Array(5).fill(5));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -467,7 +467,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.createTokens(Array(10).fill(10));
+    await nft2.createTokenSeries(Array(10).fill(10));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -528,7 +528,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.createTokens(Array(10).fill(10));
+    await nft2.createTokenSeries(Array(10).fill(10));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -583,7 +583,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       true
     );
 
-    await nft2.createTokens(Array(10).fill(10));
+    await nft2.createTokenSeries(Array(10).fill(10));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
