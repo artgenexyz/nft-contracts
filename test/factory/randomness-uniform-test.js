@@ -44,7 +44,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     await nft2.startSale();
 
@@ -104,7 +104,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     await nft2.startSale();
 
@@ -155,7 +155,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     await nft2.startSale();
 

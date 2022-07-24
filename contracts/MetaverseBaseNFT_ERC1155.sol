@@ -235,13 +235,13 @@ contract MetaverseBaseNFT_ERC1155 is
         price = _price;
     }
 
-    function setSource(bytes32 seed) public onlyOwner {
+    function setRandomnessSource(bytes32 seed) public onlyOwner {
         require(
             startTokenId() + maxSupply == nextTokenId(),
             "First import all series"
         );
 
-        _setSource(seed);
+        _setRandomnessSource(seed);
         _setNumToShuffle(maxSupplyAll());
     }
 
@@ -448,10 +448,10 @@ contract MetaverseBaseNFT_ERC1155 is
 
         console.log("amount", amount);
 
-        PRNG.Source src = _load();
+        PRNG.Source rndSource = _load();
 
         for (uint256 i = 0; i < amount; i++) {
-            tokenOffset = _next(src);
+            tokenOffset = _next(rndSource);
 
             // token id is fetched from the random offset
             tokenId = _tokenOffset2TokenId(tokenOffset);
@@ -476,7 +476,7 @@ contract MetaverseBaseNFT_ERC1155 is
             _mintTokens(to, tokenId, 1);
         }
 
-        _store(src);
+        _store(rndSource);
     }
 
     // ---- Mint control ----
@@ -597,7 +597,7 @@ contract MetaverseBaseNFT_ERC1155 is
             "First import all series"
         );
 
-        require(isNumToShuffleSet(), "You should set source before startSale");
+        require(isRandomnessSourceSet(), "You should set source before startSale");
 
         startTimestamp = block.timestamp;
     }

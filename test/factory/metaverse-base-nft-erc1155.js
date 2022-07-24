@@ -41,7 +41,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
 
-    await nft.setSource(randomSeed);
+    await nft.setRandomnessSource(randomSeed);
 
     // token id = 0: 100 items
     // token id = 1: 20 items
@@ -348,7 +348,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
 
-    await nft.setSource(randomSeed);
+    await nft.setRandomnessSource(randomSeed);
 
     await nft.startSale();
 
@@ -429,7 +429,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     // print seed
     console.log('using seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
     await nft2.startSale();
 
     const tx = await nft2.mint(10, { from: owner, value: ether.times(0.3) });
@@ -474,7 +474,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     await nft2.startSale();
 
@@ -535,7 +535,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     // for seed from 0 to 100 print table of tokenIds
 
@@ -590,7 +590,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     console.log('random seed', randomSeed);
 
-    await nft2.setSource(randomSeed);
+    await nft2.setRandomnessSource(randomSeed);
 
     // for seed from 0 to 100 print table of tokenIds
 
