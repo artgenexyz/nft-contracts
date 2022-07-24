@@ -325,6 +325,23 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     );
   });
 
+  // it should be able to set updateMaxPerWallet
+  it("should be able to set updateMaxPerWallet", async () => {
+
+    await nft.updateMaxPerWallet(7);
+
+    await nft.startSale();
+
+    await nft.mint(7, { from: user1, value: ether.times(1) });
+
+    const minted = await nft.mintedBy(user1);
+
+    expect(minted.toNumber()).to.equal(7);
+
+    expectRevert(nft.mint(7, { from: user1, value: ether.times(1) }), "Max per wallet reached");
+
+  });
+
   it("should not be able to mint more than 100 tokens, when 100 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
       "1000000000000000",
