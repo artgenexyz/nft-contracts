@@ -131,7 +131,7 @@ contract("Wilderness to Blockchain - Implementation", (accounts) => {
 
   // it should be able to mint full 8888 tokens
   // DISABLED TO KEEP TESTS FROM RUNNING TOO LONG
-  it("should be able to mint full 8888 tokens", async () => {
+  xit("should be able to mint full 8888 tokens", async () => {
     const startTimestamp = Date.now()
 
     await nft.startSale();
