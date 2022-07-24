@@ -59,7 +59,7 @@ contract Wilderness is MetaverseBaseNFT_ERC1155 {
         1, // max per mint
         1000, // royalties
         // hidden metadata
-        "ipfs://bafybeialzno2az7tiei2enotshnkymsbnm7n4rg22h4oruopkzxsy6zq3q/",
+        "ipfs://bafybeigli3j2cieqnbayiqjpobgq5qzbhdhmo2j4ygqty7vryc33llysam/",
         "Wilderness to Blockchain", // token name
         "WtoB", // token symbol
         true // start token id from 1
