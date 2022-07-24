@@ -168,7 +168,7 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 
         const argsString = args ? `?args=%5B${encodeURIComponent(args)}%5D` : "?args=%5B%5D";
 
-        console.log(`https://gate-rinkeby.buildship.dev/deploy/${cid}${argsString}`);
+        console.log(`https://gate-rinkeby.buildship.xyz/deploy/${cid}${argsString}`);
 
     } catch (err) {
         console.error(err);

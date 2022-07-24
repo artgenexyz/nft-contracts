@@ -349,7 +349,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       3, // reserved
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Buildship NFT",
       "NFT",
       true
@@ -442,7 +442,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       0, // reserved
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Buildship NFT",
       "NFT",
       false
@@ -488,7 +488,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       0, // reserved
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Buildship NFT",
       "NFT",
       false
@@ -549,7 +549,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       0, // reserved
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Buildship NFT",
       "NFT",
       false
@@ -604,7 +604,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       0, // reserved
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Buildship NFT",
       "NFT",
       true

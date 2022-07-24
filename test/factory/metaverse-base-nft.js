@@ -318,7 +318,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
       40,
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Avatar Collection NFT",
       "NFT",
       false
