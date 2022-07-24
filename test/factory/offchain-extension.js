@@ -35,7 +35,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
       false
     );
 
-    await nft.importSeries([100, 20, 100]);
+    await nft.createTokens([100, 20, 100]);
     // token id = 0: 100 items
     // token id = 1: 20 items
     // token id = 2: 100 items

@@ -13,10 +13,12 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -52,7 +54,6 @@ import "./utils/NextShufflerLazyInit.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-// ERC1155,
 contract MetaverseBaseNFT_ERC1155 is
     ERC1155Supply,
     ReentrancyGuard,
@@ -64,10 +65,8 @@ contract MetaverseBaseNFT_ERC1155 is
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
     using Strings for uint256;
-    using PRNG for PRNG.Source;
 
     Counters.Counter private _nextTokenIndex; // token index counter
-    uint256[2] private _nextShufflerSourceStore;
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
@@ -150,10 +149,6 @@ contract MetaverseBaseNFT_ERC1155 is
         BASE_URI = _uri;
     }
 
-    function startTokenId() public view returns (uint256) {
-        return startAtOne ? 1 : 0;
-    }
-
     function contractURI() public view returns (string memory _uri) {
         _uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : BASE_URI;
     }
@@ -164,10 +159,12 @@ contract MetaverseBaseNFT_ERC1155 is
 
     function uri(uint256 tokenId) public view override returns (string memory) {
         if (uriExtension != address(0)) {
-            string memory u = INFTURIExtension(uriExtension).tokenURI(tokenId);
+            string memory _uri = INFTURIExtension(uriExtension).tokenURI(
+                tokenId
+            );
 
-            if (bytes(u).length > 0) {
-                return u;
+            if (bytes(_uri).length > 0) {
+                return _uri;
             }
         }
 
@@ -179,6 +176,10 @@ contract MetaverseBaseNFT_ERC1155 is
         } else {
             return string(abi.encodePacked(BASE_URI, tokenId.toString()));
         }
+    }
+
+    function startTokenId() public view returns (uint256) {
+        return startAtOne ? 1 : 0;
     }
 
     function maxSeriesSupply(uint256 id) public view returns (uint256) {
@@ -239,16 +240,9 @@ contract MetaverseBaseNFT_ERC1155 is
             startTokenId() + maxSupply == nextTokenId(),
             "First import all series"
         );
-        require(
-            !isNumToShuffleSet(),
-            "Can't change source after seed has been set"
-        );
 
+        _setSource(seed);
         _setNumToShuffle(maxSupplyAll());
-
-        PRNG.Source src = PRNG.newSource(seed);
-
-        src.store(_nextShufflerSourceStore);
     }
 
     // Freeze forever, irreversible
@@ -330,8 +324,38 @@ contract MetaverseBaseNFT_ERC1155 is
 
     // ---- Minting ----
 
+    function _mintConsecutive(
+        uint256 nTokens,
+        address to,
+        bytes32 _data
+    ) internal {
+        require(
+            totalSupplyAll() + nTokens + reserved <= maxSupplyAll(),
+            "Not enough Tokens left."
+        );
+
+        // if data is 0xffffff...ff, then it is a request for a N sequential tokens
+        // else it's a request for a specific token id
+
+        if (uint256(_data) == type(uint256).max) {
+            revert("Not implemented");
+        } else {
+            uint256 id = uint256(_data);
+            _mint(to, id, nTokens, "");
+        }
+
+        if (_data.length > 0) {
+            for (uint256 i; i < nTokens; i++) {
+                uint256 tokenId = nextTokenId() + i;
+                data[tokenId] = _data;
+            }
+        }
+
+    }
+
+    // ---- ERC1155Randomized -----
+
     function nextTokenId() public view returns (uint256) {
-        // actually next to last
         return startTokenId() + _nextTokenIndex.current();
     }
 
@@ -339,18 +363,13 @@ contract MetaverseBaseNFT_ERC1155 is
         id = _nextTokenIndex.current();
 
         _nextTokenIndex.increment();
-
-        // return _nextTokenIndex.current() - 1;
-
-        // return id;
     }
 
-    function tokenIdSeed2TokenId(uint256 seed) public view returns (uint256) {
-        return _tokenIdSeed2TokenId(seed);
+    function tokenOffset2TokenId(uint256 seed) public view returns (uint256) {
+        return _tokenOffset2TokenId(seed);
     }
 
-    // TODO: optional push ipfs hash to metadata?
-    function importSeries(uint256[] calldata supply) public onlyOwner {
+    function createTokens(uint256[] calldata supply) public onlyOwner {
         require(
             nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply,
             "Too many tokens"
@@ -387,53 +406,7 @@ contract MetaverseBaseNFT_ERC1155 is
         _mint(to, tokenId, amount, "");
     }
 
-    function _mintTokens(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts
-    ) internal {
-        require(
-            ids.length == amounts.length,
-            "Ids and amounts must be same length"
-        );
-
-        for (uint256 i = 0; i < ids.length; i++) {
-            // console.log("Token ID", ids[i]);
-            // console.log("Amount requested", amounts[i]);
-            // console.log("Total supply", totalSeriesSupply(ids[i]));
-            // console.log("Max supply", maxSeriesSupply(ids[i]));
-
-            console.log(
-                string(
-                    abi.encodePacked(
-                        ids[i].toString(),
-                        " => ",
-                        totalSeriesSupply(ids[i]).toString(),
-                        "/",
-                        maxSeriesSupply(ids[i]).toString(),
-                        " + ",
-                        amounts[i].toString()
-                    )
-                )
-            );
-
-            require(
-                ids[i] >= startTokenId() && ids[i] < nextTokenId(),
-                "TokenId out of range"
-            );
-            require(
-                totalSeriesSupply(ids[i]) + amounts[i] <=
-                    maxSeriesSupply(ids[i]),
-                "Amount exceeds max supply"
-            );
-
-            // _mintTokens(to, ids[i], amount[i]);
-        }
-
-        _mintBatch(to, ids, amounts, "");
-    }
-
-    function _tokenIdSeed2TokenId(uint256 seed)
+    function _tokenOffset2TokenId(uint256 seed)
         internal
         view
         returns (uint256)
@@ -470,30 +443,24 @@ contract MetaverseBaseNFT_ERC1155 is
             "Not enough Tokens left"
         );
 
-        uint256 tokenIdSeed;
+        uint256 tokenOffset;
         uint256 tokenId;
 
         console.log("amount", amount);
 
-        PRNG.Source src = PRNG.loadSource(_nextShufflerSourceStore);
+        PRNG.Source src = _load();
 
         for (uint256 i = 0; i < amount; i++) {
-            // 88 series
-            // 100 tokens in each
-
-            // next = [0, 88 * 100)
-
-            tokenIdSeed = _next(src);
+            tokenOffset = _next(src);
 
             // token id is fetched from the random offset
-            tokenId = _tokenIdSeed2TokenId(tokenIdSeed);
+            tokenId = _tokenOffset2TokenId(tokenOffset);
 
-            // TODO: what's wrong?
             console.log(
                 string(
                     abi.encodePacked(
                         "Mint: [",
-                        tokenIdSeed.toString(),
+                        tokenOffset.toString(),
                         "] ~",
                         tokenId.toString(),
                         " => ",
@@ -509,18 +476,7 @@ contract MetaverseBaseNFT_ERC1155 is
             _mintTokens(to, tokenId, 1);
         }
 
-        src.store(_nextShufflerSourceStore);
-    }
-
-    function _mintConsecutive(
-        uint256 nTokens,
-        address to,
-        bytes32 extraData
-    ) internal {
-        require(extraData == 0x0, "ERC1155 does not support extra data");
-
-        // TODO: mint consecutive? token ids instead
-        _mintRandomTokens(nTokens, to);
+        _store(src);
     }
 
     // ---- Mint control ----

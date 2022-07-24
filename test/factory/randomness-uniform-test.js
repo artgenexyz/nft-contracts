@@ -37,7 +37,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.importSeries(Array(10).fill(10));
+    await nft2.createTokens(Array(10).fill(10));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -97,7 +97,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.importSeries(Array(10).fill(10));
+    await nft2.createTokens(Array(10).fill(10));
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
@@ -148,7 +148,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
       false
     );
 
-    await nft2.importSeries([100, 20, 100, 20, 100, 20, 100, 20, 100, 20]);
+    await nft2.createTokens([100, 20, 100, 20, 100, 20, 100, 20, 100, 20]);
 
     // random bytes32
     const randomSeed = web3.utils.randomHex(32);
