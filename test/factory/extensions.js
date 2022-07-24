@@ -182,7 +182,7 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
         const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
         const metaverseAddr = (await metaverseFactory.createNFT(
             1e17.toString(), 10000, 100, 10, 500,
-            "https://metadata.buildship.dev/api/token/SYMBOL/",
+            "https://metadata.buildship.xyz/api/token/SYMBOL/",
             "Avatar Collection NFT", "SYMBOL"
         )).logs.find((event) => event.event === "NFTCreated").args.deployedAddress;
         const metaverseNFT = await MetaverseNFT.at(metaverseAddr);
