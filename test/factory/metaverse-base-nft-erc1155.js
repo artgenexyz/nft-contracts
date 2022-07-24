@@ -10,13 +10,8 @@ const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const OffchainAllowListExtension = artifacts.require("OffchainAllowListExtension");
-
-const SERIES = [420, 10, 33, 69, 10, 111, 69, 69, 420, 33, 420, 420, 69, 69, 33, 33, 33, 69, 69, 111, 111, 33, 33, 33, 69, 33, 33, 10, 69, 33, 111, 69, 10, 69, 420, 33, 69, 33, 111, 33, 33, 420, 10, 10, 420, 420, 111, 33, 33, 69, 33, 69, 33, 69, 33, 10, 69, 420, 33, 111, 33, 33, 10, 69, 111, 69, 33, 33, 69, 69, 33, 420, 33, 33, 69, 420, 69, 33, 69, 33, 33, 33, 33, 33, 33, 69, 69, 420];
 
 const ether = new BigNumber(1e18);
-
-const { arrayify, hexZeroPad } = ethers.utils; 
 
 contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   let nft;
@@ -330,17 +325,17 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     );
   });
 
-  it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
+  it("should not be able to mint more than 100 tokens, when 100 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
       "1000000000000000",
       20,
-      40,
+      3, // reserved
       20,
-    500, // royalty
-    "https://metadata.buildship.dev/",
-    "Buildship NFT",
-    "NFT",
-      false
+      500, // royalty
+      "https://metadata.buildship.dev/",
+      "Buildship NFT",
+      "NFT",
+      true
     );
 
     await nft.createTokenSeries(Array(20).fill(5));
@@ -361,13 +356,28 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
     await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
     await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
-    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+
+    await nft.mint(10, { from: owner, value: ether.times(0.0001).times(20) })
 
     try {
       await nft.mint(10, { from: owner, value: ether.times(0.0001).times(20) });
     } catch (error) {
-      assert.include(error.message, "Not enough Tokens left");
+      assert.include(error.message, "Not enough Tokens left.");
     }
+
+    await nft.mint(7, { from: owner, value: ether.times(0.0001).times(20) });
+
+    await nft.claim(3, owner, { from: owner });
+
+    // check balanceOf(owner, tokenId) for each token id is 5
+
+    for (let i = 1; i <= 20; i++) {
+      const balance = await nft.balanceOf(owner, i);
+      // console
+      console.log('token', i, 'balance', balance.toString());
+      assert.equal(balance, 5);
+    }
+
   });
 
   // it should be able to add and remove extension
@@ -412,7 +422,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
       5,
-      40,
+      0, // reserved
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
@@ -458,7 +468,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
       10,
-      40,
+      0, // reserved
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
@@ -519,7 +529,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
       10,
-      40,
+      0, // reserved
       20,
       500, // royalty
       "https://metadata.buildship.dev/",
@@ -574,7 +584,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     const nft2 = await MetaverseBaseNFT.new(
       "1000000000000000",
       10,
-      40,
+      0, // reserved
       20,
       500, // royalty
       "https://metadata.buildship.dev/",

@@ -439,8 +439,8 @@ contract MetaverseBaseNFT_ERC1155 is
 
     function _mintRandomTokens(uint256 amount, address to) internal {
         require(
-            totalSupplyAll() + amount <= maxSupplyAll(),
-            "Not enough Tokens left"
+            totalSupplyAll() + amount + reserved <= maxSupplyAll(),
+            "Not enough Tokens left."
         );
 
         require(isRandomnessSourceSet(), "Randomness source not set");
