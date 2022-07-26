@@ -4,12 +4,11 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract SaleControl is Ownable {
-
     uint256 public constant __SALE_NEVER_STARTS = 2**256 - 1;
 
     uint256 public startTimestamp = __SALE_NEVER_STARTS;
 
-    modifier whenSaleStarted {
+    modifier whenSaleStarted() {
         require(saleStarted(), "Sale not started yet");
         _;
     }
