@@ -122,6 +122,7 @@ contract MetaverseBaseNFT is
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
 
+        require(startAtOne == false, "Doesn't support starting at one with ERC721A");
         startAtOne = _startAtOne;
 
         // Need help with uploading metadata? Try https://buildship.xyz
@@ -133,7 +134,8 @@ contract MetaverseBaseNFT is
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
-        return startAtOne ? 1 : 0;
+        // NB: It requires static value, override when inherit
+        return 0;
     }
 
     function contractURI() public view returns (string memory uri) {
