@@ -1,0 +1,16 @@
+name: Test script
+
+on:
+  pull_request:
+    tags:
+      - '*'
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  test_script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: echo Hello!
