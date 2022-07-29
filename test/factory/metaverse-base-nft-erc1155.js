@@ -10,6 +10,7 @@ const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const MintBatchExtension = artifacts.require("MintBatchExtension");
 
 const ether = new BigNumber(1e18);
 
@@ -655,5 +656,51 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
   })
 
+  // it should be able to mint 200 in one tx and measure gas cost
+  it("should be able to mint 200 in one tx and measure gas cost", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      false
+    );
+
+    await nft2.createTokenSeries(Array(10).fill(100));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    await nft2.startSale();
+
+    await nft2.updateMaxPerWallet(1_000);
+    await nft2.updateMaxPerMint(1_000);
+
+    const tx = await nft2.mint(400, { from: user1, value: ether.times(10) });
+
+    const gasUsed = tx.receipt.gasUsed;
+
+    console.log(`gasUsed: ${gasUsed}`);
+
+    const mintBatchExtension = await MintBatchExtension.new(nft2.address);
+
+    await nft2.addExtension(mintBatchExtension.address);
+
+    const tx2 = await mintBatchExtension.mint(400, { from: owner });
+
+    const gasUsed2 = tx2.receipt.gasUsed;
+
+    console.log(`gasUsed2: ${gasUsed2}`);
+  });
 
 });

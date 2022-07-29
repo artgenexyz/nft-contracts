@@ -6,6 +6,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
 const Wilderness = artifacts.require("Wilderness");
+const MintBatchExtension = artifacts.require("MintBatchExtension");
 
 // const SERIES = [420, 10, 33, 69, 10, 111, 69] //, 69, 420, 33, 420, 420, 69, 69, 33, 33, 33, 69, 69, 111, 111, 33, 33, 33, 69, 33, 33, 10, 69, 33, 111, 69, 10, 69, 420, 33, 69, 33, 111, 33, 33, 420, 10, 10, 420, 420, 111, 33, 33, 69, 33, 69, 33, 69, 33, 10, 69, 420, 33, 111, 33, 33, 10, 69, 111, 69, 33, 33, 69, 69, 33, 420, 33, 33, 69, 420, 69, 33, 69, 33, 33, 33, 33, 33, 33, 69, 69, 420];
 const SERIES = [420, 10, 33, 69, 10, 111, 69, 69, 420, 33, 420, 420, 69, 69, 33, 33, 33, 69, 69, 111, 111, 33, 33, 33, 69, 33, 33, 10, 69, 33, 111, 69, 10, 69, 420, 33, 69, 33, 111, 33, 33, 420, 10, 10, 420, 420, 111, 33, 33, 69, 33, 69, 33, 69, 33, 10, 69, 420, 33, 111, 33, 33, 10, 69, 111, 69, 33, 33, 69, 69, 33, 420, 33, 33, 69, 420, 69, 33, 69, 33, 33, 33, 33, 33, 33, 69, 69, 420];
@@ -181,6 +182,59 @@ contract("Wilderness to Blockchain - Implementation", (accounts) => {
     // });
 
     assert.equal(balanceAfter.toNumber(), maxSupplyToken1.toNumber());
+
+  }).timeout(1_000_000);
+
+
+  // it should mint 400 via MintBatchExtension
+  xit("should mint 400 via MintBatchExtension when forking", async () => {
+
+    const wb = "0xDe95471123ce8BD81AD8e7BA553e019dA110b654"
+    const nft2 = await Wilderness.at(wb);
+
+    const transfers = Wilderness.TransferSingle({ from: user1 });
+
+    const marco = "0x4257564c6a110A896168A42eFee4C5aE3dfD26F0"
+
+    console.log('nft2', nft2.address);
+
+    await network.provider.request({ method: "hardhat_impersonateAccount", params: [marco] })
+
+    const mintBatchExtension = await MintBatchExtension.new(nft2.address, { from: marco });
+
+    console.log('mintBatchExtension', mintBatchExtension.address);
+
+    await nft2.addExtension(mintBatchExtension.address, { from: marco });
+
+    console.log('mintBatchExtension added');
+
+    const tx2 = mintBatchExtension.mint(10, { from: marco });
+
+    tx2.on('transactionHash', (hash) => {
+      console.log('tx2 hash', hash);
+    })
+
+    const gasUsed2 = (await tx2).receipt.gasUsed;
+
+    console.log(`gasUsed2: ${gasUsed2}`);
+
+    const txr = await tx2;
+
+    // check that the minted tokens are in events of tx
+    const events = txr.logs;
+
+    console.log('tx', txr);
+    console.log('events', events);
+
+    const tr = await transfers.get();
+
+    console.log('tr', tr)
+
+    const minted = events.filter(e => e.event === 'TransferSingle');
+
+    console.log('minted', minted.length);
+
+    assert.equal(minted.length, 400);
 
   }).timeout(1_000_000);
 
