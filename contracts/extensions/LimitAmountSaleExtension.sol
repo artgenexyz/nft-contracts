@@ -33,7 +33,7 @@ contract LimitAmountSaleExtension is NFTExtension, Ownable, SaleControl {
         require(nTokens <= maxPerMint, "Too many tokens to mint");
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
-        nft.mintExternal{value: msg.value}(nTokens, msg.sender, bytes32(0x0));
+        nft.mintExternal{value: msg.value}(nTokens, _msgSender(), bytes32(0x0));
 
         totalMinted += nTokens;
     }

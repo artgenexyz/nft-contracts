@@ -37,21 +37,21 @@ contract LimitedSupplyMintingExtension is NFTExtension, Ownable, SaleControl {
 
     function mint(uint256 nTokens) external payable whenSaleStarted {
         require(
-            IERC721(address(nft)).balanceOf(msg.sender) + nTokens <=
+            IERC721(address(nft)).balanceOf(_msgSender()) + nTokens <=
                 maxPerWallet,
             "LimitedSupplyMintingExtension: max per wallet reached"
         );
 
         require(
             nTokens + totalMinted <= extensionSupply,
-            "max extensionSupply reached"
+            "LimitedSupplyMintingExtension: max extensionSupply reached"
         );
         require(nTokens <= maxPerMint, "Too many tokens to mint");
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
         totalMinted += nTokens;
 
-        nft.mintExternal{value: msg.value}(nTokens, msg.sender, bytes32(0x0));
+        nft.mintExternal{value: msg.value}(nTokens, _msgSender(), bytes32(0x0));
     }
 
     function maxSupply() public view returns (uint256) {
