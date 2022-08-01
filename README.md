@@ -80,8 +80,7 @@ npx hardhat test
 
 ```bash
 colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol --context=1
-colordiff contracts/MetaverseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
-colordiff contracts/MetaverseBaseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
+colordiff contracts/MetaverseBaseNFT_ERC1155.sol contracts/MetaverseBaseNFT.sol --context=1
 ```
 
 ### Deploy to production
