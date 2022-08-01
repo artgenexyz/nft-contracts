@@ -7,11 +7,13 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
@@ -19,9 +21,14 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "@divergencetech/ethier/contracts/random/PRNG.sol";
+
+import "hardhat/console.sol";
+
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IMetaverseNFT.sol";
 import "./utils/OpenseaProxy.sol";
+import "./utils/NextShufflerLazyInit.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -47,21 +54,22 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseBaseNFT is
-    ERC721A,
+contract MetaverseBaseNFT_ERC1155 is
+    ERC1155Supply,
     ReentrancyGuard,
     Ownable,
+    NextShufflerLazyInit,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
+    using Strings for uint256;
 
-    Counters.Counter private _tokenIndexCounter; // token index counter
+    Counters.Counter private _nextTokenIndex; // token index counter
 
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
-    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -82,10 +90,17 @@ contract MetaverseBaseNFT is
     bool private isOpenSeaProxyActive = true;
     bool private startAtOne = false;
 
+    mapping(uint256 => uint256) internal _maxSeriesSupply;
+
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
      */
     mapping(uint256 => bytes32) public data;
+
+    /**
+     * @dev Storing how many tokens each address has minted in public sale
+     */
+    mapping(address => uint256) public mintedBy;
 
     /**
      * @dev List of connected extensions
@@ -97,13 +112,16 @@ contract MetaverseBaseNFT is
     string private BASE_URI;
     string private URI_POSTFIX = "";
 
+    string public name;
+    string public symbol;
+
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
 
     constructor(
         uint256 _price,
-        uint256 _maxSupply,
+        uint256 _maxSupply, // only limit ids here, not the full number of NFTs
         uint256 _nReserved,
         uint256 _maxPerMint,
         uint256 _royaltyFee,
@@ -111,7 +129,7 @@ contract MetaverseBaseNFT is
         string memory _name,
         string memory _symbol,
         bool _startAtOne
-    ) ERC721A(_name, _symbol) {
+    ) ERC1155(_uri) {
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -122,63 +140,87 @@ contract MetaverseBaseNFT is
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
 
-        require(startAtOne == false, "Doesn't support starting at one with ERC721A");
         startAtOne = _startAtOne;
+
+        name = _name;
+        symbol = _symbol;
 
         // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
     }
 
-    function _baseURI() internal view override returns (string memory) {
-        return BASE_URI;
+    function contractURI() public view returns (string memory _uri) {
+        _uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : BASE_URI;
     }
 
-    function _startTokenId() internal view virtual override returns (uint256) {
-        // NB: It requires static value, override when inherit
-        return 0;
+    function tokenURI(uint256 _tokenId) public view returns (string memory) {
+        return uri(_tokenId);
     }
 
-    function contractURI() public view returns (string memory uri) {
-        uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : _baseURI();
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function uri(uint256 tokenId) public view override returns (string memory) {
         if (uriExtension != address(0)) {
-            string memory uri = INFTURIExtension(uriExtension).tokenURI(
+            string memory _uri = INFTURIExtension(uriExtension).tokenURI(
                 tokenId
             );
 
-            if (bytes(uri).length > 0) {
-                return uri;
+            if (bytes(_uri).length > 0) {
+                return _uri;
             }
         }
 
         if (bytes(URI_POSTFIX).length > 0) {
             return
-                string(abi.encodePacked(super.tokenURI(tokenId), URI_POSTFIX));
+                string(
+                    abi.encodePacked(BASE_URI, tokenId.toString(), URI_POSTFIX)
+                );
         } else {
-            return super.tokenURI(tokenId);
+            return string(abi.encodePacked(BASE_URI, tokenId.toString()));
         }
     }
 
     function startTokenId() public view returns (uint256) {
-        return _startTokenId();
+        return startAtOne ? 1 : 0;
+    }
+
+    function maxSeriesSupply(uint256 id) public view returns (uint256) {
+        return _maxSeriesSupply[id];
+    }
+
+    function totalSeriesSupply(uint256 id) public view returns (uint256) {
+        return totalSupply(id);
+    }
+
+    function maxSupplyAll() public view returns (uint256) {
+        // sum of all token ids
+        uint256 total = 0;
+
+        for (uint256 id = startTokenId(); id < nextTokenId(); id++) {
+            total += maxSeriesSupply(id);
+        }
+
+        return total;
+    }
+
+    function totalSupplyAll() public view returns (uint256) {
+        // sum of all token ids
+        uint256 total = 0;
+
+        for (uint256 id = startTokenId(); id < nextTokenId(); id++) {
+            total += totalSeriesSupply(id);
+        }
+
+        return total;
     }
 
     // ----- Admin functions -----
 
-    function setBaseURI(string calldata uri) public onlyOwner {
-        BASE_URI = uri;
+    function setBaseURI(string calldata _uri) public onlyOwner {
+        BASE_URI = _uri;
     }
 
     // Contract-level metadata for Opensea
-    function setContractURI(string calldata uri) public onlyOwner {
-        CONTRACT_URI = uri;
+    function setContractURI(string calldata _uri) public onlyOwner {
+        CONTRACT_URI = _uri;
     }
 
     function setPostfixURI(string calldata postfix) public onlyOwner {
@@ -189,22 +231,19 @@ contract MetaverseBaseNFT is
         price = _price;
     }
 
-    function reduceMaxSupply(uint256 _maxSupply)
-        public
-        whenSaleNotStarted
-        onlyOwner
-    {
+    function setRandomnessSource(bytes32 seed) public onlyOwner {
         require(
-            _totalMinted() + reserved <= _maxSupply,
-            "maxSupply is too low, already minted more (+ reserved)"
+            startTokenId() + maxSupply == nextTokenId(),
+            "First import all series"
         );
 
-        require(
-            _maxSupply < maxSupply,
-            "cannot set higher than the current maxSupply"
-        );
+        _setRandomnessSource(seed);
+        _setNumToShuffle(maxSupplyAll());
+    }
 
-        maxSupply = _maxSupply;
+    // Freeze forever, irreversible
+    function freeze() public onlyOwner {
+        isFrozen = true;
     }
 
     // Lock changing withdraw address
@@ -284,34 +323,147 @@ contract MetaverseBaseNFT is
     function _mintConsecutive(
         uint256 nTokens,
         address to,
-        bytes32 extraData
+        bytes32 _data
     ) internal {
         require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
+            totalSupplyAll() + nTokens + reserved <= maxSupplyAll(),
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        // if data is 0xffffff...ff, then it is a request for a N sequential tokens
+        // else it's a request for a specific token id
 
-        _safeMint(to, nTokens, "");
+        if (uint256(_data) == type(uint256).max) {
+            revert("Not implemented");
+        } else {
+            uint256 id = uint256(_data);
+            _mint(to, id, nTokens, "");
+        }
 
-        if (extraData.length > 0) {
+        if (_data.length > 0) {
             for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
-                data[tokenId] = extraData;
+                uint256 tokenId = nextTokenId() + i;
+                data[tokenId] = _data;
             }
         }
+
+    }
+
+    // ---- ERC1155Randomized -----
+
+    function nextTokenId() public view returns (uint256) {
+        return startTokenId() + _nextTokenIndex.current();
+    }
+
+    function getNextTokenId() internal returns (uint256 id) {
+        id = _nextTokenIndex.current();
+
+        _nextTokenIndex.increment();
+    }
+
+    function tokenOffset2TokenId(uint256 seed) public view returns (uint256) {
+        return _tokenOffset2TokenId(seed);
+    }
+
+    function createTokenSeries(uint256[] memory supply) public onlyOwner {
+        require(
+            nextTokenId() + supply.length - 1 - startTokenId() <= maxSupply,
+            "Too many tokens"
+        );
+
+        for (uint256 i = 0; i < supply.length; i++) {
+            uint256 tokenId = startTokenId() + getNextTokenId();
+            uint256 _supply = supply[i];
+
+            // require(_supply > 0, "Supply must be greater than 0");
+            require(_maxSeriesSupply[tokenId] == 0, "Token already imported");
+            require(_supply != 0, "Can't import empty series");
+
+            _maxSeriesSupply[tokenId] = _supply;
+        }
+    }
+
+    function _mintTokens(
+        address to,
+        uint256 tokenId,
+        uint256 amount
+    ) internal {
+        require(amount > 0, "Amount must be greater than 0");
+        require(
+            totalSeriesSupply(tokenId) + amount <= maxSeriesSupply(tokenId),
+            "Amount exceeds max supply"
+        );
+        require(
+            tokenId >= startTokenId() && tokenId < nextTokenId(),
+            "TokenId out of range"
+        );
+
+        // Mint the tokens
+        _mint(to, tokenId, amount, "");
+    }
+
+    function _tokenOffset2TokenId(uint256 seed)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 index = 0;
+        uint256 lastIndex;
+
+        for (
+            uint256 tokenId = startTokenId();
+            tokenId < nextTokenId();
+            tokenId++
+        ) {
+            lastIndex = index + maxSeriesSupply(tokenId) - 1;
+
+            if (seed <= lastIndex && seed >= index) {
+                return tokenId;
+            }
+
+            index = lastIndex + 1;
+        }
+
+        console.log("Last Index", index);
+        console.log("Seed", seed);
+        console.log("Max supply", maxSupplyAll());
+        console.log("Last token Id", nextTokenId());
+
+        revert("Not found");
+        // id = 0;
+    }
+
+    function _mintRandomTokens(uint256 amount, address to) internal {
+        require(
+            totalSupplyAll() + amount + reserved <= maxSupplyAll(),
+            "Not enough Tokens left."
+        );
+
+        require(isRandomnessSourceSet(), "Randomness source not set");
+
+        uint256 tokenOffset;
+        uint256 tokenId;
+
+        console.log("amount", amount);
+
+        PRNG.Source rndSource = _load();
+
+        for (uint256 i = 0; i < amount; i++) {
+            tokenOffset = _next(rndSource);
+
+            // token id is fetched from the random offset
+            tokenId = _tokenOffset2TokenId(tokenOffset);
+
+            _mintTokens(to, tokenId, 1);
+        }
+
+        _store(rndSource);
     }
 
     // ---- Mint control ----
 
     modifier whenSaleStarted() {
         require(saleStarted(), "Sale not started");
-        _;
-    }
-
-    modifier whenSaleNotStarted() {
-        require(!saleStarted(), "Sale should not be started");
         _;
     }
 
@@ -345,10 +497,11 @@ contract MetaverseBaseNFT is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
         }
+        mintedBy[msg.sender] += nTokens;
 
         require(
             nTokens <= maxPerMint,
@@ -357,7 +510,7 @@ contract MetaverseBaseNFT is
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, 0x0);
+        _mintRandomTokens(nTokens, msg.sender);
     }
 
     // Owner can claim free tokens
@@ -370,7 +523,7 @@ contract MetaverseBaseNFT is
 
         reserved = reserved - nTokens;
 
-        _mintConsecutive(nTokens, to, 0x0);
+        _mintRandomTokens(nTokens, to);
     }
 
     // ---- Mint via extension
@@ -378,9 +531,20 @@ contract MetaverseBaseNFT is
     function mintExternal(
         uint256 nTokens,
         address to,
-        bytes32 extraData
+        bytes32 _data
     ) external payable onlyExtension nonReentrant {
-        _mintConsecutive(nTokens, to, extraData);
+        // if data is 0x0, then it is a request for a N random tokens
+        // else it's a request for a specific token id
+        // but data is (offset + 0xff) for the token id
+        // where token id = offset + startTokenId()
+
+        if (_data == 0x0) {
+            _mintRandomTokens(nTokens, to);
+        } else {
+            uint256 offset = uint256(_data) - 0xff;
+            uint256 id = offset + startTokenId();
+            _mintTokens(to, id, nTokens);
+        }
     }
 
     // ---- Mint configuration
@@ -390,7 +554,6 @@ contract MetaverseBaseNFT is
         onlyOwner
         nonReentrant
     {
-        require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
         maxPerMint = _maxPerMint;
     }
 
@@ -413,6 +576,13 @@ contract MetaverseBaseNFT is
     }
 
     function startSale() public onlyOwner whenNotFrozen {
+        require(
+            startTokenId() + maxSupply == nextTokenId(),
+            "First create all token series"
+        );
+
+        require(isRandomnessSourceSet(), "You should set source before startSale");
+
         startTimestamp = block.timestamp;
     }
 
@@ -520,7 +690,7 @@ contract MetaverseBaseNFT is
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
-    // -------- ERC721 overrides --------
+    // -------- ERC1155 overrides --------
 
     function supportsInterface(bytes4 interfaceId)
         public

@@ -1,19 +1,20 @@
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
+const { ethers, hre, web3 } = require("hardhat");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC721");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const MintBatchExtension = artifacts.require("MintBatchExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
+contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
@@ -21,15 +22,29 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
   beforeEach(async () => {
     nft = await MetaverseBaseNFT.new(
       ether.times(0.03),
-      1000,
+      5,
       3, // reserved
       20, // per tx
       500, // 5%
       "ipfs://factory-test/",
-      "Test",
+      "Buildship NFT",
       "NFT",
       false
     );
+
+    await nft.createTokenSeries([100, 20, 100, 20, 100]);
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    await nft.setRandomnessSource(randomSeed);
+
+    // token id = 0: 100 items
+    // token id = 1: 20 items
+    // token id = 2: 100 items
+    // token id = 3: 20 items
+    // token id = 4: 100 items
+
   });
 
   // it should deploy successfully
@@ -311,36 +326,76 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
     );
   });
 
-  it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
+  // it should be able to set updateMaxPerWallet
+  it("should be able to set updateMaxPerWallet", async () => {
+
+    await nft.updateMaxPerWallet(7);
+
+    await nft.startSale();
+
+    await nft.mint(7, { from: user1, value: ether.times(1) });
+
+    const minted = await nft.mintedBy(user1);
+
+    expect(minted.toNumber()).to.equal(7);
+
+    expectRevert(nft.mint(7, { from: user1, value: ether.times(1) }), "Max per wallet reached");
+
+  });
+
+  it("should not be able to mint more than 100 tokens, when 100 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
       "1000000000000000",
-      200,
-      40,
+      20,
+      3, // reserved
       20,
       500, // royalty
       "https://metadata.buildship.xyz/",
-      "Avatar Collection NFT",
+      "Buildship NFT",
       "NFT",
-      false
+      true
     );
+
+    await nft.createTokenSeries(Array(20).fill(5));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    await nft.setRandomnessSource(randomSeed);
 
     await nft.startSale();
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
 
-    // try minting 20 * 20 tokens, which is more than the max allowed (200)
+    // try minting 100 + 10 tokens, which is more than the max allowed (100)
+
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+    await nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
+
+    await nft.mint(10, { from: owner, value: ether.times(0.0001).times(20) })
+
     try {
-      await Promise.all(
-        Array(20)
-          .fill()
-          .map(() =>
-            nft.mint(20, { from: owner, value: ether.times(0.0001).times(20) })
-          )
-      );
+      await nft.mint(10, { from: owner, value: ether.times(0.0001).times(20) });
     } catch (error) {
-      assert.include(error.message, "Not enough Tokens left");
+      assert.include(error.message, "Not enough Tokens left.");
     }
+
+    await nft.mint(7, { from: owner, value: ether.times(0.0001).times(20) });
+
+    await nft.claim(3, owner, { from: owner });
+
+    // check balanceOf(owner, tokenId) for each token id is 5
+
+    for (let i = 1; i <= 20; i++) {
+      const balance = await nft.balanceOf(owner, i);
+      // console
+      console.log('token', i, 'balance', balance.toString());
+      assert.equal(balance, 5);
+    }
+
   });
 
   // it should be able to add and remove extension
@@ -380,59 +435,272 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
     }
   });
 
-  // it should be able to set maxPerWallet
-  it("should be able to set maxPerWallet", async () => {
-    await nft.updateMaxPerWallet(10);
-    assert.equal(await nft.maxPerWallet(), 10);
+  // it should be able to create new contract, mint 10 tokens, and balanceOf(tokenId=0) should not be 10
+  it("should be able to create new contract, mint 10 tokens, and balanceOf(tokenId=0) should not be 10", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      5,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      false
+    );
+
+    await nft2.createTokenSeries(Array(5).fill(5));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    // print seed
+    console.log('using seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+    await nft2.startSale();
+
+    const tx = await nft2.mint(10, { from: owner, value: ether.times(0.3) });
+
+    // print event ShuffledWith
+    // console.log('tx logs', tx.logs);
+
+    tx.logs.map(log => {
+      if (log.event === "ShuffledWith") {
+        console.log('ShuffledWith(', log.args.current.toString(), log.args.with.toString(), ')');
+      }
+    })
+
+    expect(await nft2.balanceOf(owner, 0)).to.be.bignumber.not.equal("10");
+    expect(await nft2.balanceOf(owner, 0)).to.be.bignumber.not.equal("0");
+
+    await nft2.mint(10, { from: owner, value: ether.times(0.3) });
+
+    assert.notEqual(await nft2.balanceOf(owner, 0), 20);
+
+
+  });
+
+  // it should mint 100 tokens one by one and measure gas for each
+  it("should mint 100 tokens one by one and measure gas for each", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      false
+    );
+
+    await nft2.createTokenSeries(Array(10).fill(10));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+
+    await nft2.startSale();
+
+    const gasCost = [];
+
+    for (let i = 0; i < 5; i++) {
+      const tx = await nft2.mint(10, { from: owner, value: ether.times(0.1) });
+
+      gasCost.push(...Array(10).fill(new BigNumber(tx.receipt.gasUsed).div(10)));
+    }
+
+    for (let i = 0; i < 25; i++) {
+      const tx = await nft2.mint(2, { from: owner, value: ether.times(0.1) });
+
+      gasCost.push(...Array(2).fill(new BigNumber(tx.receipt.gasUsed).div(2)));
+    }
+
+    const gasCostAvg = gasCost.reduce((a, b) => b.plus(a), 0).div(gasCost.length);
+
+    // print gas costs in a table 10x10 for each of the transactions
+    // gasCost[i * 10 + j]
+    console.log(`
+      | ${gasCost[0]} | ${gasCost[1]} | ${gasCost[2]} | ${gasCost[3]} | ${gasCost[4]} | ${gasCost[5]} | ${gasCost[6]} | ${gasCost[7]} | ${gasCost[8]} | ${gasCost[9]} |
+      | ${gasCost[10]} | ${gasCost[11]} | ${gasCost[12]} | ${gasCost[13]} | ${gasCost[14]} | ${gasCost[15]} | ${gasCost[16]} | ${gasCost[17]} | ${gasCost[18]} | ${gasCost[19]} |
+      | ${gasCost[20]} | ${gasCost[21]} | ${gasCost[22]} | ${gasCost[23]} | ${gasCost[24]} | ${gasCost[25]} | ${gasCost[26]} | ${gasCost[27]} | ${gasCost[28]} | ${gasCost[29]} |
+      | ${gasCost[30]} | ${gasCost[31]} | ${gasCost[32]} | ${gasCost[33]} | ${gasCost[34]} | ${gasCost[35]} | ${gasCost[36]} | ${gasCost[37]} | ${gasCost[38]} | ${gasCost[39]} |
+      | ${gasCost[40]} | ${gasCost[41]} | ${gasCost[42]} | ${gasCost[43]} | ${gasCost[44]} | ${gasCost[45]} | ${gasCost[46]} | ${gasCost[47]} | ${gasCost[48]} | ${gasCost[49]} |
+
+      Average gas cost: ${gasCostAvg}
+
+      Minting by 2 tokens per tx:
+
+      | ${gasCost[50]} | ${gasCost[51]} | ${gasCost[52]} | ${gasCost[53]} | ${gasCost[54]} | ${gasCost[55]} | ${gasCost[56]} | ${gasCost[57]} | ${gasCost[58]} | ${gasCost[59]} |
+      | ${gasCost[60]} | ${gasCost[61]} | ${gasCost[62]} | ${gasCost[63]} | ${gasCost[64]} | ${gasCost[65]} | ${gasCost[66]} | ${gasCost[67]} | ${gasCost[68]} | ${gasCost[69]} |
+      | ${gasCost[70]} | ${gasCost[71]} | ${gasCost[72]} | ${gasCost[73]} | ${gasCost[74]}
+    `);
+  });
+
+  // it should return correct values in _tokenOffset2TokenId
+
+  it("should return correct values in tokenSeed2TokenId", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      false
+    );
+
+    await nft2.createTokenSeries(Array(10).fill(10));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    const tokenIds = [];
+
+    for (let i = 0; i < 100; i++) {
+      const tokenId = await nft2.tokenOffset2TokenId(i);
+
+      tokenIds[i] = tokenId;
+    }
+
+    const startTokenId = await nft2.startTokenId();
+
+    // print array in a table 10x10 with tabs between values
+    console.log(`===== token ids =====`);
+    console.log(tokenIds.join("\t"));
+
+    // expect startTokenId to be 0
+    expect(startTokenId).to.be.bignumber.eq("0");
+
+    // 0,1,2,3,4,5,6,7,8,9 => startTokenId = 0
+    // 10,11,12... => 1
+    expect( await nft2.tokenOffset2TokenId(0) ).to.be.bignumber.equal("0");
+
+    assert.equal(await nft2.tokenOffset2TokenId(10), 1);
+    assert.equal(await nft2.tokenOffset2TokenId(11), 1);
+
+    assert.equal(await nft2.tokenOffset2TokenId(99), 9);
+
+    // expect 100 revert not found
+    expectRevert(nft2.tokenOffset2TokenId(100), "Not found");
+
   })
 
-  // it should not be able to mint more than maxPerWallet if set
-  it("should not be able to mint more than maxPerWallet if set", async () => {
-    await nft.updateMaxPerWallet(10);
-    await nft.startSale();
-
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    try {
-      await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    } catch (error) {
-      assert.include(error.message, "You cannot mint more than maxPerWallet tokens for one address!");
-    }
-  });
-
-  // it should be able to mint more than maxPerWallet if user transfers
-  it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
-    await nft.updateMaxPerWallet(10);
-    await nft.startSale();
-
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    // temporary transfer token ids 0,1 to second address
-    await nft.transferFrom(user1, user2, 0, { from: user1 });
-    await nft.transferFrom(user1, user2, 1, { from: user1 });
-
-    // minting 4 + 4 + 4 tokens for user1+user2
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    // transfer back original tokens
-    await nft.transferFrom(user2, user1, 0, { from: user2 });
-    await nft.transferFrom(user2, user1, 1, { from: user2 });
-
-    assert.equal(await nft.balanceOf(user1), 12);
-    assert.equal(await nft.balanceOf(user2), 0);
-  });
-
-  // it should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT
-  it("should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT", async () => {
-    await nft.updateMaxPerMint(10);
-    assert.equal(await nft.maxPerMint(), 10);
-
-    expectRevert(
-      nft.updateMaxPerMint(100),
-      "Too many tokens per mint",
+  it("should return correct values in tokenSeed2TokenId", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      true
     );
+
+    await nft2.createTokenSeries(Array(10).fill(10));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    const tokenIds = [];
+
+    // for (let i = 0; i < 99; i++) {
+    //   const tokenId = await nft2.tokenOffset2TokenId(i);
+
+    //   tokenIds[i] = tokenId;
+    // }
+
+    const startTokenId = await nft2.startTokenId();
+
+    // print array in a table 10x10 with tabs between values
+    console.log(`===== token ids =====`);
+    console.log(tokenIds.map((x, i) => `${i}: ${x}`).join("\t\t"));
+
+    // expect startTokenId to be 1
+    expect(startTokenId).to.be.bignumber.equal( "1" );
+
+    // 0,1,2,3,4,5,6,7,8,9 => startTokenId = 0
+    // 10,11,12... => 1
+    expect(await nft2.tokenOffset2TokenId(0)).to.be.bignumber.equal(startTokenId);
+    expect(await nft2.tokenOffset2TokenId(9)).to.be.bignumber.equal(startTokenId);
+
+    assert.equal(await nft2.tokenOffset2TokenId(10), 2);
+    assert.equal(await nft2.tokenOffset2TokenId(11), 2);
+    assert.equal(await nft2.tokenOffset2TokenId(80), 9);
+    assert.equal(await nft2.tokenOffset2TokenId(89), 9);
+    assert.equal(await nft2.tokenOffset2TokenId(98), 10);
+    assert.equal(await nft2.tokenOffset2TokenId(99), 10);
+
+    // expect 100 revert not found
+    expectRevert(nft2.tokenOffset2TokenId(100), "Not found");
+
+  })
+
+  // it should be able to mint 200 in one tx and measure gas cost
+  it("should be able to mint 200 in one tx and measure gas cost", async () => {
+    const nft2 = await MetaverseBaseNFT.new(
+      "1000000000000000",
+      10,
+      0, // reserved
+      20,
+      500, // royalty
+      "https://metadata.buildship.xyz/",
+      "Buildship NFT",
+      "NFT",
+      false
+    );
+
+    await nft2.createTokenSeries(Array(10).fill(100));
+
+    // random bytes32
+    const randomSeed = web3.utils.randomHex(32);
+
+    console.log('random seed', randomSeed);
+
+    await nft2.setRandomnessSource(randomSeed);
+
+    // for seed from 0 to 100 print table of tokenIds
+
+    await nft2.startSale();
+
+    await nft2.updateMaxPerWallet(1_000);
+    await nft2.updateMaxPerMint(1_000);
+
+    const tx = await nft2.mint(400, { from: user1, value: ether.times(10) });
+
+    const gasUsed = tx.receipt.gasUsed;
+
+    console.log(`gasUsed: ${gasUsed}`);
+
+    const mintBatchExtension = await MintBatchExtension.new(nft2.address);
+
+    await nft2.addExtension(mintBatchExtension.address);
+
+    const tx2 = await mintBatchExtension.mint(400, { from: owner });
+
+    const gasUsed2 = tx2.receipt.gasUsed;
+
+    console.log(`gasUsed2: ${gasUsed2}`);
   });
 
 });
