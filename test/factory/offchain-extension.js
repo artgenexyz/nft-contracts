@@ -6,8 +6,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC1155");
-const MetaverseBaseNFTERC721A = artifacts.require("MetaverseBaseNFT");
+const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -35,7 +34,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
       false
     );
 
-    await nft.createTokenSeries(Array(1000).fill(3));
+    // await nft.createTokenSeries(Array(1000).fill(3));
     // token id = 0: 100 items
     // token id = 1: 20 items
     // token id = 2: 100 items
@@ -55,7 +54,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
     await nft.addExtension(extension.address, { from: owner });
 
     // mint token
-    await nft.setRandomnessSource("0x0");
+    // await nft.setRandomnessSource("0x0");
     await extension.startSale();
     await extension.mint(2, { from: owner, value: ether.times(0.005) });
     await extension.mint(10, { from: owner, value: ether.times(0.01) });
