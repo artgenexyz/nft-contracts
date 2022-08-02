@@ -88,6 +88,11 @@ contract MetaverseNFT is
     mapping(uint256 => bytes32) public data;
 
     /**
+     * @dev Storing how many tokens each address has minted in public sale
+     */
+    mapping(address => uint256) public mintedBy;
+
+    /**
      * @dev List of connected extensions
      */
     INFTExtension[] public extensions;
@@ -117,6 +122,7 @@ contract MetaverseNFT is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
+        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
@@ -337,9 +343,12 @@ contract MetaverseNFT is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
+
+            // only store minted amounts after limit is enabled to save gas
+            mintedBy[msg.sender] += nTokens;
         }
 
         require(
@@ -386,6 +395,7 @@ contract MetaverseNFT is
         maxPerMint = _maxPerMint;
     }
 
+    // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
         external
         onlyOwner
