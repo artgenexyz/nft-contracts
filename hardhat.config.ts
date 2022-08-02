@@ -30,6 +30,7 @@ const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const MNEMONIC = process.env.MNEMONIC;
 const ALCHEMY_RINKEBY_API = process.env.ALCHEMY_RINKEBY_API;
+const ALCHEMY_API = process.env.ALCHEMY_API;
 const FORK = process.env.FORK;
 
 stdout.isTTY && console.log('Using env variables', {
@@ -40,6 +41,7 @@ stdout.isTTY && console.log('Using env variables', {
     MOONBEAM_API_KEY: MOONBEAM_API_KEY ? '✅' : '❌',
     MOONRIVER_API_KEY: MOONRIVER_API_KEY ? '✅' : '❌',
     ALCHEMY_RINKEBY_API: ALCHEMY_RINKEBY_API ? '✅' : '❌',
+    ALCHEMY_API: ALCHEMY_API ? '✅' : '❌',
     FORK: FORK ? '✅' : '❌',
     MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
 });
@@ -59,7 +61,9 @@ const mnemonic = (() => {
 const config: HardhatUserConfig = {
     networks: {
         hardhat: {
-            forking: (FORK && ALCHEMY_RINKEBY_API) ? {
+            forking: (FORK === "mainnet" && ALCHEMY_API) ? {
+                url: ALCHEMY_API
+            } : (FORK && ALCHEMY_RINKEBY_API) ? {
                 url: ALCHEMY_RINKEBY_API,
             } : undefined,
         },

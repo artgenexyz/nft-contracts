@@ -46,12 +46,6 @@ contract("MetaverseNFTFactory", (accounts) => {
       "Owner is not zero"
     );
 
-    // TODO: fix for ganache v7 https://github.com/trufflesuite/ganache/discussions/1075#user-content-v7.0.0-alpha.0-the-big-ones
-
-    await expectRevert(
-      original.mint(1, { from: user1, value: ether.times(0.1) }),
-      "Sale not started"
-    );
   });
 
   // it should measure gas spent on deployment
@@ -171,6 +165,11 @@ contract("MetaverseNFTFactory", (accounts) => {
     assert.equal(
       await original.owner(),
       "0x0000000000000000000000000000000000000000"
+    );
+
+    assert.equal(
+      await original.saleStarted(),
+      false
     );
 
     await expectRevert(
