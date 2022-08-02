@@ -126,7 +126,6 @@ contract MetaverseNFT is
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
-        royaltyReceiver = address(this);
 
         isOpenSeaProxyActive = true;
 
@@ -457,7 +456,7 @@ contract MetaverseNFT is
         returns (address receiver, uint256 royaltyAmount)
     {
         // We use the same contract to split royalties: 5% of royalty goes to the developer
-        receiver = royaltyReceiver;
+        receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
 
@@ -469,6 +468,16 @@ contract MetaverseNFT is
         receiver = payoutReceiver != address(0x0)
             ? payable(payoutReceiver)
             : payable(owner());
+    }
+
+    function getRoyaltyReceiver()
+        public
+        view
+        returns (address payable receiver)
+    {
+        receiver = royaltyReceiver != address(0x0)
+            ? payable(royaltyReceiver)
+            : getPayoutReceiver();
     }
 
     // ---- Allow royalty deposits from Opensea -----
