@@ -71,7 +71,7 @@ contract MetaverseBaseNFT_ERC1155 is
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
 
-    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
+    uint256 public startTimestamp;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -82,13 +82,13 @@ contract MetaverseBaseNFT_ERC1155 is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
-    address public payoutReceiver = address(0x0);
-    address public uriExtension = address(0x0);
+    address public payoutReceiver;
+    address public uriExtension;
 
     bool public isFrozen;
     bool public isPayoutChangeLocked;
-    bool private isOpenSeaProxyActive = true;
-    bool private startAtOne = false;
+    bool private isOpenSeaProxyActive;
+    bool private startAtOne;
 
     mapping(uint256 => uint256) internal _maxSeriesSupply;
 
@@ -140,6 +140,8 @@ contract MetaverseBaseNFT_ERC1155 is
 
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
+
+        isOpenSeaProxyActive = true;
 
         startAtOne = _startAtOne;
 

@@ -63,7 +63,7 @@ contract MetaverseNFT is
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
-    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
+    uint256 public startTimestamp;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -74,13 +74,13 @@ contract MetaverseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
-    address public payoutReceiver = address(0x0);
-    address public uriExtension = address(0x0);
+    address public payoutReceiver;
+    address public uriExtension;
 
     bool public isFrozen;
     bool public isPayoutChangeLocked;
-    bool private isOpenSeaProxyActive = true;
-    bool private startAtOne = false;
+    bool private isOpenSeaProxyActive;
+    bool private startAtOne;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
@@ -127,6 +127,8 @@ contract MetaverseNFT is
 
         royaltyFee = _royaltyFee;
         royaltyReceiver = address(this);
+
+        isOpenSeaProxyActive = true;
 
         startAtOne = _startAtOne;
 
