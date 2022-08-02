@@ -88,6 +88,11 @@ contract MetaverseBaseNFT is
     mapping(uint256 => bytes32) public data;
 
     /**
+     * @dev Storing how many tokens each address has minted in public sale
+     */
+    mapping(address => uint256) public mintedBy;
+
+    /**
      * @dev List of connected extensions
      */
     INFTExtension[] public extensions;
@@ -117,6 +122,7 @@ contract MetaverseBaseNFT is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
+        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
@@ -124,6 +130,7 @@ contract MetaverseBaseNFT is
 
         isOpenSeaProxyActive = true;
 
+        require(startAtOne == false, "Doesn't support starting at one with ERC721A");
         startAtOne = _startAtOne;
 
         // Need help with uploading metadata? Try https://buildship.xyz
@@ -135,7 +142,8 @@ contract MetaverseBaseNFT is
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
-        return startAtOne ? 1 : 0;
+        // NB: It requires static value, override when inherit
+        return 0;
     }
 
     function contractURI() public view returns (string memory uri) {
@@ -327,9 +335,12 @@ contract MetaverseBaseNFT is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
+
+            // only store minted amounts after limit is enabled to save gas
+            mintedBy[msg.sender] += nTokens;
         }
 
         require(
@@ -376,6 +387,7 @@ contract MetaverseBaseNFT is
         maxPerMint = _maxPerMint;
     }
 
+    // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
         external
         onlyOwner

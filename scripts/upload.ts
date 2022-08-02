@@ -17,6 +17,7 @@ const argv = minimist(process.argv.slice(2));
 task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 .addPositionalParam("contract", "Contract to deploy")
 .addOptionalParam("args", "Deploy arguments")
+.addOptionalParam("ascii", "ASCII art file path (.txt)")
 .setAction(async (taskArgs, hre) => {
     try {
 
@@ -30,7 +31,7 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
         await hre.run("compile");
 
         // console.log('process.argv', process.argv)
-        const { contract, args } = taskArgs;
+        const { contract, args, ascii } = taskArgs;
 
         console.log("Using contract", contract);
 
@@ -112,6 +113,13 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 
             flattened = flattened.trim()
 
+            if (ascii) {
+                // read file from ascii and paste in front of flattened
+                const art = fs.readFileSync(ascii, "utf8");
+
+                flattened = `${art}\n\n${flattened}`;
+            }
+
             // write it back
             fs.writeFileSync("./tmp/Flattened.sol", flattened);
 
@@ -160,7 +168,7 @@ task("upload", "Uploads a compiled contract to IPFS and returns deploy link")
 
         const argsString = args ? `?args=%5B${encodeURIComponent(args)}%5D` : "?args=%5B%5D";
 
-        console.log(`https://gate-rinkeby.buildship.dev/deploy/${cid}${argsString}`);
+        console.log(`https://gate-rinkeby.buildship.xyz/deploy/${cid}${argsString}`);
 
     } catch (err) {
         console.error(err);
