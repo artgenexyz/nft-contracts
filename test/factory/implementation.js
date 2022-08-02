@@ -394,6 +394,8 @@ contract("MetaverseNFT – Implementation", accounts => {
 
         await nft.startSale();
 
+        await nft.updateMaxPerWallet(0);
+
         // set price to 0.0001 ether
         await nft.setPrice(ether.times(0.0001));
 
@@ -479,7 +481,7 @@ contract("MetaverseNFT – Implementation", accounts => {
     });
 
     // it should be able to mint more than maxPerWallet if user transfers
-    it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
+    it("cannot trick maxPerWallet if user transfers to second address temporary", async () => {
         await nft.updateMaxPerWallet(10);
         await nft.startSale();
 
@@ -491,13 +493,17 @@ contract("MetaverseNFT – Implementation", accounts => {
         await nft.transferFrom(user1, user2, 1, { from: user1 });
 
         // minting 4 + 4 + 4 tokens for user1+user2
-        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+        expectRevert(
+            nft.mint(4, { from: user1, value: ether.times(0.03).times(4) }),
+            "You cannot mint more than maxPerWallet tokens for one address!"
+        );
 
         // transfer back original tokens
         await nft.transferFrom(user2, user1, 0, { from: user2 });
         await nft.transferFrom(user2, user1, 1, { from: user2 });
 
-        assert.equal(await nft.balanceOf(user1), 12);
+        assert.notEqual(await nft.balanceOf(user1), 12);
+        assert.equal(await nft.balanceOf(user1), 8);
         assert.equal(await nft.balanceOf(user2), 0);
     });
 

@@ -96,6 +96,8 @@ contract("Wilderness to Blockchain - Implementation", (accounts) => {
   it("should be able to mint 100 tokens", async () => {
     await nft.startSale();
 
+    await nft.updateMaxPerWallet(100);
+
     const balanceBefore = await nft.balanceOf(user1, 1);
 
     assert.equal(balanceBefore, 0);

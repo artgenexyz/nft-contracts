@@ -48,6 +48,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
 
     await nft2.startSale();
 
+    await nft2.updateMaxPerWallet(0);
+
     const gasCost = [];
 
     // await nft2.claim(beneficiary, 10, { from: owner });

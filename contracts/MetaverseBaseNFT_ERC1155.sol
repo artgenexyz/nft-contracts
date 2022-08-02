@@ -135,6 +135,7 @@ contract MetaverseBaseNFT_ERC1155 is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
+        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
@@ -500,8 +501,10 @@ contract MetaverseBaseNFT_ERC1155 is
                 mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
+
+            // only store minted amounts after limit is enabled to save gas
+            mintedBy[msg.sender] += nTokens;
         }
-        mintedBy[msg.sender] += nTokens;
 
         require(
             nTokens <= maxPerMint,
@@ -557,6 +560,7 @@ contract MetaverseBaseNFT_ERC1155 is
         maxPerMint = _maxPerMint;
     }
 
+    // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
         external
         onlyOwner

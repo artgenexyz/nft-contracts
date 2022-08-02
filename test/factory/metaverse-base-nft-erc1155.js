@@ -364,6 +364,7 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     await nft.setRandomnessSource(randomSeed);
 
     await nft.startSale();
+    await nft.updateMaxPerWallet(0);
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
@@ -505,6 +506,8 @@ contract("MetaverseBaseNFT_ERC1155 - Implementation", (accounts) => {
     await nft2.setRandomnessSource(randomSeed);
 
     await nft2.startSale();
+
+    await nft2.updateMaxPerWallet(0);
 
     const gasCost = [];
 
