@@ -63,7 +63,7 @@ contract MetaverseNFT is
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
-    uint256 public startTimestamp;
+    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -116,7 +116,7 @@ contract MetaverseNFT is
         string memory _name,
         string memory _symbol,
         bool _startAtOne
-    ) public initializer {
+    ) public initializerERC721A initializer {
         startTimestamp = SALE_STARTS_AT_INFINITY;
 
         price = _price;
@@ -296,13 +296,13 @@ contract MetaverseNFT is
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        uint256 nextTokenId = _nextTokenId();
 
         _safeMint(to, nTokens, "");
 
         if (extraData.length > 0) {
             for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
+                uint256 tokenId = nextTokenId + i;
                 data[tokenId] = extraData;
             }
         }
