@@ -445,7 +445,6 @@ contract MetaverseBaseNFT is
         view
         returns (address receiver, uint256 royaltyAmount)
     {
-        // We use the same contract to split royalties: 5% of royalty goes to the developer
         receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
