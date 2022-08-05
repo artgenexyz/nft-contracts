@@ -330,7 +330,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
         nReserved: 40,
 
         startPrice: "1000000000000000",
-        maxTokensPerMint: 10,
+        maxTokensPerMint: 30,
         royaltyFee: 500,
         miscParams: 0,
 
@@ -344,6 +344,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
+    // await nft.updateMaxPerMint(40);
 
     // try minting 20 * 20 tokens, which is more than the max allowed (200)
     try {
