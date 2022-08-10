@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./MetaverseNFT.sol";
 
-import "./MetaverseNFTProxy.sol";
-
 /**
  * MetaverseNFT is a cloneable contract for your NFT collection.
  * It's adapted from OpenZeppeling ERC721 implementation upgradeable versions.
