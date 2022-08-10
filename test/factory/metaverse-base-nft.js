@@ -371,17 +371,38 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     assert.equal(await nft.isExtensionAdded(extension2.address), true);
   });
 
-  // it should be able to freeze minting and then startSale doesnt work
-  it("should be able to freeze minting and then startSale doesnt work", async () => {
+  // it should be able to reduce supply minting
+  it("should be able to reduce supply and then mint doesnt work", async () => {
+    await nft.reduceMaxSupply(10);
     await nft.startSale();
-    await nft.freeze();
+
+    await nft.mint(5, { value: ether });
+    await nft.claim(3, user1);
 
     try {
-      await nft.startSale();
+      await nft.mint(5, { value: ether });
+
     } catch (error) {
-      assert.include(error.message, "Minting is frozen");
+      assert.include(error.message, "Not enough Tokens left.");
     }
   });
+
+  // it should not be able to reduce max supply more than possible
+  it("should not be able to reduce max supply more than possible", async () => {
+    await nft.claim(3, user2);
+
+    await nft.startSale();
+    await nft.mint(10, { from: user2, value: ether });
+
+    await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+
+    await nft.stopSale();
+
+    await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
+
+    await expectRevert(nft.reduceMaxSupply(1337), "Cannot set higher than the current maxSupply");
+
+  })
 
   it("should be able to batch mint", async () => {
     expect(await nft.claim(3, user1, { from: owner })).to.be.ok;

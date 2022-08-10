@@ -77,7 +77,6 @@ contract MetaverseNFT is
     address public payoutReceiver;
     address public uriExtension;
 
-    bool public isFrozen;
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive;
     bool private startAtOne;
@@ -206,9 +205,22 @@ contract MetaverseNFT is
         price = _price;
     }
 
-    // Freeze forever, irreversible
-    function freeze() public onlyOwner {
-        isFrozen = true;
+    function reduceMaxSupply(uint256 _maxSupply)
+        public
+        whenSaleNotStarted
+        onlyOwner
+    {
+        require(
+            _totalMinted() + reserved <= _maxSupply,
+            "Max supply is too low, already minted more (+ reserved)"
+        );
+
+        require(
+            _maxSupply < maxSupply,
+            "Cannot set higher than the current maxSupply"
+        );
+
+        maxSupply = _maxSupply;
     }
 
     // Lock changing withdraw address
@@ -314,8 +326,8 @@ contract MetaverseNFT is
         _;
     }
 
-    modifier whenNotFrozen() {
-        require(!isFrozen, "Minting is frozen");
+    modifier whenSaleNotStarted() {
+        require(!saleStarted(), "Sale should not be started");
         _;
     }
 
@@ -407,15 +419,11 @@ contract MetaverseNFT is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp)
-        public
-        onlyOwner
-        whenNotFrozen
-    {
+    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner {
         startTimestamp = _startTimestamp;
     }
 
-    function startSale() public onlyOwner whenNotFrozen {
+    function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
     }
 
