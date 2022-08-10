@@ -52,7 +52,7 @@ interface IMetaverseNFT is IAvatarNFT {
     function setRoyaltyFee(uint256 fee) external;
 }
 
-interface IMetaverseNFTExternal {
+interface IMetaverseNFTSetup {
 
     function initialize(
         uint256 _price,

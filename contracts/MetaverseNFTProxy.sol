@@ -1,11 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
-
-/**
- * @title LICENSE REQUIREMENT
- * @dev This contract is licensed under the MIT license.
- * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
- */
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -37,7 +31,7 @@ import "./interfaces/IMetaverseNFT.sol";
 //            '''                  cc
 //                                ,'
 
-contract MetaverseNFTProxy is Proxy, Initializable {
+contract MetaverseNFTProxy is Proxy {
     address internal constant proxyImplementation =
         0xA43220565f2F47565C58bcDf9994b70fdCd279c5;
 
@@ -57,26 +51,18 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         // bool shouldUseJSONExtension
     }
 
-    // bytes32 public immutable id;
-
     event MetaverseNFTCreated(
-        bytes32 indexed salt,
         string _name,
         string _symbol,
         uint256 maxSupply
     );
 
-    constructor(MetaverseNFTArgs memory args) // bool shouldUseJSONExtension
-    {
-        // id = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
-        // bytes32 salt = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
-
-        // emit MetaverseNFTCreated(salt, _name, _symbol, _maxSupply);
+    constructor(MetaverseNFTArgs memory args) {
 
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
-                IMetaverseNFTExternal.initialize.selector,
+                IMetaverseNFTSetup.initialize.selector,
                 args.startPrice,
                 args.maxSupply,
                 args.nReserved,
@@ -88,6 +74,9 @@ contract MetaverseNFTProxy is Proxy, Initializable {
                 args.miscParams & (1 << 1) != 0
             )
         );
+
+        emit MetaverseNFTCreated(args.name, args.symbol, args.maxSupply);
+
     }
 
     function initialize(
@@ -103,7 +92,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
             Address.functionDelegateCall(
                 proxyImplementation,
                 abi.encodeWithSelector(
-                    IMetaverseNFTExternal.setPostfixURI.selector,
+                    IMetaverseNFTSetup.setPostfixURI.selector,
                     ".json"
                 )
             );
@@ -112,7 +101,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         if (miscParams & (1 << 2) != 0) {
             Address.functionDelegateCall(
                 proxyImplementation,
-                abi.encodeWithSelector(IMetaverseNFTExternal.startSale.selector)
+                abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector)
             );
         }
 
@@ -120,8 +109,8 @@ contract MetaverseNFTProxy is Proxy, Initializable {
             Address.functionDelegateCall(
                 proxyImplementation,
                 abi.encodeWithSelector(
-                    IMetaverseNFTExternal.setPayoutReceiver.selector,
-                    (payoutReceiver)
+                    IMetaverseNFTSetup.setPayoutReceiver.selector,
+                    payoutReceiver
                 )
             );
         }
@@ -129,7 +118,9 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         if (miscParams & (1 << 3) != 0) {
             Address.functionDelegateCall(
                 proxyImplementation,
-                abi.encodeWithSelector(IMetaverseNFTExternal.lockPayoutChange.selector)
+                abi.encodeWithSelector(
+                    IMetaverseNFTSetup.lockPayoutChange.selector
+                )
             );
         }
     }
