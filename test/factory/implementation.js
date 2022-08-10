@@ -463,6 +463,23 @@ contract("MetaverseNFT – Implementation", accounts => {
         }
     });
 
+    // it should not be able to reduce max supply more than possible
+    it("should not be able to reduce max supply more than possible", async () => {
+        await nft.claim(3, user2);
+
+        await nft.startSale();
+        await nft.mint(10, { from: user2, value: ether });
+
+        await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+
+        await nft.stopSale();
+
+        await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
+
+        await expectRevert(nft.reduceMaxSupply(1337), "Cannot set higher than the current maxSupply");
+
+    })
+
     // it should be able to set maxPerWallet
     it("should be able to set maxPerWallet", async () => {
         await nft.updateMaxPerWallet(10);

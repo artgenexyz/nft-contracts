@@ -205,12 +205,12 @@ contract MetaverseBaseNFT is
     {
         require(
             _totalMinted() + reserved <= _maxSupply,
-            "maxSupply is too low, already minted more (+ reserved)"
+            "Max supply is too low, already minted more (+ reserved)"
         );
 
         require(
             _maxSupply < maxSupply,
-            "cannot set higher than the current maxSupply"
+            "Cannot set higher than the current maxSupply"
         );
 
         maxSupply = _maxSupply;
