@@ -289,7 +289,7 @@ contract("MetaverseNFT – Implementation", accounts => {
         // info.royaltyReceiver is nft address
         // info.royaltyFee is 5%
 
-        assert.equal(info.receiver, nft.address);
+        assert.equal(info.receiver, await nft.owner());
         assert.equal(info.royaltyAmount, 500);
 
         // it can change 
