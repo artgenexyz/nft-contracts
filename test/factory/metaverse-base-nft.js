@@ -371,7 +371,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     assert.equal(await nft.isExtensionAdded(extension2.address), true);
   });
 
-  // it should be able to freeze minting
+  // it should be able to reduce supply minting
   it("should be able to reduce supply and then mint doesnt work", async () => {
     await nft.reduceMaxSupply(10);
     await nft.startSale();

@@ -447,15 +447,19 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     });
 
-    // it should be able to freeze minting and then startSale doesnt work
-    it("should be able to freeze minting and then startSale doesnt work", async () => {
+    // it should be able to reduce supply minting
+    it("should be able to reduce supply and then mint doesnt work", async () => {
+        await nft.reduceMaxSupply(10);
         await nft.startSale();
-        await nft.freeze();
+
+        await nft.mint(5, { value: ether });
+        await nft.claim(3, user1);
 
         try {
-            await nft.startSale();
+            await nft.mint(5, { value: ether });
+
         } catch (error) {
-            assert.include(error.message, "Minting is frozen");
+            assert.include(error.message, "Not enough Tokens left.");
         }
     });
 

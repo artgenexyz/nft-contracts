@@ -77,7 +77,6 @@ contract MetaverseBaseNFT is
     address public payoutReceiver;
     address public uriExtension;
 
-    bool public isFrozen;
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive;
     bool private startAtOne;
@@ -129,7 +128,10 @@ contract MetaverseBaseNFT is
 
         isOpenSeaProxyActive = true;
 
-        require(startAtOne == false, "Doesn't support starting at one with ERC721A");
+        require(
+            startAtOne == false,
+            "Doesn't support starting at one with ERC721A"
+        );
         startAtOne = _startAtOne;
 
         // Need help with uploading metadata? Try https://buildship.xyz
@@ -322,11 +324,6 @@ contract MetaverseBaseNFT is
         _;
     }
 
-    modifier whenNotFrozen() {
-        require(!isFrozen, "Minting is frozen");
-        _;
-    }
-
     modifier whenNotPayoutChangeLocked() {
         require(!isPayoutChangeLocked, "Payout change is locked");
         _;
@@ -415,15 +412,11 @@ contract MetaverseBaseNFT is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp)
-        public
-        onlyOwner
-        whenNotFrozen
-    {
+    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner {
         startTimestamp = _startTimestamp;
     }
 
-    function startSale() public onlyOwner whenNotFrozen {
+    function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
     }
 
