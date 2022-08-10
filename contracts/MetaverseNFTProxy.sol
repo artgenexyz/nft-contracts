@@ -10,7 +10,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./MetaverseNFT.sol";
+import "./interfaces/IMetaverseNFT.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -41,7 +41,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
     address internal constant proxyImplementation =
         0xA43220565f2F47565C58bcDf9994b70fdCd279c5;
 
-    struct Args {
+    struct MetaverseNFTArgs {
         string name;
         string symbol;
         uint256 maxSupply;
@@ -66,7 +66,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         uint256 maxSupply
     );
 
-    constructor(Args memory args) // bool shouldUseJSONExtension
+    constructor(MetaverseNFTArgs memory args) // bool shouldUseJSONExtension
     {
         // id = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
         // bytes32 salt = keccak256(abi.encodePacked(msg.sender, _name, _symbol, block.timestamp));
@@ -76,7 +76,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
-                MetaverseNFT.initialize.selector,
+                IMetaverseNFTExternal.initialize.selector,
                 args.startPrice,
                 args.maxSupply,
                 args.nReserved,
@@ -103,7 +103,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
             Address.functionDelegateCall(
                 proxyImplementation,
                 abi.encodeWithSelector(
-                    MetaverseNFT.setPostfixURI.selector,
+                    IMetaverseNFTExternal.setPostfixURI.selector,
                     ".json"
                 )
             );
@@ -112,7 +112,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         if (miscParams & (1 << 2) != 0) {
             Address.functionDelegateCall(
                 proxyImplementation,
-                abi.encodeWithSelector(MetaverseNFT.startSale.selector)
+                abi.encodeWithSelector(IMetaverseNFTExternal.startSale.selector)
             );
         }
 
@@ -120,7 +120,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
             Address.functionDelegateCall(
                 proxyImplementation,
                 abi.encodeWithSelector(
-                    MetaverseNFT.setPayoutReceiver.selector,
+                    IMetaverseNFTExternal.setPayoutReceiver.selector,
                     (payoutReceiver)
                 )
             );
@@ -129,7 +129,7 @@ contract MetaverseNFTProxy is Proxy, Initializable {
         if (miscParams & (1 << 3) != 0) {
             Address.functionDelegateCall(
                 proxyImplementation,
-                abi.encodeWithSelector(MetaverseNFT.lockPayoutChange.selector)
+                abi.encodeWithSelector(IMetaverseNFTExternal.lockPayoutChange.selector)
             );
         }
     }

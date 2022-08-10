@@ -51,3 +51,30 @@ interface IMetaverseNFT is IAvatarNFT {
 
     function setRoyaltyFee(uint256 fee) external;
 }
+
+interface IMetaverseNFTExternal {
+
+    function initialize(
+        uint256 _price,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        uint256 _maxPerMint,
+        uint256 _royaltyFee,
+        string memory _uri,
+        string memory _name,
+        string memory _symbol,
+        bool _startAtOne
+    ) external;
+
+    function startSale() external;
+    function stopSale() external;
+
+    function saleStarted() external view returns (bool);
+
+    function setPostfixURI(string memory postfix) external;
+    function setRoyaltyReceiver(address _receiver) external;
+    function setPayoutReceiver(address _receiver) external;
+
+    function lockPayoutChange() external;
+
+}
