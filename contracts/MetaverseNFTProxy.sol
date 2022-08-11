@@ -33,7 +33,7 @@ import "./interfaces/IMetaverseNFT.sol";
 
 contract MetaverseNFTProxy is Proxy {
     address internal constant proxyImplementation =
-        0xA43220565f2F47565C58bcDf9994b70fdCd279c5;
+        0x72c0199dD84731fc85A71366724415F55603b9Bc;
 
     struct MetaverseNFTArgs {
         string name;
@@ -71,7 +71,6 @@ contract MetaverseNFTProxy is Proxy {
         );
 
         emit MetaverseNFTCreated(args.name, args.symbol, args.maxSupply);
-
     }
 
     function initialize(
