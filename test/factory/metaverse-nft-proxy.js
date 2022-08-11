@@ -244,7 +244,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     // info.royaltyReceiver is nft address
     // info.royaltyFee is 5%
 
-    assert.equal(info.receiver, nft.address);
+    assert.equal(info.receiver, await nft.owner());
     assert.equal(info.royaltyAmount, 500);
 
     // it can change
@@ -344,7 +344,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
-    // await nft.updateMaxPerMint(40);
+    await nft.updateMaxPerWallet(0);
 
     // try minting 20 * 20 tokens, which is more than the max allowed (200)
     try {
@@ -412,6 +412,8 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
 
     await nft.stopSale();
+
+    await nft.reduceMaxSupply(1000);
 
     await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
 
