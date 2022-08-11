@@ -51,14 +51,9 @@ contract MetaverseNFTProxy is Proxy {
         // bool shouldUseJSONExtension
     }
 
-    event MetaverseNFTCreated(
-        string _name,
-        string _symbol,
-        uint256 maxSupply
-    );
+    event MetaverseNFTCreated(string _name, string _symbol, uint256 maxSupply);
 
     constructor(MetaverseNFTArgs memory args) {
-
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
