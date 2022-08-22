@@ -115,7 +115,7 @@ contract MetaverseNFTFactory is Ownable {
         );
         address clone = Clones.clone(proxyImplementation);
 
-        MetaverseNFT(payable(clone)).initialize(
+        MetaverseNFT(payable(clone)).initializeFull(
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -170,7 +170,7 @@ contract MetaverseNFTFactory is Ownable {
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
         // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
-        MetaverseNFT(payable(clone)).initialize(
+        MetaverseNFT(payable(clone)).initializeFull(
             _startPrice,
             _maxSupply,
             _nReserved,
@@ -241,7 +241,7 @@ contract MetaverseNFTFactory is Ownable {
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
         // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
 
-        MetaverseNFT(payable(clone)).initialize(
+        MetaverseNFT(payable(clone)).initializeFull(
             _startPrice,
             _maxSupply,
             _nReserved,

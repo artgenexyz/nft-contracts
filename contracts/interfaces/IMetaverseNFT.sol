@@ -53,8 +53,14 @@ interface IMetaverseNFT is IAvatarNFT {
 }
 
 interface IMetaverseNFTSetup {
-
     function initialize(
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        string memory _name,
+        string memory _symbol
+    ) external;
+
+    function initializeFull(
         uint256 _price,
         uint256 _maxSupply,
         uint256 _nReserved,
@@ -66,6 +72,24 @@ interface IMetaverseNFTSetup {
         bool _startAtOne
     ) external;
 
+    function initializeExtra(
+        string calldata _uri,
+        // init sale : (should start = true/false)
+        // uint256 _startPrice,
+        // uint256 _maxTokensPerMint,
+        // uint256 _royaltyFee,
+        address _payoutReceiver,
+        uint16 miscParams,
+        bool shouldUseJSONExtension
+    ) external;
+
+    function initializePublicSale(
+        uint256 startPrice,
+        uint256 maxTokensPerMint,
+        uint256 _royaltyFee, // basis points
+        uint16 miscParams // 1 = start at one, 0 = start at 0
+    ) external;
+
     function startSale() external;
     function stopSale() external;
 
@@ -74,6 +98,12 @@ interface IMetaverseNFTSetup {
     function setPostfixURI(string memory postfix) external;
     function setRoyaltyReceiver(address _receiver) external;
     function setPayoutReceiver(address _receiver) external;
+
+    function setPrice(uint256 _price) external;
+    function setRoyaltyFee(uint256 _fee) external;
+
+    function updateMaxPerMint(uint256 _limit) external;
+    function updateMaxPerWallet(uint256 _limit) external;
 
     function lockPayoutChange() external;
 

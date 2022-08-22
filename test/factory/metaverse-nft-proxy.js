@@ -2,6 +2,7 @@ const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+// const { web3 } = require("hardhat");
 
 const { getGasCost } = require("../utils");
 
@@ -12,33 +13,57 @@ const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
-const ether = new BigNumber(1e18);
+const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
+const ether = new BigNumber(1e18);
 
 contract("MetaverseNFTProxy - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
+  before(async () => {
+    assert.equal(await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618"), "0x", "Contract should not be deployed");
+
+    // check if there is contract code at 0xb1B131B17E2E2F50dC239917f33575779707D618
+    const code = await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618");
+
+    if (code === "0x") {
+      await getImplementation();
+    }
+
+    assert.notEqual(await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618"), "0x", "No contract code at 0xb1B131B17E2E2F50dC239917f33575779707D618");
+
+  });
+
   beforeEach(async () => {
+
     nft = await MetaverseNFTProxy.new(
       {
-        // salt: `0x${Buffer.from(salt).toString("hex")}`,
         name: "Test",
         symbol: "NFT",
         maxSupply: 10000,
         nReserved: 3,
 
-        startPrice: ether.times(0.03).toString(),
-        maxTokensPerMint: 20,
-        royaltyFee: 500,
-
-        miscParams: 0,
-        uri: "ipfs://factory-test/",
       }
     );
 
     nft = await MetaverseNFT.at(nft.address);
+
+    await nft.initializePublicSale(
+      ether.times(0.03).toString(),
+      20, // max per mint
+      500, // basis points
+      0 // 1 = start at one, 0 = start at 0
+
+    );
+
+    await nft.initializeExtra(
+      "ipfs://factory-test/",
+      "0x0000000000000000000000000000000000000000", // payout receiver
+      0, // misc params
+      false // should use json extension
+    )
 
   });
 
@@ -46,6 +71,28 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
   it("should deploy successfully", async () => {
     assert.ok(nft.address);
   });
+
+  // it should spend <500k gas to deploy proxy
+  it("should spend less than 500k gas to deploy proxy", async () => {
+
+    const nft = await MetaverseNFTProxy.new(
+      {
+        name: "Test",
+        symbol: "NFT",
+        maxSupply: 10000,
+        nReserved: 3,
+      }
+    );
+
+    const hash = nft.transactionHash;
+
+    const receipt = await web3.eth.getTransactionReceipt(hash);
+
+    const gasUsed = receipt.gasUsed;
+
+    assert.isBelow(gasUsed, 500000);
+
+  })
 
   // price should equal 0.03 ether
   it("should have a price of 0.03 ether", async () => {
@@ -328,17 +375,17 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
         symbol: "NFT",
         maxSupply: 200,
         nReserved: 40,
-
-        startPrice: "1000000000000000",
-        maxTokensPerMint: 30,
-        royaltyFee: 500,
-        miscParams: 0,
-
-        uri: "https://metadata.buildship.dev/",
       }
     );
 
     const nft = await MetaverseNFT.at(_nft.address);
+
+    await nft.initializePublicSale(
+      "1000000000000000",
+      30,
+      500,
+      0,
+    );
 
     await nft.startSale();
 
@@ -407,6 +454,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     await nft.claim(3, user2);
 
     await nft.startSale();
+    await nft.updateMaxPerMint(10);
     await nft.mint(10, { from: user2, value: ether });
 
     await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");

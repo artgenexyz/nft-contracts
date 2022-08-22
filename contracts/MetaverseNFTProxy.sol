@@ -12,13 +12,13 @@ import "./interfaces/IMetaverseNFT.sol";
 //                                    ,:loxO0KXXc
 //                               ,cdOKKKOxol:lKWl
 //                            ;oOXKko:,      ;KNc
-//                        'ox0X0d:           cNK,
-//                 ','  ;xXX0x:              dWk
+//                         ox0X0d:           cNK,
+//                      ;xXX0x:              dWk
 //            ,cdO0KKKKKXKo,                ,0Nl
 //         ;oOXKko:,;kWMNl                  dWO'
 //      ,o0XKd:'    oNMMK:                 cXX:
 //   'ckNNk:       ;KMN0c                 cXXl
-//  'OWMMWKOdl;'    cl;                  oXXc
+//  'OWMMWKOdl;     cl;                  oXXc
 //   ;cclldxOKXKkl,                    ;kNO;
 //            ;cdk0kl'             ;clxXXo
 //                ':oxo'         c0WMMMMK;
@@ -33,9 +33,25 @@ import "./interfaces/IMetaverseNFT.sol";
 
 contract MetaverseNFTProxy is Proxy {
     address internal constant proxyImplementation =
-        0x72c0199dD84731fc85A71366724415F55603b9Bc;
+        0xb1B131B17E2E2F50dC239917f33575779707D618;
 
     struct MetaverseNFTArgs {
+        string name;
+        string symbol;
+        uint256 maxSupply;
+        uint256 nReserved;
+        // public sale setup:
+        // uint256 startPrice;
+        // uint256 maxTokensPerMint;
+        // // todo: init sale : (should start = true/false)
+        // uint256 royaltyFee;
+        // // address payoutReceiver,
+        // uint16 miscParams; // should claim X
+        // string uri;
+        // bool shouldUseJSONExtension
+    }
+
+    struct MetaverseNFTArgsFull {
         string name;
         string symbol;
         uint256 maxSupply;
@@ -58,65 +74,26 @@ contract MetaverseNFTProxy is Proxy {
             proxyImplementation,
             abi.encodeWithSelector(
                 IMetaverseNFTSetup.initialize.selector,
-                args.startPrice,
+                // 0,
                 args.maxSupply,
                 args.nReserved,
-                args.maxTokensPerMint,
-                args.royaltyFee,
-                args.uri,
+                // 0,
+                // 0,
+                // "",
                 args.name,
-                args.symbol,
-                args.miscParams & (1 << 1) != 0
+                args.symbol
+                // 0
             )
         );
 
         emit MetaverseNFTCreated(args.name, args.symbol, args.maxSupply);
     }
 
-    function initialize(
-        // init sale : (should start = true/false)
-        // uint256 _startPrice,
-        // uint256 _maxTokensPerMint,
-        // uint256 _royaltyFee,
-        address payoutReceiver,
-        uint16 miscParams,
-        bool shouldUseJSONExtension
-    ) public {
-        if (shouldUseJSONExtension) {
-            Address.functionDelegateCall(
-                proxyImplementation,
-                abi.encodeWithSelector(
-                    IMetaverseNFTSetup.setPostfixURI.selector,
-                    ".json"
-                )
-            );
-        }
-
-        if (miscParams & (1 << 2) != 0) {
-            Address.functionDelegateCall(
-                proxyImplementation,
-                abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector)
-            );
-        }
-
-        if (payoutReceiver != address(0)) {
-            Address.functionDelegateCall(
-                proxyImplementation,
-                abi.encodeWithSelector(
-                    IMetaverseNFTSetup.setPayoutReceiver.selector,
-                    payoutReceiver
-                )
-            );
-        }
-
-        if (miscParams & (1 << 3) != 0) {
-            Address.functionDelegateCall(
-                proxyImplementation,
-                abi.encodeWithSelector(
-                    IMetaverseNFTSetup.lockPayoutChange.selector
-                )
-            );
-        }
+    function _super(bytes memory data) internal {
+        Address.functionDelegateCall(
+            proxyImplementation,
+            data
+        );
     }
 
     function implementation() public view returns (address) {
