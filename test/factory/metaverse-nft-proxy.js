@@ -2,7 +2,6 @@ const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-// const { web3 } = require("hardhat");
 
 const { getGasCost } = require("../utils");
 
@@ -12,21 +11,11 @@ const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
+const DemoCollection = artifacts.require("DemoCollection");
+
 const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
-
-
-// struct MetaverseNFTConfig {
-//   uint256 publicPrice;
-//   uint256 maxTokensPerMint;
-//   uint256 maxTokensPerWallet;
-//   uint256 royaltyFee;
-//   address payoutReceiver;
-//   bool shouldLockPayoutReceiver;
-//   bool shouldStartSale;
-//   bool shouldUseJsonExtension;
-// }
 
 contract("MetaverseNFTProxy - Implementation", (accounts) => {
   let nft;
@@ -537,4 +526,46 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     expect(await nft.transferFrom(user1, user2, 1, { from: user1 })).to.be.ok;
     expect(await nft.ownerOf(1)).to.be.equal(user2);
   });
+
+  it("should spend less than 600k gas with null config", async () => {
+    const demo = await DemoCollection.new();
+
+    const tx1 = demo.transactionHash;
+
+    const receipt1 = await web3.eth.getTransactionReceipt(tx1);
+
+    assert.ok(receipt1);
+    assert.isBelow(receipt1.gasUsed, 650_000);
+
+    const nft = await MetaverseNFTProxy.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MetaverseNFTConfig
+      {
+        publicPrice: 0,
+        maxTokensPerMint: 0,
+        maxTokensPerWallet: 0,
+        royaltyFee: 0,
+        payoutReceiver: "0x0000000000000000000000000000000000000000",
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
+    );
+
+    const tx2 = nft.transactionHash;
+    const receipt2 = await web3.eth.getTransactionReceipt(tx2);
+    assert.ok(receipt2);
+    assert.isBelow(receipt2.gasUsed, 650_000);
+
+    console.log('DemoCollection', receipt1.gasUsed);
+    console.log('MetaverseNFTProxy', receipt2.gasUsed);
+
+    assert.isAbove(receipt1.gasUsed, receipt2.gasUsed);
+  });
+
 });

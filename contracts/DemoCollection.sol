@@ -50,16 +50,27 @@ contract DemoCollection is ERC721XYZ {
         )
     {}
 
-    // function defaultConfig() public view returns (MetaverseNFTConfig memory) {
-    //     return MetaverseNFTConfig(
-    //         0, // public price
-    //         50, // maxTokensPerMint,
-    //         0, // maxTokensPerWallet,
-    //         500, // basis points royalty fee
-    //         msg.sender, // payout receiver
-    //         false, // should lock payout receiver
-    //         false, // should start sale
-    //         false // should use json extension
-    //     );
-    // }
+    // empty config
+    // MetaverseNFTConfig(
+    //     0, // public price
+    //     0, // maxTokensPerMint,
+    //     0, // maxTokensPerWallet,
+    //     0, // basis points royalty fee
+    //     address(0), // payout receiver
+    //     false, // should lock payout receiver
+    //     false, // should start sale
+    //     false // should use json extension
+    // )
+
+    // default config
+    // MetaverseNFTConfig(
+    //     0, // public price
+    //     50, // maxTokensPerMint,
+    //     0, // maxTokensPerWallet,
+    //     500, // basis points royalty fee
+    //     msg.sender, // payout receiver
+    //     false, // should lock payout receiver
+    //     false, // should start sale
+    //     false // should use json extension
+    // );
 }
