@@ -528,14 +528,6 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
   });
 
   it("should spend less than 600k gas with null config", async () => {
-    const demo = await DemoCollection.new();
-
-    const tx1 = demo.transactionHash;
-
-    const receipt1 = await web3.eth.getTransactionReceipt(tx1);
-
-    assert.ok(receipt1);
-    assert.isBelow(receipt1.gasUsed, 650_000);
 
     const nft = await MetaverseNFTProxy.new(
       "Test", // name
@@ -562,10 +554,21 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     assert.ok(receipt2);
     assert.isBelow(receipt2.gasUsed, 650_000);
 
-    console.log('DemoCollection', receipt1.gasUsed);
     console.log('MetaverseNFTProxy', receipt2.gasUsed);
 
-    assert.isAbove(receipt1.gasUsed, receipt2.gasUsed);
+  });
+
+  it("should spend less than 750k gas for DemoCollection", async () => {
+    const demo = await DemoCollection.new();
+
+    const tx1 = demo.transactionHash;
+
+    const receipt1 = await web3.eth.getTransactionReceipt(tx1);
+
+    assert.ok(receipt1);
+    assert.isBelow(receipt1.gasUsed, 750_000);
+
+    console.log('DemoCollection', receipt1.gasUsed);
   });
 
 });

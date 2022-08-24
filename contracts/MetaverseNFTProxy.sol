@@ -48,7 +48,7 @@ contract MetaverseNFTProxy is Proxy {
         uint256 nReserved,
         bool startAtOne,
         string memory uri,
-        MetaverseNFTConfig memory config
+        MetaverseNFTConfig memory configValues
     ) {
         Address.functionDelegateCall(
             proxyImplementation,
@@ -60,7 +60,7 @@ contract MetaverseNFTProxy is Proxy {
                 nReserved,
                 startAtOne,
                 uri,
-                config
+                configValues
             )
         );
 
