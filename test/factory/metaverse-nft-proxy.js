@@ -6,7 +6,6 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseNFTProxy = artifacts.require("MetaverseNFTProxy");
 const NFTExtension = artifacts.require("NFTExtension");
@@ -17,53 +16,71 @@ const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
+
+// struct MetaverseNFTConfig {
+//   uint256 publicPrice;
+//   uint256 maxTokensPerMint;
+//   uint256 maxTokensPerWallet;
+//   uint256 royaltyFee;
+//   address payoutReceiver;
+//   bool shouldLockPayoutReceiver;
+//   bool shouldStartSale;
+//   bool shouldUseJsonExtension;
+// }
+
 contract("MetaverseNFTProxy - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   before(async () => {
-    assert.equal(await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618"), "0x", "Contract should not be deployed");
+    assert.equal(await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e"), "0x", "Contract should not be deployed");
 
-    // check if there is contract code at 0xb1B131B17E2E2F50dC239917f33575779707D618
-    const code = await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618");
+    // check if there is contract code at 0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e
+    const code = await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e");
 
     if (code === "0x") {
       await getImplementation();
     }
 
-    assert.notEqual(await web3.eth.getCode("0xb1B131B17E2E2F50dC239917f33575779707D618"), "0x", "No contract code at 0xb1B131B17E2E2F50dC239917f33575779707D618");
+    assert.notEqual(await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e"), "0x", "No contract code at 0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e");
 
   });
 
   beforeEach(async () => {
 
     nft = await MetaverseNFTProxy.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MetaverseNFTConfig
       {
-        name: "Test",
-        symbol: "NFT",
-        maxSupply: 10000,
-        nReserved: 3,
-
-      }
+        publicPrice: ether.times(0.03).toFixed(),
+        maxTokensPerMint: 20,
+        maxTokensPerWallet: 20,
+        royaltyFee: 500,
+        payoutReceiver: beneficiary,
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
 
     nft = await MetaverseNFT.at(nft.address);
 
-    await nft.initializePublicSale(
-      ether.times(0.03).toString(),
-      20, // max per mint
-      500, // basis points
-      0 // 1 = start at one, 0 = start at 0
-
-    );
-
-    await nft.initializeExtra(
-      "ipfs://factory-test/",
-      "0x0000000000000000000000000000000000000000", // payout receiver
-      0, // misc params
-      false // should use json extension
-    )
+    // await nft.setup(
+    //   ether.times(0.03).toString(),
+    //   20, // max per mint
+    //   20, // max per mint
+    //   500, // basis points
+    //   "0x0000000000000000000000000000000000000000", // payout receiver
+    //   false, // should lock payout receiver
+    //   false, // should start sale
+    //   false, // should use json extension
+    // )
 
   });
 
@@ -72,25 +89,51 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     assert.ok(nft.address);
   });
 
-  // it should spend <500k gas to deploy proxy
-  it("should spend less than 500k gas to deploy proxy", async () => {
+  // it should spend <1m gas to deploy proxy
+  it("should spend less than 1m gas to deploy proxy", async () => {
 
     const nft = await MetaverseNFTProxy.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MetaverseNFTConfig
       {
-        name: "Test",
-        symbol: "NFT",
-        maxSupply: 10000,
-        nReserved: 3,
-      }
+        publicPrice: ether.times(0.03).toFixed(),
+        maxTokensPerMint: 20,
+        maxTokensPerWallet: 20,
+        royaltyFee: 500,
+        payoutReceiver: user1,
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
+
+    const nft_ = (await MetaverseNFT.at(nft.address))
+
+    // const setupTx = await nft_.setup(
+    //   ether.times(0.03).toString(),
+    //   20, // max per mint
+    //   20, // max per mint
+    //   500, // basis points
+    //   user1, // payout receiver
+    //   false, // should lock payout receiver
+    //   false, // should start sale
+    //   false, // should use json extension
+    // );
 
     const hash = nft.transactionHash;
 
     const receipt = await web3.eth.getTransactionReceipt(hash);
 
-    const gasUsed = receipt.gasUsed;
+    // const setupReceipt = (await setupTx).receipt;
 
-    assert.isBelow(gasUsed, 500000);
+    const gasUsed = receipt.gasUsed + 0 // setupReceipt.gasUsed;
+
+    assert.isBelow(gasUsed, 1_000_000);
 
   })
 
@@ -370,22 +413,37 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
     const _nft = await MetaverseNFTProxy.new(
+      "Avatar Collection NFT", // name: 
+      "NFT", // symbol: 
+      200, // maxSupply: 
+      40, // nReserved: 
+      false, // start at one
+      "ipfs://factory-test/", // baseURI:
+      // MetaverseNFTConfig
       {
-        name: "Avatar Collection NFT",
-        symbol: "NFT",
-        maxSupply: 200,
-        nReserved: 40,
-      }
+        publicPrice: "1000000000000000",
+        maxTokensPerMint: 30,
+        maxTokensPerWallet: 30,
+        royaltyFee: 500,
+        payoutReceiver: "0x0000000000000000000000000000000000000000",
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
 
     const nft = await MetaverseNFT.at(_nft.address);
 
-    await nft.initializePublicSale(
-      "1000000000000000",
-      30,
-      500,
-      0,
-    );
+    // await nft.setup(
+    //   "1000000000000000",
+    //   30,
+    //   30,
+    //   500,
+    //   "0x0000000000000000000000000000000000000000",
+    //   false,
+    //   false,
+    //   false,
+    // );
 
     await nft.startSale();
 

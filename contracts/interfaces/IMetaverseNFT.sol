@@ -3,7 +3,19 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IAvatarNFT {
+/** @dev these values can be edited later */
+struct MetaverseNFTConfig {
+    uint256 publicPrice;
+    uint256 maxTokensPerMint;
+    uint256 maxTokensPerWallet;
+    uint256 royaltyFee;
+    address payoutReceiver;
+    bool shouldLockPayoutReceiver;
+    bool shouldStartSale;
+    bool shouldUseJsonExtension;
+}
+
+interface IMetaverseNFT {
     function DEVELOPER() external pure returns (string memory _url);
 
     function DEVELOPER_ADDRESS() external pure returns (address payable _dev);
@@ -34,9 +46,7 @@ interface IAvatarNFT {
     function revokeExtension(address extension) external;
 
     function withdraw() external;
-}
 
-interface IMetaverseNFT is IAvatarNFT {
     // ------ View functions ------
     /**
         Recommended royalty for tokenId sale.
@@ -52,59 +62,14 @@ interface IMetaverseNFT is IAvatarNFT {
     function setRoyaltyFee(uint256 fee) external;
 }
 
-interface IMetaverseNFTSetup {
+interface IMetaverseNFTImplementation {
     function initialize(
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        string memory _name,
-        string memory _symbol
-    ) external;
-
-    function initializeFull(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
         string memory _name,
         string memory _symbol,
-        bool _startAtOne
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory uri,
+        MetaverseNFTConfig memory config
     ) external;
-
-    function initializeExtra(
-        string calldata _uri,
-        // init sale : (should start = true/false)
-        // uint256 _startPrice,
-        // uint256 _maxTokensPerMint,
-        // uint256 _royaltyFee,
-        address _payoutReceiver,
-        uint16 miscParams,
-        bool shouldUseJSONExtension
-    ) external;
-
-    function initializePublicSale(
-        uint256 startPrice,
-        uint256 maxTokensPerMint,
-        uint256 _royaltyFee, // basis points
-        uint16 miscParams // 1 = start at one, 0 = start at 0
-    ) external;
-
-    function startSale() external;
-    function stopSale() external;
-
-    function saleStarted() external view returns (bool);
-
-    function setPostfixURI(string memory postfix) external;
-    function setRoyaltyReceiver(address _receiver) external;
-    function setPayoutReceiver(address _receiver) external;
-
-    function setPrice(uint256 _price) external;
-    function setRoyaltyFee(uint256 _fee) external;
-
-    function updateMaxPerMint(uint256 _limit) external;
-    function updateMaxPerWallet(uint256 _limit) external;
-
-    function lockPayoutChange() external;
-
 }

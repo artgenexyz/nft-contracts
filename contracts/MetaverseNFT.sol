@@ -51,6 +51,7 @@ contract MetaverseNFT is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
+    IMetaverseNFTImplementation,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -106,54 +107,72 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        string memory _name,
-        string memory _symbol
-    ) public initializerERC721A initializer {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-
-        reserved = _nReserved;
-        maxSupply = _maxSupply;
-
-        isOpenSeaProxyActive = true;
-
-        __ERC721A_init(_name, _symbol);
-        __ReentrancyGuard_init();
-        __Ownable_init();
-    }
-
-    function initializeFull(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
         string memory _name,
         string memory _symbol,
-        bool _startAtOne
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory _uri,
+        MetaverseNFTConfig memory _config
     ) public initializerERC721A initializer {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-
-        price = _price;
         reserved = _nReserved;
-        maxPerMint = _maxPerMint;
-        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
-        royaltyFee = _royaltyFee;
-
-        isOpenSeaProxyActive = true;
-
+        // should be set before calling ERC721A_init !
         startAtOne = _startAtOne;
 
-        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        // defaults
+        startTimestamp = SALE_STARTS_AT_INFINITY;
+        isOpenSeaProxyActive = true;
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
+
+        _configure(
+            _config.publicPrice,
+            _config.maxTokensPerMint,
+            _config.maxTokensPerWallet,
+            _config.royaltyFee,
+            _config.payoutReceiver,
+            _config.shouldLockPayoutReceiver,
+            _config.shouldStartSale,
+            _config.shouldUseJsonExtension
+        );
+    }
+
+    function _configure(
+        uint256 publicPrice,
+        uint256 maxTokensPerMint,
+        uint256 maxTokensPerWallet,
+        uint256 _royaltyFee,
+        address _payoutReceiver,
+        bool shouldLockPayoutReceiver,
+        bool shouldStartSale,
+        bool shouldUseJsonExtension
+    ) internal {
+        price = publicPrice;
+
+        maxPerMint = maxTokensPerMint;
+        maxPerWallet = maxTokensPerWallet;
+
+        royaltyFee = _royaltyFee;
+        payoutReceiver = _payoutReceiver;
+
+        if (shouldLockPayoutReceiver) {
+            isPayoutChangeLocked = true;
+        }
+
+        if (shouldStartSale) {
+            // start sale right now
+            startTimestamp = block.timestamp;
+        }
+
+        if (shouldUseJsonExtension) {
+            URI_POSTFIX = ".json";
+        }
     }
 
     // This constructor ensures that this contract can only be used as a master copy
@@ -242,7 +261,7 @@ contract MetaverseNFT is
     }
 
     // Lock changing withdraw address
-    function lockPayoutChange() public onlyOwner {
+    function lockPayoutReceiver() public onlyOwner {
         isPayoutChangeLocked = true;
     }
 
@@ -598,100 +617,95 @@ contract MetaverseNFT is
         return super.isApprovedForAll(owner, operator);
     }
 
+    // function initializePublicSale(
+    //     uint256 startPrice,
+    //     uint256 maxTokensPerMint,
+    //     uint256 _royaltyFee, // basis points
+    //     uint16 miscParams // 1 = start at one, 0 = start at 0
+    // ) public onlyOwner {
+    //     setPrice(startPrice);
+    //     // _super(abi.encodeWithSelector(
+    //     //     IMetaverseNFTSetup.setPrice.selector,
+    //     //     startPrice
+    //     // ));
 
-    // proxy initalization
+    //     updateMaxPerMint(maxTokensPerMint);
+    //     // _super(abi.encodeWithSelector(
+    //     //     IMetaverseNFTSetup.updateMaxPerMint.selector,
+    //     //     maxTokensPerMint
+    //     // ));
 
-    function initializePublicSale(
-        uint256 startPrice,
-        uint256 maxTokensPerMint,
-        uint256 _royaltyFee, // basis points
-        uint16 miscParams // 1 = start at one, 0 = start at 0
-    ) public onlyOwner {
-        setPrice(startPrice);
-        // _super(abi.encodeWithSelector(
-        //     IMetaverseNFTSetup.setPrice.selector,
-        //     startPrice
-        // ));
+    //     setRoyaltyFee(_royaltyFee);
+    //     // _super(abi.encodeWithSelector(
+    //     //     IMetaverseNFTSetup.setRoyaltyFee.selector,
+    //     //     royaltyFee
+    //     // ));
 
-        updateMaxPerMint(maxTokensPerMint);
-        // _super(abi.encodeWithSelector(
-        //     IMetaverseNFTSetup.updateMaxPerMint.selector,
-        //     maxTokensPerMint
-        // ));
+    //     if (miscParams & (1 << 2) != 0) {
+    //         startSale();
+    //         // _super(abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector));
+    //     }
 
-        setRoyaltyFee(_royaltyFee);
-        // _super(abi.encodeWithSelector(
-        //     IMetaverseNFTSetup.setRoyaltyFee.selector,
-        //     royaltyFee
-        // ));
+    //     if (miscParams & (1 << 3) != 0) {
+    //         lockPayoutChange();
+    //         // _super(abi.encodeWithSelector(
+    //         //         IMetaverseNFTSetup.lockPayoutChange.selector
+    //         //     )
+    //         // );
+    //     }
 
+    // }
 
-        if (miscParams & (1 << 2) != 0) {
-            startSale();
-            // _super(abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector));
-        }
+    // function initializeExtra(
+    //     string calldata _uri,
+    //     // init sale : (should start = true/false)
+    //     // uint256 _startPrice,
+    //     // uint256 _maxTokensPerMint,
+    //     // uint256 _royaltyFee,
+    //     address _payoutReceiver,
+    //     uint16 miscParams,
+    //     bool shouldUseJSONExtension
+    // ) public onlyOwner {
+    //     setBaseURI(_uri);
 
-        if (miscParams & (1 << 3) != 0) {
-            lockPayoutChange();
-            // _super(abi.encodeWithSelector(
-            //         IMetaverseNFTSetup.lockPayoutChange.selector
-            //     )
-            // );
-        }
-    
-    }
+    //     if (shouldUseJSONExtension) {
+    //         setPostfixURI(".json");
+    //         // Address.functionDelegateCall(
+    //         //     proxyImplementation,
+    //         //     abi.encodeWithSelector(
+    //         //         IMetaverseNFTSetup.setPostfixURI.selector,
+    //         //         ".json"
+    //         //     )
+    //         // );
+    //     }
 
-    function initializeExtra(
-        string calldata _uri,
-        // init sale : (should start = true/false)
-        // uint256 _startPrice,
-        // uint256 _maxTokensPerMint,
-        // uint256 _royaltyFee,
-        address _payoutReceiver,
-        uint16 miscParams,
-        bool shouldUseJSONExtension
-    ) public onlyOwner {
-        setBaseURI(_uri);
+    //     if (miscParams & (1 << 2) != 0) {
+    //         startSale();
+    //         // Address.functionDelegateCall(
+    //         //     proxyImplementation,
+    //         //     abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector)
+    //         // );
+    //     }
 
-        if (shouldUseJSONExtension) {
-            setPostfixURI(".json");
-            // Address.functionDelegateCall(
-            //     proxyImplementation,
-            //     abi.encodeWithSelector(
-            //         IMetaverseNFTSetup.setPostfixURI.selector,
-            //         ".json"
-            //     )
-            // );
-        }
+    //     if (_payoutReceiver != address(0)) {
+    //         setPayoutReceiver(_payoutReceiver);
+    //         // Address.functionDelegateCall(
+    //         //     proxyImplementation,
+    //         //     abi.encodeWithSelector(
+    //         //         IMetaverseNFTSetup.setPayoutReceiver.selector,
+    //         //         payoutReceiver
+    //         //     )
+    //         // );
+    //     }
 
-        if (miscParams & (1 << 2) != 0) {
-            startSale();
-            // Address.functionDelegateCall(
-            //     proxyImplementation,
-            //     abi.encodeWithSelector(IMetaverseNFTSetup.startSale.selector)
-            // );
-        }
-
-        if (_payoutReceiver != address(0)) {
-            setPayoutReceiver(_payoutReceiver);
-            // Address.functionDelegateCall(
-            //     proxyImplementation,
-            //     abi.encodeWithSelector(
-            //         IMetaverseNFTSetup.setPayoutReceiver.selector,
-            //         payoutReceiver
-            //     )
-            // );
-        }
-
-        if (miscParams & (1 << 3) != 0) {
-            lockPayoutChange();
-            // Address.functionDelegateCall(
-            //     proxyImplementation,
-            //     abi.encodeWithSelector(
-            //         IMetaverseNFTSetup.lockPayoutChange.selector
-            //     )
-            // );
-        }
-    }
-
+    //     if (miscParams & (1 << 3) != 0) {
+    //         lockPayoutChange();
+    //         // Address.functionDelegateCall(
+    //         //     proxyImplementation,
+    //         //     abi.encodeWithSelector(
+    //         //         IMetaverseNFTSetup.lockPayoutChange.selector
+    //         //     )
+    //         // );
+    //     }
+    // }
 }

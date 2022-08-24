@@ -30,73 +30,67 @@ import "./interfaces/IMetaverseNFT.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-
 contract MetaverseNFTProxy is Proxy {
     address internal constant proxyImplementation =
-        0xb1B131B17E2E2F50dC239917f33575779707D618;
+        0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e;
 
-    struct MetaverseNFTArgs {
-        string name;
-        string symbol;
-        uint256 maxSupply;
-        uint256 nReserved;
-        // public sale setup:
-        // uint256 startPrice;
-        // uint256 maxTokensPerMint;
-        // // todo: init sale : (should start = true/false)
-        // uint256 royaltyFee;
-        // // address payoutReceiver,
-        // uint16 miscParams; // should claim X
-        // string uri;
-        // bool shouldUseJSONExtension
-    }
+    event MetaverseNFTCreated(
+        string _name,
+        string _symbol,
+        uint256 maxSupply,
+        address deployedAddress
+    );
 
-    struct MetaverseNFTArgsFull {
-        string name;
-        string symbol;
-        uint256 maxSupply;
-        uint256 nReserved;
-        // public sale setup:
-        uint256 startPrice;
-        uint256 maxTokensPerMint;
-        // todo: init sale : (should start = true/false)
-        uint256 royaltyFee;
-        // address payoutReceiver,
-        uint16 miscParams; // should claim X
-        string uri;
-        // bool shouldUseJSONExtension
-    }
-
-    event MetaverseNFTCreated(string _name, string _symbol, uint256 maxSupply);
-
-    constructor(MetaverseNFTArgs memory args) {
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint256 maxSupply,
+        uint256 nReserved,
+        bool startAtOne,
+        string memory uri,
+        MetaverseNFTConfig memory config
+    ) {
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
-                IMetaverseNFTSetup.initialize.selector,
-                // 0,
-                args.maxSupply,
-                args.nReserved,
-                // 0,
-                // 0,
-                // "",
-                args.name,
-                args.symbol
-                // 0
+                IMetaverseNFTImplementation.initialize.selector,
+                name,
+                symbol,
+                maxSupply,
+                nReserved,
+                startAtOne,
+                uri,
+                config
             )
         );
 
-        emit MetaverseNFTCreated(args.name, args.symbol, args.maxSupply);
+        emit MetaverseNFTCreated(name, symbol, maxSupply, address(this));
     }
 
-    function _super(bytes memory data) internal {
-        Address.functionDelegateCall(
-            proxyImplementation,
-            data
-        );
+    function init(
+        uint256 price,
+        uint256 maxTokensPerMint,
+        uint256 maxTokensPerWallet,
+        uint256 royaltyFee,
+        address payoutReceiver,
+        bool shouldLockPayoutReceiver,
+        bool shouldStartSale,
+        bool shouldUseJsonExtension
+    ) internal pure returns (MetaverseNFTConfig memory) {
+        return
+            MetaverseNFTConfig({
+                publicPrice: price,
+                maxTokensPerMint: maxTokensPerMint,
+                maxTokensPerWallet: maxTokensPerWallet,
+                royaltyFee: royaltyFee,
+                payoutReceiver: payoutReceiver,
+                shouldLockPayoutReceiver: shouldLockPayoutReceiver,
+                shouldStartSale: shouldStartSale,
+                shouldUseJsonExtension: shouldUseJsonExtension
+            });
     }
 
-    function implementation() public view returns (address) {
+    function implementation() public pure returns (address) {
         return _implementation();
     }
 
