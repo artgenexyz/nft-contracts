@@ -34,7 +34,7 @@ contract DemoCollection is ERC721Community {
             "DC",
             1337,
             1,
-            true, // should start at one
+            START_FROM_ONE,
             "ipfs://QmABABABABABABABABABABABABABA/",
             // optionally, use defaultConfig()
             MintConfig(
