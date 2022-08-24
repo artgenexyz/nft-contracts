@@ -67,7 +67,8 @@ contract MetaverseNFTProxy is Proxy {
         emit MetaverseNFTCreated(name, symbol, maxSupply, address(this));
     }
 
-    function init(
+
+    function config(
         uint256 price,
         uint256 maxTokensPerMint,
         uint256 maxTokensPerWallet,

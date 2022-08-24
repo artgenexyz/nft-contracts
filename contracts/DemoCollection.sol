@@ -36,16 +36,30 @@ contract DemoCollection is ERC721XYZ {
             1,
             true, // should start at one
             "ipfs://QmABABABABABABABABABABABABABA/",
-            init(
+            // optionally, use defaultConfig()
+            config(
                 0.1 ether, // public price
                 5, // maxTokensPerMint,
                 5, // maxTokensPerWallet,
                 500, // basis points royalty fee
                 msg.sender, // payout receiver
-                false, // should start sale
                 false, // should lock payout receiver
+                false, // should start sale
                 true // should use json extension
             )
         )
     {}
+
+    // function defaultConfig() public view returns (MetaverseNFTConfig memory) {
+    //     return MetaverseNFTConfig(
+    //         0, // public price
+    //         50, // maxTokensPerMint,
+    //         0, // maxTokensPerWallet,
+    //         500, // basis points royalty fee
+    //         msg.sender, // payout receiver
+    //         false, // should lock payout receiver
+    //         false, // should start sale
+    //         false // should use json extension
+    //     );
+    // }
 }
