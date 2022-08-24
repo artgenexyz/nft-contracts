@@ -8,7 +8,7 @@ import "./interfaces/IMetaverseNFT.sol";
 
 /**
  * @title made by buildship.xyz
- * @dev ERC721XYz is extendable implementation of ERC721 based on ERC721A and MetaverseNFT.
+ * @dev ERC721Community is extendable implementation of ERC721 based on ERC721A and MetaverseNFT.
  */
 
 //      Want to launch your own collection?
