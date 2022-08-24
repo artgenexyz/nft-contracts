@@ -125,6 +125,7 @@ contract MetaverseNFT is
 
         // defaults
         startTimestamp = SALE_STARTS_AT_INFINITY;
+        maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
 
         __ERC721A_init(_name, _symbol);
@@ -153,13 +154,24 @@ contract MetaverseNFT is
         bool shouldStartSale,
         bool shouldUseJsonExtension
     ) internal {
-        price = publicPrice;
+        if (publicPrice != 0) {
+            price = publicPrice;
+        }
 
-        maxPerMint = maxTokensPerMint;
-        maxPerWallet = maxTokensPerWallet;
+        if (maxTokensPerMint > 0) {
+            maxPerMint = maxTokensPerMint;
+        }
+        if (maxTokensPerWallet > 0) {
+            maxPerWallet = maxTokensPerWallet;
+        }
 
-        royaltyFee = _royaltyFee;
-        payoutReceiver = _payoutReceiver;
+        if (_royaltyFee > 0) {
+            royaltyFee = _royaltyFee;
+        }
+
+        if (_payoutReceiver != address(0)) {
+            payoutReceiver = _payoutReceiver;
+        }
 
         if (shouldLockPayoutReceiver) {
             isPayoutChangeLocked = true;
