@@ -510,7 +510,8 @@ contract("MetaverseNFTFactory", (accounts) => {
     );
   });
 
-  it("Should be able to set mint max per mint limit", async () => {
+  // disabled because max per mint limit is in MetaverseNFT now
+  xit("Should be able to set mint max per mint limit", async () => {
     await factory.setMaxPerMintLimit(100, { from: owner });
     await factory.createNFT(
       ether.times(0.01),
