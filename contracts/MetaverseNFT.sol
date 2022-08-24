@@ -113,7 +113,7 @@ contract MetaverseNFT is
         uint256 _nReserved,
         bool _startAtOne,
         string memory _uri,
-        MetaverseNFTConfig memory _config
+        MintConfig memory _config
     ) public initializerERC721A initializer {
         reserved = _nReserved;
         maxSupply = _maxSupply;

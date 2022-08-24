@@ -6,7 +6,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { getGasCost } = require("../utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
-const MetaverseNFTProxy = artifacts.require("MetaverseNFTProxy");
+const ERC721XYZ = artifacts.require("ERC721XYZ");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -17,35 +17,35 @@ const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseNFTProxy - Implementation", (accounts) => {
+contract("ERC721XYZ - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   before(async () => {
-    assert.equal(await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e"), "0x", "Contract should not be deployed");
+    assert.equal(await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d"), "0x", "Contract should not be deployed");
 
-    // check if there is contract code at 0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e
-    const code = await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e");
+    // check if there is contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d
+    const code = await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
 
     if (code === "0x") {
       await getImplementation();
     }
 
-    assert.notEqual(await web3.eth.getCode("0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e"), "0x", "No contract code at 0xb1b1B1B17c265aF88dDbD25e385EA9f46237459e");
+    assert.notEqual(await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d"), "0x", "No contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
 
   });
 
   beforeEach(async () => {
 
-    nft = await MetaverseNFTProxy.new(
+    nft = await ERC721XYZ.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
       3, // nReserved
       false, // startAtOne
       "ipfs://factory-test/", // uri
-      // MetaverseNFTConfig
+      // MintConfig
       {
         publicPrice: ether.times(0.03).toFixed(),
         maxTokensPerMint: 20,
@@ -81,14 +81,14 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
   // it should spend <1m gas to deploy proxy
   it("should spend less than 1m gas to deploy proxy", async () => {
 
-    const nft = await MetaverseNFTProxy.new(
+    const nft = await ERC721XYZ.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
       3, // nReserved
       false, // startAtOne
       "ipfs://factory-test/", // uri
-      // MetaverseNFTConfig
+      // MintConfig
       {
         publicPrice: ether.times(0.03).toFixed(),
         maxTokensPerMint: 20,
@@ -401,14 +401,14 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
   });
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-    const _nft = await MetaverseNFTProxy.new(
+    const _nft = await ERC721XYZ.new(
       "Avatar Collection NFT", // name: 
       "NFT", // symbol: 
       200, // maxSupply: 
       40, // nReserved: 
       false, // start at one
       "ipfs://factory-test/", // baseURI:
-      // MetaverseNFTConfig
+      // MintConfig
       {
         publicPrice: "1000000000000000",
         maxTokensPerMint: 30,
@@ -529,14 +529,14 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
 
   it("should spend less than 600k gas with null config", async () => {
 
-    const nft = await MetaverseNFTProxy.new(
+    const nft = await ERC721XYZ.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
       3, // nReserved
       false, // startAtOne
       "ipfs://factory-test/", // uri
-      // MetaverseNFTConfig
+      // MintConfig
       {
         publicPrice: 0,
         maxTokensPerMint: 0,
@@ -554,7 +554,7 @@ contract("MetaverseNFTProxy - Implementation", (accounts) => {
     assert.ok(receipt2);
     assert.isBelow(receipt2.gasUsed, 650_000);
 
-    console.log('MetaverseNFTProxy', receipt2.gasUsed);
+    console.log('ERC721XYZ', receipt2.gasUsed);
 
   });
 

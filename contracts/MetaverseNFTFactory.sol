@@ -99,9 +99,9 @@ contract MetaverseNFTFactory is Ownable {
         maxAllowedAmount = _maxAllowedAmount;
     }
 
-    function buildDefaultConfig() public view returns (MetaverseNFTConfig memory) {
+    function buildDefaultConfig() public view returns (MintConfig memory) {
         return
-            MetaverseNFTConfig({
+            MintConfig({
                 publicPrice: 0,
                 maxTokensPerMint: 5,
                 maxTokensPerWallet: 5,
@@ -195,7 +195,7 @@ contract MetaverseNFTFactory is Ownable {
             miscParams & SHOULD_START_AT_ONE != 0,
             _uri,
             buildDefaultConfig()
-            // MetaverseNFTConfig(_startPrice, _maxTokensPerMint, _maxTokensPerMint, _royaltyFee, msg.sender, false, false, false)
+            // MintConfig(_startPrice, _maxTokensPerMint, _maxTokensPerMint, _royaltyFee, msg.sender, false, false, false)
         );
 
         MetaverseNFT(payable(clone)).setPrice(_startPrice);
@@ -281,7 +281,7 @@ contract MetaverseNFTFactory is Ownable {
             miscParams & SHOULD_START_AT_ONE != 0,
             _uri,
             buildDefaultConfig()
-            // MetaverseNFTConfig(
+            // MintConfig(
             //     _startPrice,
             //     _maxTokensPerMint,
             //     _maxTokensPerMint,

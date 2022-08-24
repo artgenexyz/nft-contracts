@@ -37,7 +37,7 @@ contract DemoCollection is ERC721XYZ {
             true, // should start at one
             "ipfs://QmABABABABABABABABABABABABABA/",
             // optionally, use defaultConfig()
-            config(
+            MintConfig(
                 0.1 ether, // public price
                 5, // maxTokensPerMint,
                 5, // maxTokensPerWallet,
@@ -51,7 +51,7 @@ contract DemoCollection is ERC721XYZ {
     {}
 
     // empty config
-    // MetaverseNFTConfig(
+    // MintConfig(
     //     0, // public price
     //     0, // maxTokensPerMint,
     //     0, // maxTokensPerWallet,
@@ -63,7 +63,7 @@ contract DemoCollection is ERC721XYZ {
     // )
 
     // default config
-    // MetaverseNFTConfig(
+    // MintConfig(
     //     0, // public price
     //     50, // maxTokensPerMint,
     //     0, // maxTokensPerWallet,

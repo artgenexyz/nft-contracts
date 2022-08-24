@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /** @dev these values can be edited later */
-struct MetaverseNFTConfig {
+struct MintConfig {
     uint256 publicPrice;
     uint256 maxTokensPerMint;
     uint256 maxTokensPerWallet;
@@ -70,6 +70,6 @@ interface IMetaverseNFTImplementation {
         uint256 _nReserved,
         bool _startAtOne,
         string memory uri,
-        MetaverseNFTConfig memory config
+        MintConfig memory config
     ) external;
 }
