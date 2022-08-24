@@ -37,10 +37,10 @@ contract MetaverseNFTFactory is Ownable {
         uint256 nReserved,
         string name,
         string symbol,
-        bool shouldUseJSONExtension,
-        bool shouldStartAtOne,
+        bool shouldUseJsonExtension,
+        bool startAtOne,
         bool shouldStartSale,
-        bool shouldLockPayoutChange
+        bool shouldLockPayoutReceiver
     );
 
     modifier hasAccess(address creator) {
@@ -99,6 +99,20 @@ contract MetaverseNFTFactory is Ownable {
         maxAllowedAmount = _maxAllowedAmount;
     }
 
+    function buildDefaultConfig() public view returns (MetaverseNFTConfig memory) {
+        return
+            MetaverseNFTConfig({
+                publicPrice: 0,
+                maxTokensPerMint: 5,
+                maxTokensPerWallet: 5,
+                royaltyFee: 500,
+                payoutReceiver: msg.sender,
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false
+            });
+    }
+
     function createNFT(
         uint256 _startPrice,
         uint256 _maxSupply,
@@ -115,17 +129,20 @@ contract MetaverseNFTFactory is Ownable {
         );
         address clone = Clones.clone(proxyImplementation);
 
-        MetaverseNFT(payable(clone)).initializeFull(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
-            _uri,
+        MetaverseNFT(payable(clone)).initialize(
             _name,
             _symbol,
-            false
+            _maxSupply,
+            _nReserved,
+            false,
+            _uri,
+            buildDefaultConfig()
         );
+
+        MetaverseNFT(payable(clone)).setPrice(_startPrice);
+        MetaverseNFT(payable(clone)).setRoyaltyFee(_royaltyFee);
+        MetaverseNFT(payable(clone)).updateMaxPerMint(_maxTokensPerMint);
+        MetaverseNFT(payable(clone)).updateMaxPerWallet(_maxTokensPerMint);
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
 
@@ -154,7 +171,7 @@ contract MetaverseNFTFactory is Ownable {
         string memory _name,
         string memory _symbol,
         address payoutReceiver,
-        bool shouldUseJSONExtension,
+        bool shouldUseJsonExtension,
         uint16 miscParams
     ) external hasAccess(msg.sender) {
         require(
@@ -165,24 +182,39 @@ contract MetaverseNFTFactory is Ownable {
 
         // params is a bitmask of:
 
-        // bool shouldUseJSONExtension = (miscParams & 0x01) == 0x01;
+        // bool shouldUseJsonExtension = (miscParams & 0x01) == 0x01;
         // bool startTokenIdAtOne = (miscParams & 0x02) == 0x02;
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
-        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+        // bool shouldLockPayoutReceiver = (miscParams & 0x08) == 0x08;
 
-        MetaverseNFT(payable(clone)).initializeFull(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
-            _uri,
+        MetaverseNFT(payable(clone)).initialize(
             _name,
             _symbol,
-            miscParams & SHOULD_START_AT_ONE != 0
+            _maxSupply,
+            _nReserved,
+            miscParams & SHOULD_START_AT_ONE != 0,
+            _uri,
+            buildDefaultConfig()
+            // MetaverseNFTConfig(_startPrice, _maxTokensPerMint, _maxTokensPerMint, _royaltyFee, msg.sender, false, false, false)
         );
 
-        if (shouldUseJSONExtension) {
+        MetaverseNFT(payable(clone)).setPrice(_startPrice);
+        MetaverseNFT(payable(clone)).setRoyaltyFee(_royaltyFee);
+        MetaverseNFT(payable(clone)).updateMaxPerMint(_maxTokensPerMint);
+        MetaverseNFT(payable(clone)).updateMaxPerWallet(_maxTokensPerMint);
+
+        // MetaverseNFT(payable(clone)).setup(
+        //     _maxSupply,
+        //     _maxTokensPerMint,
+        //     _maxTokensPerMint,
+        //     _royaltyFee,
+        //     payoutReceiver,
+        //     miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0,
+        //     miscParams & SHOULD_START_SALE != 0,
+        //     shouldUseJsonExtension
+        // );
+
+        if (shouldUseJsonExtension) {
             MetaverseNFT(payable(clone)).setPostfixURI(".json");
         }
 
@@ -195,7 +227,7 @@ contract MetaverseNFTFactory is Ownable {
         }
 
         if (miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0) {
-            MetaverseNFT(payable(clone)).lockPayoutChange();
+            MetaverseNFT(payable(clone)).lockPayoutReceiver();
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
@@ -208,7 +240,7 @@ contract MetaverseNFTFactory is Ownable {
             _nReserved,
             _name,
             _symbol,
-            shouldUseJSONExtension,
+            shouldUseJsonExtension,
             miscParams & SHOULD_START_AT_ONE != 0,
             miscParams & SHOULD_START_SALE != 0,
             miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
@@ -225,7 +257,7 @@ contract MetaverseNFTFactory is Ownable {
         string memory _name,
         string memory _symbol,
         address payoutReceiver,
-        bool shouldUseJSONExtension,
+        bool shouldUseJsonExtension,
         uint16 miscParams
     ) external checkTotalAmount(_startPrice * _maxSupply) {
         require(
@@ -236,24 +268,49 @@ contract MetaverseNFTFactory is Ownable {
 
         // params is a bitmask of:
 
-        // bool shouldUseJSONExtension = (miscParams & 0x01) == 0x01;
+        // bool shouldUseJsonExtension = (miscParams & 0x01) == 0x01;
         // bool startTokenIdAtOne = (miscParams & 0x02) == 0x02;
         // bool shouldStartSale = (miscParams & 0x04) == 0x04;
-        // bool shouldLockPayoutChange = (miscParams & 0x08) == 0x08;
+        // bool shouldLockPayoutReceiver = (miscParams & 0x08) == 0x08;
 
-        MetaverseNFT(payable(clone)).initializeFull(
-            _startPrice,
-            _maxSupply,
-            _nReserved,
-            _maxTokensPerMint,
-            _royaltyFee,
-            _uri,
+        MetaverseNFT(payable(clone)).initialize(
             _name,
             _symbol,
-            miscParams & SHOULD_START_AT_ONE != 0
+            _maxSupply,
+            _nReserved,
+            miscParams & SHOULD_START_AT_ONE != 0,
+            _uri,
+            buildDefaultConfig()
+            // MetaverseNFTConfig(
+            //     _startPrice,
+            //     _maxTokensPerMint,
+            //     _maxTokensPerMint,
+            //     _royaltyFee,
+            //     payoutReceiver,
+            //     miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0,
+            //     miscParams & SHOULD_START_SALE != 0,
+            //     shouldUseJsonExtension
+            // )
         );
 
-        if (shouldUseJSONExtension) {
+        MetaverseNFT(payable(clone)).setPrice(_startPrice);
+        MetaverseNFT(payable(clone)).setRoyaltyFee(_royaltyFee);
+        MetaverseNFT(payable(clone)).updateMaxPerMint(_maxTokensPerMint);
+        MetaverseNFT(payable(clone)).updateMaxPerWallet(_maxTokensPerMint);
+
+        // MetaverseNFT(payable(clone)).setup(
+        //     _startPrice,
+        //     _maxTokensPerMint,
+        //     _maxTokensPerMint,
+        //     _royaltyFee,
+        //     payoutReceiver,
+        //     miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0,
+        //     miscParams & SHOULD_START_SALE != 0,
+        //     shouldUseJsonExtension
+
+        // );
+
+        if (shouldUseJsonExtension) {
             MetaverseNFT(payable(clone)).setPostfixURI(".json");
         }
 
@@ -266,7 +323,7 @@ contract MetaverseNFTFactory is Ownable {
         }
 
         if (miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0) {
-            MetaverseNFT(payable(clone)).lockPayoutChange();
+            MetaverseNFT(payable(clone)).lockPayoutReceiver();
         }
 
         MetaverseNFT(payable(clone)).transferOwnership(msg.sender);
@@ -279,7 +336,7 @@ contract MetaverseNFTFactory is Ownable {
             _nReserved,
             _name,
             _symbol,
-            shouldUseJSONExtension,
+            shouldUseJsonExtension,
             miscParams & SHOULD_START_AT_ONE != 0,
             miscParams & SHOULD_START_SALE != 0,
             miscParams & SHOULD_LOCK_PAYOUT_CHANGE != 0
