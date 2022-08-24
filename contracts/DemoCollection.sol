@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC721XYZ.sol";
+import "./ERC721Community.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -27,9 +27,9 @@ import "./ERC721XYZ.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract DemoCollection is ERC721XYZ {
+contract DemoCollection is ERC721Community {
     constructor()
-        ERC721XYZ(
+        ERC721Community(
             "DemoCollection",
             "DC",
             1337,

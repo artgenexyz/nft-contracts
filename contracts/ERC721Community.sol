@@ -35,7 +35,7 @@ import "./interfaces/IMetaverseNFT.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract ERC721XYZ is Proxy {
+contract ERC721Community is Proxy {
     address internal constant proxyImplementation =
         0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d;
 
@@ -62,29 +62,6 @@ contract ERC721XYZ is Proxy {
             )
         );
     }
-
-    // function config(
-    //     uint256 price,
-    //     uint256 maxTokensPerMint,
-    //     uint256 maxTokensPerWallet,
-    //     uint256 royaltyFee,
-    //     address payoutReceiver,
-    //     bool shouldLockPayoutReceiver,
-    //     bool shouldStartSale,
-    //     bool shouldUseJsonExtension
-    // ) internal pure returns (MintConfig memory) {
-    //     return
-    //         MintConfig({
-    //             publicPrice: price,
-    //             maxTokensPerMint: maxTokensPerMint,
-    //             maxTokensPerWallet: maxTokensPerWallet,
-    //             royaltyFee: royaltyFee,
-    //             payoutReceiver: payoutReceiver,
-    //             shouldLockPayoutReceiver: shouldLockPayoutReceiver,
-    //             shouldStartSale: shouldStartSale,
-    //             shouldUseJsonExtension: shouldUseJsonExtension
-    //         });
-    // }
 
     function implementation() public pure returns (address) {
         return _implementation();

@@ -6,7 +6,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { getGasCost } = require("../utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
-const ERC721XYZ = artifacts.require("ERC721XYZ");
+const ERC721Community = artifacts.require("ERC721Community");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -17,7 +17,7 @@ const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
-contract("ERC721XYZ - Implementation", (accounts) => {
+contract("ERC721Community - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
@@ -38,7 +38,7 @@ contract("ERC721XYZ - Implementation", (accounts) => {
 
   beforeEach(async () => {
 
-    nft = await ERC721XYZ.new(
+    nft = await ERC721Community.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
@@ -81,7 +81,7 @@ contract("ERC721XYZ - Implementation", (accounts) => {
   // it should spend <1m gas to deploy proxy
   it("should spend less than 1m gas to deploy proxy", async () => {
 
-    const nft = await ERC721XYZ.new(
+    const nft = await ERC721Community.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
@@ -401,7 +401,7 @@ contract("ERC721XYZ - Implementation", (accounts) => {
   });
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-    const _nft = await ERC721XYZ.new(
+    const _nft = await ERC721Community.new(
       "Avatar Collection NFT", // name: 
       "NFT", // symbol: 
       200, // maxSupply: 
@@ -529,7 +529,7 @@ contract("ERC721XYZ - Implementation", (accounts) => {
 
   it("should spend less than 600k gas with null config", async () => {
 
-    const nft = await ERC721XYZ.new(
+    const nft = await ERC721Community.new(
       "Test", // name
       "NFT", // symbol
       10000, // maxSupply
@@ -554,7 +554,7 @@ contract("ERC721XYZ - Implementation", (accounts) => {
     assert.ok(receipt2);
     assert.isBelow(receipt2.gasUsed, 650_000);
 
-    console.log('ERC721XYZ', receipt2.gasUsed);
+    console.log('ERC721Community', receipt2.gasUsed);
 
   });
 
