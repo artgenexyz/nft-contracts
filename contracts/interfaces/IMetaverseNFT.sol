@@ -3,7 +3,19 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IAvatarNFT {
+/** @dev config includes values have setters and can be changed later */
+struct MintConfig {
+    uint256 publicPrice;
+    uint256 maxTokensPerMint;
+    uint256 maxTokensPerWallet;
+    uint256 royaltyFee;
+    address payoutReceiver;
+    bool shouldLockPayoutReceiver;
+    bool shouldStartSale;
+    bool shouldUseJsonExtension;
+}
+
+interface IMetaverseNFT {
     function DEVELOPER() external pure returns (string memory _url);
 
     function DEVELOPER_ADDRESS() external pure returns (address payable _dev);
@@ -34,9 +46,7 @@ interface IAvatarNFT {
     function revokeExtension(address extension) external;
 
     function withdraw() external;
-}
 
-interface IMetaverseNFT is IAvatarNFT {
     // ------ View functions ------
     /**
         Recommended royalty for tokenId sale.
@@ -50,4 +60,16 @@ interface IMetaverseNFT is IAvatarNFT {
     function setRoyaltyReceiver(address receiver) external;
 
     function setRoyaltyFee(uint256 fee) external;
+}
+
+interface IMetaverseNFTImplementation {
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory uri,
+        MintConfig memory config
+    ) external;
 }
