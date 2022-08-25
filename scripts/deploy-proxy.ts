@@ -36,7 +36,7 @@ export async function main() {
   const vanityBalance = await vanity.getBalance();
 
   console.log('vanity deployer address is', vanity.address);
-  console.log('vanity deployer balance is', vanityBalance.div(1e18).toNumber());
+  console.log('vanity deployer balance is', vanityBalance);
 
   if (vanityBalance.eq(0)) {
     console.log("Vanity account has balance 0");
