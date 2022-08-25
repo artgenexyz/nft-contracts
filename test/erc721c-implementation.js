@@ -6,7 +6,7 @@ const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { parseEther } = require("ethers").utils;
 
-const { getGasCost, createNFTSale } = require("../utils");
+const { getGasCost, createNFTSale } = require("./utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
@@ -15,7 +15,7 @@ const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const ERC721Community = artifacts.require("ERC721Community");
 
-const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
+const { main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
