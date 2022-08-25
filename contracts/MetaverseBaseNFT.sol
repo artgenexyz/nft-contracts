@@ -74,18 +74,22 @@ contract MetaverseBaseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
-    address public payoutReceiver = address(0x0);
-    address public uriExtension = address(0x0);
+    address public payoutReceiver;
+    address public uriExtension;
 
-    bool public isFrozen;
     bool public isPayoutChangeLocked;
-    bool private isOpenSeaProxyActive = true;
-    bool private startAtOne = false;
+    bool private isOpenSeaProxyActive;
+    bool private startAtOne;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
      */
     mapping(uint256 => bytes32) public data;
+
+    /**
+     * @dev Storing how many tokens each address has minted in public sale
+     */
+    mapping(address => uint256) public mintedBy;
 
     /**
      * @dev List of connected extensions
@@ -117,11 +121,17 @@ contract MetaverseBaseNFT is
         price = _price;
         reserved = _nReserved;
         maxPerMint = _maxPerMint;
+        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
         royaltyFee = _royaltyFee;
-        royaltyReceiver = address(this);
 
+        isOpenSeaProxyActive = true;
+
+        require(
+            startAtOne == false,
+            "Doesn't support starting at one with ERC721A"
+        );
         startAtOne = _startAtOne;
 
         // Need help with uploading metadata? Try https://buildship.xyz
@@ -133,7 +143,8 @@ contract MetaverseBaseNFT is
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
-        return startAtOne ? 1 : 0;
+        // NB: It requires static value, override when inherit
+        return 0;
     }
 
     function contractURI() public view returns (string memory uri) {
@@ -187,9 +198,22 @@ contract MetaverseBaseNFT is
         price = _price;
     }
 
-    // Freeze forever, irreversible
-    function freeze() public onlyOwner {
-        isFrozen = true;
+    function reduceMaxSupply(uint256 _maxSupply)
+        public
+        whenSaleNotStarted
+        onlyOwner
+    {
+        require(
+            _totalMinted() + reserved <= _maxSupply,
+            "Max supply is too low, already minted more (+ reserved)"
+        );
+
+        require(
+            _maxSupply < maxSupply,
+            "Cannot set higher than the current maxSupply"
+        );
+
+        maxSupply = _maxSupply;
     }
 
     // Lock changing withdraw address
@@ -276,13 +300,13 @@ contract MetaverseBaseNFT is
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        uint256 nextTokenId = _nextTokenId();
 
         _safeMint(to, nTokens, "");
 
         if (extraData.length > 0) {
             for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
+                uint256 tokenId = nextTokenId + i;
                 data[tokenId] = extraData;
             }
         }
@@ -295,8 +319,8 @@ contract MetaverseBaseNFT is
         _;
     }
 
-    modifier whenNotFrozen() {
-        require(!isFrozen, "Minting is frozen");
+    modifier whenSaleNotStarted() {
+        require(!saleStarted(), "Sale should not be started");
         _;
     }
 
@@ -325,9 +349,12 @@ contract MetaverseBaseNFT is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
+
+            // only store minted amounts after limit is enabled to save gas
+            mintedBy[msg.sender] += nTokens;
         }
 
         require(
@@ -374,6 +401,7 @@ contract MetaverseBaseNFT is
         maxPerMint = _maxPerMint;
     }
 
+    // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
         external
         onlyOwner
@@ -384,15 +412,11 @@ contract MetaverseBaseNFT is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp)
-        public
-        onlyOwner
-        whenNotFrozen
-    {
+    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner {
         startTimestamp = _startTimestamp;
     }
 
-    function startSale() public onlyOwner whenNotFrozen {
+    function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
     }
 
@@ -432,8 +456,7 @@ contract MetaverseBaseNFT is
         view
         returns (address receiver, uint256 royaltyAmount)
     {
-        // We use the same contract to split royalties: 5% of royalty goes to the developer
-        receiver = royaltyReceiver;
+        receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
 
@@ -445,6 +468,16 @@ contract MetaverseBaseNFT is
         receiver = payoutReceiver != address(0x0)
             ? payable(payoutReceiver)
             : payable(owner());
+    }
+
+    function getRoyaltyReceiver()
+        public
+        view
+        returns (address payable receiver)
+    {
+        receiver = royaltyReceiver != address(0x0)
+            ? payable(royaltyReceiver)
+            : getPayoutReceiver();
     }
 
     // ---- Allow royalty deposits from Opensea -----

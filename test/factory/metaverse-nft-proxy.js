@@ -1,41 +1,129 @@
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT_ERC721");
+const MetaverseNFT = artifacts.require("MetaverseNFT");
+const ERC721Community = artifacts.require("ERC721Community");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
+const DemoCollection = artifacts.require("DemoCollection");
+
+const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
+
 const ether = new BigNumber(1e18);
 
-contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
+contract("ERC721Community - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
+  before(async () => {
+
+    // check if there is contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d
+    const code = await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
+
+    if (code === "0x") {
+      await getImplementation();
+    }
+
+    assert.notEqual(await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d"), "0x", "No contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
+
+  });
+
   beforeEach(async () => {
-    nft = await MetaverseBaseNFT.new(
-      ether.times(0.03),
-      1000,
-      3, // reserved
-      20, // per tx
-      500, // 5%
-      "ipfs://factory-test/",
-      "Test",
-      "NFT",
-      false
+
+    nft = await ERC721Community.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MintConfig
+      {
+        publicPrice: ether.times(0.03).toFixed(),
+        maxTokensPerMint: 20,
+        maxTokensPerWallet: 20,
+        royaltyFee: 500,
+        payoutReceiver: beneficiary,
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
+
+    nft = await MetaverseNFT.at(nft.address);
+
+    // await nft.setup(
+    //   ether.times(0.03).toString(),
+    //   20, // max per mint
+    //   20, // max per mint
+    //   500, // basis points
+    //   "0x0000000000000000000000000000000000000000", // payout receiver
+    //   false, // should lock payout receiver
+    //   false, // should start sale
+    //   false, // should use json extension
+    // )
+
   });
 
   // it should deploy successfully
   it("should deploy successfully", async () => {
     assert.ok(nft.address);
   });
+
+  // it should spend <1m gas to deploy proxy
+  it("should spend less than 1m gas to deploy proxy", async () => {
+
+    const nft = await ERC721Community.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MintConfig
+      {
+        publicPrice: ether.times(0.03).toFixed(),
+        maxTokensPerMint: 20,
+        maxTokensPerWallet: 20,
+        royaltyFee: 500,
+        payoutReceiver: user1,
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
+    );
+
+    const nft_ = (await MetaverseNFT.at(nft.address))
+
+    // const setupTx = await nft_.setup(
+    //   ether.times(0.03).toString(),
+    //   20, // max per mint
+    //   20, // max per mint
+    //   500, // basis points
+    //   user1, // payout receiver
+    //   false, // should lock payout receiver
+    //   false, // should start sale
+    //   false, // should use json extension
+    // );
+
+    const hash = nft.transactionHash;
+
+    const receipt = await web3.eth.getTransactionReceipt(hash);
+
+    // const setupReceipt = (await setupTx).receipt;
+
+    const gasUsed = receipt.gasUsed + 0 // setupReceipt.gasUsed;
+
+    assert.isBelow(gasUsed, 1_000_000);
+
+  })
 
   // price should equal 0.03 ether
   it("should have a price of 0.03 ether", async () => {
@@ -234,7 +322,7 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
     // info.royaltyReceiver is nft address
     // info.royaltyFee is 5%
 
-    assert.equal(info.receiver, nft.address);
+    assert.equal(info.receiver, await nft.owner());
     assert.equal(info.royaltyAmount, 500);
 
     // it can change
@@ -312,22 +400,44 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
   });
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-    const nft = await MetaverseBaseNFT.new(
-      "1000000000000000",
-      200,
-      40,
-      20,
-      500, // royalty
-      "https://metadata.buildship.dev/",
-      "Avatar Collection NFT",
-      "NFT",
-      false
+    const _nft = await ERC721Community.new(
+      "Avatar Collection NFT", // name: 
+      "NFT", // symbol: 
+      200, // maxSupply: 
+      40, // nReserved: 
+      false, // start at one
+      "ipfs://factory-test/", // baseURI:
+      // MintConfig
+      {
+        publicPrice: "1000000000000000",
+        maxTokensPerMint: 30,
+        maxTokensPerWallet: 30,
+        royaltyFee: 500,
+        payoutReceiver: "0x0000000000000000000000000000000000000000",
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
+
+    const nft = await MetaverseNFT.at(_nft.address);
+
+    // await nft.setup(
+    //   "1000000000000000",
+    //   30,
+    //   30,
+    //   500,
+    //   "0x0000000000000000000000000000000000000000",
+    //   false,
+    //   false,
+    //   false,
+    // );
 
     await nft.startSale();
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
+    await nft.updateMaxPerWallet(0);
 
     // try minting 20 * 20 tokens, which is more than the max allowed (200)
     try {
@@ -339,6 +449,7 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
           )
       );
     } catch (error) {
+      console.log('error', error.message)
       assert.include(error.message, "Not enough Tokens left");
     }
   });
@@ -368,71 +479,95 @@ contract("MetaverseBaseNFT_ERC721 - Implementation", (accounts) => {
     assert.equal(await nft.isExtensionAdded(extension2.address), true);
   });
 
-  // it should be able to freeze minting and then startSale doesnt work
-  it("should be able to freeze minting and then startSale doesnt work", async () => {
+  // it should be able to reduce supply minting
+  it("should be able to reduce supply and then mint doesnt work", async () => {
+    await nft.reduceMaxSupply(10);
     await nft.startSale();
-    await nft.freeze();
+
+    await nft.mint(5, { value: ether });
+    await nft.claim(3, user1);
 
     try {
-      await nft.startSale();
+      await nft.mint(5, { value: ether });
+
     } catch (error) {
-      assert.include(error.message, "Minting is frozen");
+      assert.include(error.message, "Not enough Tokens left.");
     }
   });
 
-  // it should be able to set maxPerWallet
-  it("should be able to set maxPerWallet", async () => {
-    await nft.updateMaxPerWallet(10);
-    assert.equal(await nft.maxPerWallet(), 10);
+  // it should not be able to reduce max supply more than possible
+  it("should not be able to reduce max supply more than possible", async () => {
+    await nft.claim(3, user2);
+
+    await nft.startSale();
+    await nft.updateMaxPerMint(10);
+    await nft.mint(10, { from: user2, value: ether });
+
+    await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+
+    await nft.stopSale();
+
+    await nft.reduceMaxSupply(1000);
+
+    await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
+
+    await expectRevert(nft.reduceMaxSupply(1337), "Cannot set higher than the current maxSupply");
+
   })
 
-  // it should not be able to mint more than maxPerWallet if set
-  it("should not be able to mint more than maxPerWallet if set", async () => {
-    await nft.updateMaxPerWallet(10);
-    await nft.startSale();
+  it("should be able to batch mint", async () => {
+    expect(await nft.claim(3, user1, { from: owner })).to.be.ok;
+    expect((await nft.balanceOf(user1)).toString()).to.be.equal("3");
+    expect(await nft.ownerOf(0)).to.be.equal(user1);
+    expect(await nft.ownerOf(1)).to.be.equal(user1);
+    expect(await nft.ownerOf(2)).to.be.equal(user1);
 
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    try {
-      await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    } catch (error) {
-      assert.include(error.message, "You cannot mint more than maxPerWallet tokens for one address!");
-    }
+    expect(await nft.transferFrom(user1, user2, 1, { from: user1 })).to.be.ok;
+    expect(await nft.ownerOf(1)).to.be.equal(user2);
   });
 
-  // it should be able to mint more than maxPerWallet if user transfers
-  it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
-    await nft.updateMaxPerWallet(10);
-    await nft.startSale();
+  it("should spend less than 600k gas with null config", async () => {
 
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    // temporary transfer token ids 0,1 to second address
-    await nft.transferFrom(user1, user2, 0, { from: user1 });
-    await nft.transferFrom(user1, user2, 1, { from: user1 });
-
-    // minting 4 + 4 + 4 tokens for user1+user2
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
-
-    // transfer back original tokens
-    await nft.transferFrom(user2, user1, 0, { from: user2 });
-    await nft.transferFrom(user2, user1, 1, { from: user2 });
-
-    assert.equal(await nft.balanceOf(user1), 12);
-    assert.equal(await nft.balanceOf(user2), 0);
-  });
-
-  // it should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT
-  it("should be able to update maxPerMint, but not more than MAX_PER_MINT_LIMIT", async () => {
-    await nft.updateMaxPerMint(10);
-    assert.equal(await nft.maxPerMint(), 10);
-
-    expectRevert(
-      nft.updateMaxPerMint(100),
-      "Too many tokens per mint",
+    const nft = await ERC721Community.new(
+      "Test", // name
+      "NFT", // symbol
+      10000, // maxSupply
+      3, // nReserved
+      false, // startAtOne
+      "ipfs://factory-test/", // uri
+      // MintConfig
+      {
+        publicPrice: 0,
+        maxTokensPerMint: 0,
+        maxTokensPerWallet: 0,
+        royaltyFee: 0,
+        payoutReceiver: "0x0000000000000000000000000000000000000000",
+        shouldLockPayoutReceiver: false,
+        shouldStartSale: false,
+        shouldUseJsonExtension: false,
+      },
     );
+
+    const tx2 = nft.transactionHash;
+    const receipt2 = await web3.eth.getTransactionReceipt(tx2);
+    assert.ok(receipt2);
+    assert.isBelow(receipt2.gasUsed, 650_000);
+
+    console.log('ERC721Community', receipt2.gasUsed);
+
+  });
+
+  it("should spend less than 750k gas for DemoCollection", async () => {
+    const demo = await DemoCollection.new();
+
+    const tx1 = demo.transactionHash;
+
+    const receipt1 = await web3.eth.getTransactionReceipt(tx1);
+
+    assert.ok(receipt1);
+    assert.isBelow(receipt1.gasUsed, 750_000);
+
+    console.log('DemoCollection', receipt1.gasUsed);
   });
 
 });

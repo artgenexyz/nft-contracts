@@ -5,7 +5,6 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("../utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -234,7 +233,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     // info.royaltyReceiver is nft address
     // info.royaltyFee is 5%
 
-    assert.equal(info.receiver, nft.address);
+    assert.equal(info.receiver, await nft.owner());
     assert.equal(info.royaltyAmount, 500);
 
     // it can change
@@ -318,13 +317,15 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
       40,
       20,
       500, // royalty
-      "https://metadata.buildship.dev/",
+      "https://metadata.buildship.xyz/",
       "Avatar Collection NFT",
       "NFT",
       false
     );
 
     await nft.startSale();
+
+    await nft.updateMaxPerWallet(0);
 
     // set price to 0.0001 ether
     await nft.setPrice(ether.times(0.0001));
@@ -339,6 +340,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
           )
       );
     } catch (error) {
+      console.log('error', error.message);
       assert.include(error.message, "Not enough Tokens left");
     }
   });
@@ -368,17 +370,38 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     assert.equal(await nft.isExtensionAdded(extension2.address), true);
   });
 
-  // it should be able to freeze minting and then startSale doesnt work
-  it("should be able to freeze minting and then startSale doesnt work", async () => {
+  // it should be able to reduce supply minting
+  it("should be able to reduce supply and then mint doesnt work", async () => {
+    await nft.reduceMaxSupply(10);
     await nft.startSale();
-    await nft.freeze();
+
+    await nft.mint(5, { value: ether });
+    await nft.claim(3, user1);
 
     try {
-      await nft.startSale();
+      await nft.mint(5, { value: ether });
+
     } catch (error) {
-      assert.include(error.message, "Minting is frozen");
+      assert.include(error.message, "Not enough Tokens left.");
     }
   });
+
+  // it should not be able to reduce max supply more than possible
+  it("should not be able to reduce max supply more than possible", async () => {
+    await nft.claim(3, user2);
+
+    await nft.startSale();
+    await nft.mint(10, { from: user2, value: ether });
+
+    await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+
+    await nft.stopSale();
+
+    await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
+
+    await expectRevert(nft.reduceMaxSupply(1337), "Cannot set higher than the current maxSupply");
+
+  })
 
   it("should be able to batch mint", async () => {
     expect(await nft.claim(3, user1, { from: owner })).to.be.ok;
@@ -413,7 +436,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
   });
 
   // it should be able to mint more than maxPerWallet if user transfers
-  it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
+  it("cannot easily trick maxPerWallet if user transfers to second address temporary", async () => {
     await nft.updateMaxPerWallet(10);
     await nft.startSale();
 
@@ -425,13 +448,16 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     await nft.transferFrom(user1, user2, 1, { from: user1 });
 
     // minting 4 + 4 + 4 tokens for user1+user2
-    await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+    expectRevert(
+      nft.mint(4, { from: user1, value: ether.times(0.03).times(4) }),
+      "You cannot mint more than maxPerWallet tokens for one address!"
+    );
 
     // transfer back original tokens
     await nft.transferFrom(user2, user1, 0, { from: user2 });
     await nft.transferFrom(user2, user1, 1, { from: user2 });
 
-    assert.equal(await nft.balanceOf(user1), 12);
+    assert.notEqual(await nft.balanceOf(user1), 12);
     assert.equal(await nft.balanceOf(user2), 0);
   });
 

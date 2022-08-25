@@ -51,6 +51,7 @@ contract MetaverseNFT is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
+    IMetaverseNFTImplementation,
     IMetaverseNFT // implements IERC2981
 {
     using Address for address;
@@ -74,18 +75,22 @@ contract MetaverseNFT is
     uint256 public royaltyFee;
 
     address public royaltyReceiver;
-    address public payoutReceiver = address(0x0);
-    address public uriExtension = address(0x0);
+    address public payoutReceiver;
+    address public uriExtension;
 
-    bool public isFrozen;
     bool public isPayoutChangeLocked;
-    bool private isOpenSeaProxyActive = true;
-    bool private startAtOne = false;
+    bool private isOpenSeaProxyActive;
+    bool private startAtOne;
 
     /**
      * @dev Additional data for each token that needs to be stored and accessed on-chain
      */
     mapping(uint256 => bytes32) public data;
+
+    /**
+     * @dev Storing how many tokens each address has minted in public sale
+     */
+    mapping(address => uint256) public mintedBy;
 
     /**
      * @dev List of connected extensions
@@ -102,34 +107,84 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
         string memory _name,
         string memory _symbol,
-        bool _startAtOne
-    ) public initializer {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-
-        price = _price;
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory _uri,
+        MintConfig memory _config
+    ) public initializerERC721A initializer {
         reserved = _nReserved;
-        maxPerMint = _maxPerMint;
         maxSupply = _maxSupply;
 
-        royaltyFee = _royaltyFee;
-        royaltyReceiver = address(this);
-
+        // should be set before calling ERC721A_init !
         startAtOne = _startAtOne;
 
-        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        // defaults
+        startTimestamp = SALE_STARTS_AT_INFINITY;
+        maxPerMint = MAX_PER_MINT_LIMIT;
+        isOpenSeaProxyActive = true;
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
+
+        _configure(
+            _config.publicPrice,
+            _config.maxTokensPerMint,
+            _config.maxTokensPerWallet,
+            _config.royaltyFee,
+            _config.payoutReceiver,
+            _config.shouldLockPayoutReceiver,
+            _config.shouldStartSale,
+            _config.shouldUseJsonExtension
+        );
+    }
+
+    function _configure(
+        uint256 publicPrice,
+        uint256 maxTokensPerMint,
+        uint256 maxTokensPerWallet,
+        uint256 _royaltyFee,
+        address _payoutReceiver,
+        bool shouldLockPayoutReceiver,
+        bool shouldStartSale,
+        bool shouldUseJsonExtension
+    ) internal {
+        if (publicPrice != 0) {
+            price = publicPrice;
+        }
+
+        if (maxTokensPerMint > 0) {
+            maxPerMint = maxTokensPerMint;
+        }
+        if (maxTokensPerWallet > 0) {
+            maxPerWallet = maxTokensPerWallet;
+        }
+
+        if (_royaltyFee > 0) {
+            royaltyFee = _royaltyFee;
+        }
+
+        if (_payoutReceiver != address(0)) {
+            payoutReceiver = _payoutReceiver;
+        }
+
+        if (shouldLockPayoutReceiver) {
+            isPayoutChangeLocked = true;
+        }
+
+        if (shouldStartSale) {
+            // start sale right now
+            startTimestamp = block.timestamp;
+        }
+
+        if (shouldUseJsonExtension) {
+            URI_POSTFIX = ".json";
+        }
     }
 
     // This constructor ensures that this contract can only be used as a master copy
@@ -191,7 +246,7 @@ contract MetaverseNFT is
         CONTRACT_URI = uri;
     }
 
-    function setPostfixURI(string calldata postfix) public onlyOwner {
+    function setPostfixURI(string memory postfix) public onlyOwner {
         URI_POSTFIX = postfix;
     }
 
@@ -199,13 +254,26 @@ contract MetaverseNFT is
         price = _price;
     }
 
-    // Freeze forever, irreversible
-    function freeze() public onlyOwner {
-        isFrozen = true;
+    function reduceMaxSupply(uint256 _maxSupply)
+        public
+        whenSaleNotStarted
+        onlyOwner
+    {
+        require(
+            _totalMinted() + reserved <= _maxSupply,
+            "Max supply is too low, already minted more (+ reserved)"
+        );
+
+        require(
+            _maxSupply < maxSupply,
+            "Cannot set higher than the current maxSupply"
+        );
+
+        maxSupply = _maxSupply;
     }
 
     // Lock changing withdraw address
-    function lockPayoutChange() public onlyOwner {
+    function lockPayoutReceiver() public onlyOwner {
         isPayoutChangeLocked = true;
     }
 
@@ -288,13 +356,13 @@ contract MetaverseNFT is
             "Not enough Tokens left."
         );
 
-        uint256 currentTokenIndex = _currentIndex;
+        uint256 nextTokenId = _nextTokenId();
 
         _safeMint(to, nTokens, "");
 
         if (extraData.length > 0) {
             for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = currentTokenIndex + i;
+                uint256 tokenId = nextTokenId + i;
                 data[tokenId] = extraData;
             }
         }
@@ -307,8 +375,8 @@ contract MetaverseNFT is
         _;
     }
 
-    modifier whenNotFrozen() {
-        require(!isFrozen, "Minting is frozen");
+    modifier whenSaleNotStarted() {
+        require(!saleStarted(), "Sale should not be started");
         _;
     }
 
@@ -337,9 +405,12 @@ contract MetaverseNFT is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                balanceOf(msg.sender) + nTokens <= maxPerWallet,
+                mintedBy[msg.sender] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
+
+            // only store minted amounts after limit is enabled to save gas
+            mintedBy[msg.sender] += nTokens;
         }
 
         require(
@@ -378,7 +449,7 @@ contract MetaverseNFT is
     // ---- Mint configuration
 
     function updateMaxPerMint(uint256 _maxPerMint)
-        external
+        public
         onlyOwner
         nonReentrant
     {
@@ -386,8 +457,9 @@ contract MetaverseNFT is
         maxPerMint = _maxPerMint;
     }
 
+    // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
-        external
+        public
         onlyOwner
         nonReentrant
     {
@@ -396,15 +468,11 @@ contract MetaverseNFT is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp)
-        public
-        onlyOwner
-        whenNotFrozen
-    {
+    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner {
         startTimestamp = _startTimestamp;
     }
 
-    function startSale() public onlyOwner whenNotFrozen {
+    function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
     }
 
@@ -444,8 +512,7 @@ contract MetaverseNFT is
         view
         returns (address receiver, uint256 royaltyAmount)
     {
-        // We use the same contract to split royalties: 5% of royalty goes to the developer
-        receiver = royaltyReceiver;
+        receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
 
@@ -457,6 +524,16 @@ contract MetaverseNFT is
         receiver = payoutReceiver != address(0x0)
             ? payable(payoutReceiver)
             : payable(owner());
+    }
+
+    function getRoyaltyReceiver()
+        public
+        view
+        returns (address payable receiver)
+    {
+        receiver = royaltyReceiver != address(0x0)
+            ? payable(royaltyReceiver)
+            : getPayoutReceiver();
     }
 
     // ---- Allow royalty deposits from Opensea -----
@@ -544,4 +621,5 @@ contract MetaverseNFT is
 
         return super.isApprovedForAll(owner, operator);
     }
+
 }

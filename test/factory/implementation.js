@@ -4,15 +4,18 @@ const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { parseEther } = require("ethers").utils;
 
 const { getGasCost, createNFTSale } = require("../utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const ERC721Community = artifacts.require("ERC721Community");
+
+const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
@@ -21,28 +24,45 @@ contract("MetaverseNFT – Implementation", accounts => {
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
 
-    beforeEach(async () => {
-        if (!pass || !factory) {
-            pass = await createNFTSale(MetaverseBaseNFT);
-            await pass.claim(2, owner);
+    before(async () => {
+        // check if there is contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d
+        const code = await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
 
-            factory = await NFTFactory.new(pass.address);
+        if (code === "0x") {
+            await getImplementation();
         }
 
-        tx = await factory.createNFT(
-            ether.times(0.03),
-            1000,
-            3, // reserved
-            20, // per tx
-            500, // 5%
-            "ipfs://factory-test/",
+        assert.notEqual(await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d"), "0x", "No contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");
+    });
+
+    beforeEach(async () => {
+        if (!pass) {
+            pass = await createNFTSale(MetaverseBaseNFT);
+            await pass.claim(2, owner);
+        }
+
+        nft_ = await ERC721Community.new(
             "Test",
             "NFT",
+            1000,
+            3, // reserved
+            false,
+            "ipfs://factory-test/",
+            { 
+                publicPrice: parseEther("0.03"),
+                maxTokensPerMint: 20,
+                maxTokensPerWallet: 0,
+                royaltyFee: 500,
+                payoutReceiver: owner,
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false
+            }
         );
 
-        const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
+        // const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
 
-        nft = await MetaverseNFT.at(deployedAddress);
+        nft = await MetaverseNFT.at(nft_.address);
     });
 
     // it should deploy successfully
@@ -289,7 +309,7 @@ contract("MetaverseNFT – Implementation", accounts => {
         // info.royaltyReceiver is nft address
         // info.royaltyFee is 5%
 
-        assert.equal(info.receiver, nft.address);
+        assert.equal(info.receiver, await nft.owner());
         assert.equal(info.royaltyAmount, 500);
 
         // it can change 
@@ -378,21 +398,30 @@ contract("MetaverseNFT – Implementation", accounts => {
 
 
     it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-        const tx = await factory.createNFT(
-            "1000000000000000",
+        const nft_ = await ERC721Community.new(
+            "Test",
+            "NFT",
             200,
-            40,
-            20,
-            500, // royalty
-            "https://metadata.buildship.dev/",
-            "Avatar Collection NFT", "NFT",
+            40, // reserved
+            false,
+            "ipfs://factory-test/",
+            {
+                publicPrice: parseEther("0.03"),
+                maxTokensPerMint: 20,
+                maxTokensPerWallet: 0,
+                royaltyFee: 500,
+                payoutReceiver: owner,
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false
+            }
         );
 
-        const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
-
-        const nft = await MetaverseNFT.at(deployedAddress);
+        const nft = await MetaverseNFT.at(nft_.address);
 
         await nft.startSale();
+
+        await nft.updateMaxPerWallet(0);
 
         // set price to 0.0001 ether
         await nft.setPrice(ether.times(0.0001));
@@ -445,17 +474,38 @@ contract("MetaverseNFT – Implementation", accounts => {
 
     });
 
-    // it should be able to freeze minting and then startSale doesnt work
-    it("should be able to freeze minting and then startSale doesnt work", async () => {
+    // it should be able to reduce supply minting
+    it("should be able to reduce supply and then mint doesnt work", async () => {
+        await nft.reduceMaxSupply(10);
         await nft.startSale();
-        await nft.freeze();
+
+        await nft.mint(5, { value: ether });
+        await nft.claim(3, user1);
 
         try {
-            await nft.startSale();
+            await nft.mint(5, { value: ether });
+
         } catch (error) {
-            assert.include(error.message, "Minting is frozen");
+            assert.include(error.message, "Not enough Tokens left.");
         }
     });
+
+    // it should not be able to reduce max supply more than possible
+    it("should not be able to reduce max supply more than possible", async () => {
+        await nft.claim(3, user2);
+
+        await nft.startSale();
+        await nft.mint(10, { from: user2, value: ether });
+
+        await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+
+        await nft.stopSale();
+
+        await expectRevert(nft.reduceMaxSupply(10), "Max supply is too low, already minted more (+ reserved)");
+
+        await expectRevert(nft.reduceMaxSupply(1337), "Cannot set higher than the current maxSupply");
+
+    })
 
     // it should be able to set maxPerWallet
     it("should be able to set maxPerWallet", async () => {
@@ -479,7 +529,7 @@ contract("MetaverseNFT – Implementation", accounts => {
     });
 
     // it should be able to mint more than maxPerWallet if user transfers
-    it("(WARNING) can easily trick maxPerWallet if user transfers to second address temporary", async () => {
+    it("cannot trick maxPerWallet if user transfers to second address temporary", async () => {
         await nft.updateMaxPerWallet(10);
         await nft.startSale();
 
@@ -491,13 +541,17 @@ contract("MetaverseNFT – Implementation", accounts => {
         await nft.transferFrom(user1, user2, 1, { from: user1 });
 
         // minting 4 + 4 + 4 tokens for user1+user2
-        await nft.mint(4, { from: user1, value: ether.times(0.03).times(4) });
+        expectRevert(
+            nft.mint(4, { from: user1, value: ether.times(0.03).times(4) }),
+            "You cannot mint more than maxPerWallet tokens for one address!"
+        );
 
         // transfer back original tokens
         await nft.transferFrom(user2, user1, 0, { from: user2 });
         await nft.transferFrom(user2, user1, 1, { from: user2 });
 
-        assert.equal(await nft.balanceOf(user1), 12);
+        assert.notEqual(await nft.balanceOf(user1), 12);
+        assert.equal(await nft.balanceOf(user1), 8);
         assert.equal(await nft.balanceOf(user2), 0);
     });
 
