@@ -14,17 +14,6 @@ The architecture works as follows:
 3. Now you can startSale or use extension any other way to mint tokens from the `MetaverseNFT`.
 
 
-## MetaverseNFTFactory
-
-Pay a fee to create a new NFT smart-contract.
-
-NFTFactory.createNFT is MUCH cheaper than deploying your own smart-contract.
-
-Usual ERC721 deployment varies from 3m to 5m gas.
-
-NFTFactory.createNFT eats about 300k gas, 10-20x cheaper.
-
-
 ## MetaverseNFT
 
 This is a clone-able version of `contracts/AvatarNFT.sol`. It's a fixed-supply ERC721 minter. You can set price and other misc params for the public sale.
