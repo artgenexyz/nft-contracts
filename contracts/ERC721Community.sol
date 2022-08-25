@@ -42,8 +42,8 @@ contract ERC721Community is Proxy {
     address internal constant proxyImplementation =
         0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d;
 
-    StartFromTokenIdOne public constant START_FROM_ONE = StartFromTokenIdOne.wrap(true);
-    StartFromTokenIdOne public constant START_FROM_ZERO = StartFromTokenIdOne.wrap(false);
+    StartFromTokenIdOne internal constant START_FROM_ONE = StartFromTokenIdOne.wrap(true);
+    StartFromTokenIdOne internal constant START_FROM_ZERO = StartFromTokenIdOne.wrap(false);
 
     constructor(
         string memory name,
