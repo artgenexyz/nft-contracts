@@ -23,7 +23,6 @@ contract("ERC721Community - Implementation", (accounts) => {
   const beneficiary = owner;
 
   before(async () => {
-    assert.equal(await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d"), "0x", "Contract should not be deployed");
 
     // check if there is contract code at 0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d
     const code = await web3.eth.getCode("0xe7c721B7CB5Fb2E47E01dE0D19d3385d6b13B87d");

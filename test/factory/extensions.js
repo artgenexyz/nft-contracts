@@ -6,9 +6,6 @@ const delay = require("delay");
 
 const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require("../utils");
 
-const MetaverseNFT = artifacts.require("MetaverseNFT");
-const MetaverseNFTFactory = artifacts.require("MetaverseNFTFactory");
-const NFTExtension = artifacts.require("NFTExtension");
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const LimitedSupplyMintingExtension = artifacts.require("LimitedSupplyMintingExtension");
@@ -16,8 +13,6 @@ const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
-
-const ether = new BigNumber(1e18);
 
 contract("MetaverseBaseNFT – Extensions", (accounts) => {
     let nft;
@@ -179,15 +174,9 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
         const pass = await createNFTSale(MetaverseBaseNFT);
         await pass.claim(2, owner);
 
-        const metaverseFactory = await MetaverseNFTFactory.new(pass.address);
-        const metaverseAddr = (await metaverseFactory.createNFT(
-            1e17.toString(), 10000, 100, 10, 500,
-            "https://metadata.buildship.xyz/api/token/SYMBOL/",
-            "Avatar Collection NFT", "SYMBOL"
-        )).logs.find((event) => event.event === "NFTCreated").args.deployedAddress;
-        const metaverseNFT = await MetaverseNFT.at(metaverseAddr);
+        const metaverseNFT = nft;
 
-        const ERC20Extension = await ERC20SaleExtension.new(metaverseAddr, currency.address, 10, 20);
+        const ERC20Extension = await ERC20SaleExtension.new(metaverseNFT.address, currency.address, 10, 20);
         await metaverseNFT.addExtension(ERC20Extension.address);
 
         await currency.transfer(user1, 500);
@@ -365,197 +354,5 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
             "LimitedSupplyMintingExtension: max per wallet reached"
         );
 
-    });
-
-    return ;
-
-    // it should measure gas spent on deployment
-    it("should measure gas spent on deployment", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.01),
-            10000,
-            0,
-            20,
-            "factory-test-buy",
-            "Test",
-            "NFT",
-            { value: ether.times(0.1) },
-        );
-
-        const gasSpent = nft.receipt.gasUsed;
-
-        assert.isBelow(gasSpent, 500_000);
-
-    });
-
-    // it should test that NFT Factory can create NFTs
-    it("should test that NFT Factory can create NFTs", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.05),
-            10000,
-            0,
-            20,
-            "factory-test",
-            "Test",
-            "NFT",
-            { value: ether.times(0.1) },
-        );
-
-        assert.ok(nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress);
-    });
-
-    // it should test that deployed NFTs have correct owner and correct values
-    it("should test that deployed NFTs have correct owner and correct values", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.05),
-            10000,
-            0,
-            20,
-            "factory-test",
-            "Test",
-            "NFT",
-            { from: user1, value: ether.times(0.1) }
-        );
-
-        let deployedNFT = await MetaverseNFT.at(
-            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
-        );
-
-        assert.equal(await deployedNFT.owner(), user1);
-        assert.include(await deployedNFT.baseURI(), "factory-test");
-        assert.equal(
-            await deployedNFT.baseURI(),
-            "factory-test"
-        );
-    });
-
-    // it should allow updating value in one NFT doesn't change value in other, or in the shared implementation
-    it("should allow updating value in one NFT doesn't change value in other, or in the shared implementation", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.05),
-            10000,
-            0,
-            20,
-            "factory-test",
-            "Test",
-            "NFT",
-            { from: user1, value: ether.times(0.1) }
-        );
-
-        let nft2 = await factory.createNFT(
-            ether.times(0.05),
-            10000,
-            0,
-            20,
-            "factory-test",
-            "Test",
-            "NFT",
-            { from: user1, value: ether.times(0.1) }
-        );
-
-        let deployedNFT = await MetaverseNFT.at(
-            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
-        );
-        let deployedNFT2 = await MetaverseNFT.at(
-            nft2.logs.find(l => l.event === "NFTCreated").args.deployedAddress
-        );
-
-        await deployedNFT.setPrice(ether.times(0.1), { from: user1 });
-
-        assert.equal(
-            (await deployedNFT.getPrice()).toString(),
-            ether.times(0.1).toString()
-        );
-
-        assert.equal(
-            (await deployedNFT2.getPrice()).toString(),
-            ether.times(0.05).toString()
-        );
-    });
-
-    // it should test that shared implementation fails on all transactions
-    it("should test that shared implementation fails on all transactions", async () => {
-        const proxyImplementation = await factory.proxyImplementation();
-        const original = await MetaverseNFT.at(proxyImplementation);
-
-        assert.equal(
-            await original.owner(),
-            "0x0000000000000000000000000000000000000000"
-        );
-
-        await expectRevert(
-            original.mint(1, { from: owner, value: ether.times(0.1) }),
-            "Sale not started"
-        );
-    });
-
-    // it should measure gas spent on deployment
-    it("should measure gas spent on deployment", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.01),
-            10000,
-            0,
-            20,
-            "factory-test-buy",
-            "Test",
-            "NFT",
-            { value: ether.times(0.1) },
-        );
-
-        const gasSpent = nft.receipt.gasUsed;
-
-        assert.isBelow(gasSpent, 500_000);
-
-    });
-
-    // it should allow starting sale and buying nft from factory
-    // it should test fee split works correctly and developer gets 5% of the balance after owner calls withdraw()
-    it("should allow starting sale and buying nft from factory", async () => {
-        let nft = await factory.createNFT(
-            ether.times(0.01),
-            10000,
-            0,
-            20,
-            "factory-test-buy",
-            "Test",
-            "NFT",
-            { value: ether.times(0.1) },
-        );
-
-        let deployedNFT = await MetaverseNFT.at(
-            nft.logs.find(l => l.event === "NFTCreated").args.deployedAddress
-        );
-
-        await deployedNFT.flipSaleStarted();
-
-        await deployedNFT.mint(5, { from: user1, value: ether.times(0.05) });
-        await deployedNFT.mint(5, { from: user2, value: ether.times(0.05) });
-
-        // total is 0.1 eth now
-
-        const dev = await deployedNFT.DEVELOPER_ADDRESS();
-
-        const balance = await web3.eth.getBalance(deployedNFT.address);
-        const balanceDeveloperBefore = await web3.eth.getBalance(dev);
-        const balanceOwnerBefore = await web3.eth.getBalance(owner);
-
-        assert.equal(balance.toString(), ether.times(0.1).toString());
-
-        const tx = await deployedNFT.withdraw({ from: owner });
-
-        const balanceOwnerAfter = await web3.eth.getBalance(owner);
-        const balanceDeveloperAfter = await web3.eth.getBalance(dev);
-
-        const gasCost = getGasCost(tx);
-
-        assert.equal(
-            new BigNumber(balanceOwnerAfter).minus(balanceOwnerBefore).plus(gasCost).toString(),
-            ether.times(0.1).times(0.95).toString(),
-        );
-
-        assert.equal(
-            new BigNumber(balanceDeveloperAfter).minus(balanceDeveloperBefore).toString(),
-            ether.times(0.1).times(0.05).toString(),
-        );
     });
 });
