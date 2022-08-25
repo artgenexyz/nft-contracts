@@ -1,7 +1,7 @@
 const assert = require("assert");
 const BigNumber = require("bignumber.js");
 
-const { createNFTSale } = require("../utils");
+const { createNFTSale } = require("./utils");
 
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 
