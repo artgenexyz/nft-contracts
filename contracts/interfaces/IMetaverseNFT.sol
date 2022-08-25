@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-/** @dev these values can be edited later */
+/** @dev config includes values have setters and can be changed later */
 struct MintConfig {
     uint256 publicPrice;
     uint256 maxTokensPerMint;
