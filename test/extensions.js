@@ -4,7 +4,7 @@ const { assert, expect } = require("chai");
 const keccak256 = require("keccak256");
 const delay = require("delay");
 
-const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require("../utils");
+const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require("./utils");
 
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");

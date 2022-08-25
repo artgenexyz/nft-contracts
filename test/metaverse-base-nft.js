@@ -3,7 +3,7 @@ const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost } = require("./utils");
 
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");

@@ -3,7 +3,7 @@ const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost } = require("./utils");
 
 const MetaverseNFT = artifacts.require("MetaverseNFT");
 const ERC721Community = artifacts.require("ERC721Community");
@@ -13,7 +13,7 @@ const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const DemoCollection = artifacts.require("DemoCollection");
 
-const { main: getImplementation } = require("../../scripts/deploy-proxy.ts");
+const { main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
