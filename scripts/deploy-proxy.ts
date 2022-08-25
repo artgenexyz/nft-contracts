@@ -34,6 +34,10 @@ export async function main() {
 
   // if balance of vanity account is 0, top it up
   const vanityBalance = await vanity.getBalance();
+
+  console.log('vanity deployer address is', vanity.address);
+  console.log('vanity deployer balance is', vanityBalance.div(1e18).toNumber());
+
   if (vanityBalance.eq(0)) {
     console.log("Vanity account has balance 0");
     if (false && hre.network.name == "hardhat") {
