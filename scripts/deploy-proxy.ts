@@ -1,11 +1,34 @@
 import hre, { ethers } from "hardhat";
 import fs from "fs";
-import { parseEther } from "ethers/lib/utils";
+import { getContractAddress, parseEther } from "ethers/lib/utils";
+
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+export const VANITY_ADDRESS = "0x721721001Ac55A3Ef34565b9320B29B47135597f";
+
+export const computeVanityAddress = async () => {
+
+  // load account from process.env.VANITY_PRIVATE_DEPLOYER
+  const vanityKey = process.env.VANITY_PRIVATE_DEPLOYER;
+
+  if (!vanityKey) {
+    throw new Error("VANITY_PRIVATE_DEPLOYER is not set");
+  }
+
+  const vanityDeployer = new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
+  const transactionCount = await vanityDeployer.getTransactionCount();
+
+  const vanityAddress = getContractAddress({
+    from: vanityDeployer.address,
+    nonce: transactionCount
+  });
+
+  return vanityAddress;
+}
+
 export async function main() {
-  const [ admin ] = await hre.ethers.getSigners();
+  const [admin] = await hre.ethers.getSigners();
 
   // load account from process.env.VANITY_PRIVATE_DEPLOYER
   const vanityKey = process.env.VANITY_PRIVATE_DEPLOYER;
@@ -22,6 +45,31 @@ export async function main() {
   //   });
 
   // }
+
+
+  const ERC721Community = await hre.ethers.getContractFactory("ERC721Community");
+
+  if (ERC721Community.bytecode.includes(VANITY_ADDRESS.toLowerCase().slice(2))) {
+    
+    console.log("Bytecode includes vanity address", VANITY_ADDRESS);
+
+  } else {
+    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, VANITY_ADDRESS);
+
+    throw new Error("ERC721Community bytecode does not include vanity address");
+  }
+
+  const futureAddress = await computeVanityAddress();
+  console.log("Future address:", futureAddress);
+  console.log("Vanity address:", VANITY_ADDRESS);
+
+  if (futureAddress === VANITY_ADDRESS) {
+    console.log("Address matches vanity address", futureAddress, VANITY_ADDRESS);
+  } else {
+    console.log("Address does not match vanity address", futureAddress, VANITY_ADDRESS);
+
+    throw new Error(`Address does not match vanity address: ${futureAddress} != ${VANITY_ADDRESS}`);
+  }
 
   const vanity = new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
 
@@ -73,7 +121,7 @@ export async function main() {
     `module.exports = ${JSON.stringify(args)}`,
     "utf8"
   );
-  
+
   // skip waiting if running on hardhat network
   if (hre.network.name == "hardhat") {
     return;
@@ -81,7 +129,7 @@ export async function main() {
 
   // print that we are waiting
   console.log("Waiting 3 seconds...");
-  
+
   await delay(3000);
 
   // send verification request
