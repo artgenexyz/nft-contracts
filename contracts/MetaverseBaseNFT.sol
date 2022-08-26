@@ -62,6 +62,8 @@ contract MetaverseBaseNFT is
     uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
+    address public constant OPENSEA_CONDUIT =
+        0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -557,16 +559,7 @@ contract MetaverseBaseNFT is
         override
         returns (bool)
     {
-        // Get a reference to OpenSea's proxy registry contract by instantiating
-        // the contract using the already existing address.
-        ProxyRegistry proxyRegistry = ProxyRegistry(
-            0xa5409ec958C83C3f309868babACA7c86DCB077c1
-        );
-
-        if (
-            isOpenSeaProxyActive &&
-            address(proxyRegistry.proxies(owner)) == operator
-        ) {
+        if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
 
