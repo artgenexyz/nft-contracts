@@ -59,10 +59,10 @@ contract MetaverseBaseNFT is
 
     Counters.Counter private _tokenIndexCounter; // token index counter
 
-    uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
-    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
-    address public constant OPENSEA_CONDUIT =
+    uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
+    uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
+    address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
