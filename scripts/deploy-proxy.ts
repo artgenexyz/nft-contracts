@@ -1,11 +1,27 @@
 import hre, { ethers } from "hardhat";
 import fs from "fs";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
+import { Address } from "hardhat-deploy/dist/types";
+import { Signer } from "ethers";
 
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const VANITY_ADDRESS = "0x721721001Ac55A3Ef34565b9320B29B47135597f";
+
+export const sendAllFunds = async (account: Signer, to: Address) => {
+  const balance = await account.getBalance();
+
+  const gasPrice = hre.ethers.utils.parseUnits("10", "gwei");
+  const gasCost = gasPrice.mul(21000);
+
+  return await account.sendTransaction({
+    to: to,
+    value: balance.sub(gasCost),
+    gasLimit: 21_000,
+    gasPrice: gasPrice,
+  });
+}
 
 export const computeVanityAddress = async () => {
 
@@ -106,7 +122,13 @@ export async function main() {
   }
 
   const ERC721CommunityImplementation = await hre.ethers.getContractFactory("ERC721CommunityImplementation");
-  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy();
+
+  // deploy with gas = 15 gwei
+  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy({
+    gasPrice: ethers.utils.parseUnits("20", "gwei"),
+    gasLimit: 6_000_000,
+    nonce: vanityNonce,
+  });
 
   await implementation.deployed();
 
