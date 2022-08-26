@@ -38,8 +38,35 @@ const getAirdropTree = (addresses) => {
 
 }
 
+// struct MintConfig {
+//     uint256 publicPrice;
+//     uint256 maxTokensPerMint;
+//     uint256 maxTokensPerWallet;
+//     uint256 royaltyFee;
+//     address payoutReceiver;
+//     bool shouldLockPayoutReceiver;
+//     bool shouldStartSale;
+//     bool shouldUseJsonExtension;
+// }
+const getMintConfig = () => ({
+    publicPrice: new BigNumber(1e18).times(0.1).toString(),
+    maxTokensPerMint: 10,
+    maxTokensPerWallet: 0,
+    royaltyFee: 500,
+    payoutReceiver: "0x0000000000000000000000000000000000000000",
+    shouldLockPayoutReceiver: false,
+    shouldStartSale: false,
+    shouldUseJsonExtension: false,
+})
+
 const createNFTSale = (MetaverseBaseNFT) => {
-    return MetaverseBaseNFT.new(ether("0.1"), 1000, 10, 10, 0, "ipfs://avatar-nft/", "NFT", "NFT", false)
+    return MetaverseBaseNFT.new(
+        "NFT", "NFT",
+        1000, 10,
+        false,
+        "ipfs://avatar-nft/",
+        getMintConfig()
+    )
 }
 
 async function mineBlock() {
@@ -59,4 +86,4 @@ async function rpc(request) {
 }
 
 
-module.exports = { getGasCost, getAirdropTree, processAddress, createNFTSale, mineBlock, rpc }
+module.exports = { getGasCost, getMintConfig, getAirdropTree, processAddress, createNFTSale, mineBlock, rpc }
