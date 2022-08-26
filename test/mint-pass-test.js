@@ -3,7 +3,7 @@ const BigNumber = require("bignumber.js");
 
 const { createNFTSale } = require("./utils");
 
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 
 const MintPassExtension = artifacts.require("MintPassExtension");
 
@@ -15,8 +15,8 @@ contract("MintPass – Extension", (accounts) => {
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await createNFTSale(MetaverseBaseNFT);
-        mintpass = await createNFTSale(MetaverseBaseNFT);
+        nft = await createNFTSale(ERC721CommunityBase);
+        mintpass = await createNFTSale(ERC721CommunityBase);
 
         extension = await MintPassExtension.new(
             nft.address,

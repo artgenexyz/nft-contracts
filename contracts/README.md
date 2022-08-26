@@ -1,20 +1,20 @@
-# MetaverseNFTFactory
+# ERC721CommunityImplementationFactory
 
 The architecture works as follows:
 
-- MetaverseNFTFactory is a base contract that manages the creation of NFTs. It takes small gas fee (about 500k gas) to create a new NFT smart-contract.
-- MetaverseNFT is an NFT sale contract. It can mint NFTs and allows other contracts to connect to it for minting. It includes public sale options by default.
-- INFTExtension is an interface that is allowed to connect to MetaverseNFT and mint on their behalf
-- MetaverseBaseNFT is a standalone contract that can be deployed without Factory. It has all the features from MetaverseNFT, but allows to be extended and deployed separately.
+- ERC721CommunityImplementationFactory is a base contract that manages the creation of NFTs. It takes small gas fee (about 500k gas) to create a new NFT smart-contract.
+- ERC721CommunityImplementation is an NFT sale contract. It can mint NFTs and allows other contracts to connect to it for minting. It includes public sale options by default.
+- INFTExtension is an interface that is allowed to connect to ERC721CommunityImplementation and mint on their behalf
+- ERC721CommunityBase is a standalone contract that can be deployed without Factory. It has all the features from ERC721CommunityImplementation, but allows to be extended and deployed separately.
 
-## How to connect extension to MetaverseNFT
+## How to connect extension to ERC721CommunityImplementation
 
 1. Deploy extension contract that conforms to `INFTExtension` interface. Optionally, use `NFTExtension` as a base contract.
-2. On that `MetaverseNFT`, call `addExtension(address _extension)` with the address of the extension.
-3. Now you can startSale or use extension any other way to mint tokens from the `MetaverseNFT`.
+2. On that `ERC721CommunityImplementation`, call `addExtension(address _extension)` with the address of the extension.
+3. Now you can startSale or use extension any other way to mint tokens from the `ERC721CommunityImplementation`.
 
 
-## MetaverseNFT
+## ERC721CommunityImplementation
 
 This is a clone-able version of `contracts/AvatarNFT.sol`. It's a fixed-supply ERC721 minter. You can set price and other misc params for the public sale.
 
@@ -29,25 +29,25 @@ Features:
 - can be extended to include other features
 
 
-## MetaverseBaseNFT
+## ERC721CommunityBase
 
-Sometimes you need to override functionality. We published a `MetaverseBaseNFT` that can be used as a base for your own NFT smart-contract.
+Sometimes you need to override functionality. We published a `ERC721CommunityBase` that can be used as a base for your own NFT smart-contract.
 
-It's a copy of `MetaverseNFT`, but uses non-upgradeable versions of ERC721 and Ownable.
+It's a copy of `ERC721CommunityImplementation`, but uses non-upgradeable versions of ERC721 and Ownable.
 
 Check that the code is identical:
 
 ```bash
-colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol
+colordiff contracts/ERC721CommunityBase.sol contracts/ERC721CommunityImplementation.sol
 ```
 
 ## INFTExtension
 
-This one is a cherry on top of this architecture! It's a contract that can be connected to MetaverseNFT and mint on their behalf.
+This one is a cherry on top of this architecture! It's a contract that can be connected to ERC721CommunityImplementation and mint on their behalf.
 
-The main idea here is that `INFTExtension` is a stateless contract. The state should be stored in the `MetaverseNFT` contract.
+The main idea here is that `INFTExtension` is a stateless contract. The state should be stored in the `ERC721CommunityImplementation` contract.
 
-This is meant to reduce deployment cost as much as possible. Extensions are meant to be deployed once and be available to use for every `MetaverseNFT` instance who wants to connect them.
+This is meant to reduce deployment cost as much as possible. Extensions are meant to be deployed once and be available to use for every `ERC721CommunityImplementation` instance who wants to connect them.
 
 Examples of state stored in the original contract would be:
 - Tier info
@@ -70,13 +70,13 @@ contract Extension is INFTExtension {
 
 ## (DRAFT) Research extension architecture
 
-Basically there are three options to connect extension to MetaverseNFT.
+Basically there are three options to connect extension to ERC721CommunityImplementation.
 
 NFTSale <=> ExtensionA
         <=> ExtensionB
 
 
-1. Send token data to MetaverseNFT directly. Store extension data in MetaverseNFT.
+1. Send token data to ERC721CommunityImplementation directly. Store extension data in ERC721CommunityImplementation.
 
 ```solidity
 function mint(uint nTokens, bytes32[] data) {
@@ -94,7 +94,7 @@ function mint(uint nTokens, bytes32[] data) {
 - can't control which tokenIds are being issued, only issued sequentially
 
 
-2. MetaverseNFT accepts tokenIds data from outside and doesn't store lastTokenId
+2. ERC721CommunityImplementation accepts tokenIds data from outside and doesn't store lastTokenId
 
 ```solidity
 function mint(uint[] tokenIds) {
@@ -108,7 +108,7 @@ function mint(uint[] tokenIds) {
 + can issue different sequences of tokenId, e.g. 0-100 separate from 1000-1100
 - extension needs to store tokenIdCounter for each collection
 
-3. MetaverseNFT accepts tokenIds data from outside, but also stores lastTokenId as a public value
+3. ERC721CommunityImplementation accepts tokenIds data from outside, but also stores lastTokenId as a public value
 
 ```solidity
 function totalSupply () {

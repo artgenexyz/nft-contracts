@@ -9,17 +9,17 @@ const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require(".
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const LimitedSupplyMintingExtension = artifacts.require("LimitedSupplyMintingExtension");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
-contract("MetaverseBaseNFT – Extensions", (accounts) => {
+contract("ERC721CommunityBase – Extensions", (accounts) => {
     let nft;
     const [owner, user1, user2] = accounts;
 
     beforeEach(async () => {
-        nft = await createNFTSale(MetaverseBaseNFT);
+        nft = await createNFTSale(ERC721CommunityBase);
     });
 
     // it should deploy successfully
@@ -171,7 +171,7 @@ contract("MetaverseBaseNFT – Extensions", (accounts) => {
     // it should allow to mint from ERC20SaleExtension
     it ("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const pass = await createNFTSale(MetaverseBaseNFT);
+        const pass = await createNFTSale(ERC721CommunityBase);
         await pass.claim(2, owner);
 
         const metaverseNFT = nft;

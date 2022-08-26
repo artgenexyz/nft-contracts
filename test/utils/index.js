@@ -59,8 +59,8 @@ const getMintConfig = () => ({
     shouldUseJsonExtension: false,
 })
 
-const createNFTSale = (MetaverseBaseNFT) => {
-    return MetaverseBaseNFT.new(
+const createNFTSale = (ERC721CommunityBase) => {
+    return ERC721CommunityBase.new(
         "NFT", "NFT",
         1000, 10,
         false,

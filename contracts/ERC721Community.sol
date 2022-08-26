@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./interfaces/IMetaverseNFT.sol";
+import "./interfaces/IERC721Community.sol";
 
 /**
  * @title made by buildship.xyz
- * @dev ERC721Community is extendable implementation of ERC721 based on ERC721A and MetaverseNFT.
+ * @dev ERC721Community is extendable implementation of ERC721 based on ERC721A and ERC721CommunityImplementation.
  */
 
 //      Want to launch your own collection?
@@ -57,7 +57,7 @@ contract ERC721Community is Proxy {
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
-                IMetaverseNFTImplementation.initialize.selector,
+                IERC721CommunityImplementation.initialize.selector,
                 name,
                 symbol,
                 maxSupply,

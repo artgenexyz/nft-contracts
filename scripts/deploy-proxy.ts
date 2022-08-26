@@ -57,12 +57,12 @@ export async function main() {
     }
   }
 
-  const MetaverseNFT = await hre.ethers.getContractFactory("MetaverseNFT");
-  const implementation = await MetaverseNFT.connect(vanity).deploy();
+  const ERC721CommunityImplementation = await hre.ethers.getContractFactory("ERC721CommunityImplementation");
+  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy();
 
   await implementation.deployed();
 
-  console.log("MetaverseNFT implementation deployed to:", implementation.address);
+  console.log("ERC721CommunityImplementation implementation deployed to:", implementation.address);
 
   // write file to scripts/params.js
 
@@ -89,13 +89,13 @@ export async function main() {
 
   // verify contract
   await hre.run("verify", {
-    contract: "contracts/MetaverseNFT.sol:MetaverseNFT",
+    contract: "contracts/ERC721CommunityImplementation.sol:ERC721CommunityImplementation",
     address: implementation.address,
     constructorArgs: "./scripts/params.js",
     network: "rinkeby",
   });
 
-  const nft = MetaverseNFT.attach(implementation.address);
+  const nft = ERC721CommunityImplementation.attach(implementation.address);
 
   // // Call the deployed contract.
   // const tx2 = await implementation.initialize(
