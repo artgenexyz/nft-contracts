@@ -4,13 +4,13 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../../interfaces/INFTExtension.sol";
-import "../../interfaces/IERC721CommunityImplementation.sol";
+import "../../interfaces/IERC721Community.sol";
 
 contract NFTExtension is INFTExtension, ERC165 {
-    IERC721CommunityImplementation public immutable nft;
+    IERC721Community public immutable nft;
 
     constructor(address _nft) {
-        nft = IERC721CommunityImplementation(_nft);
+        nft = IERC721Community(_nft);
     }
 
     function beforeMint() internal view {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./interfaces/IERC721CommunityImplementation.sol";
+import "./interfaces/IERC721Community.sol";
 
 /**
  * @title made by buildship.xyz
@@ -57,7 +57,7 @@ contract ERC721Community is Proxy {
         Address.functionDelegateCall(
             proxyImplementation,
             abi.encodeWithSelector(
-                IERC721CommunityImplementationImplementation.initialize.selector,
+                IERC721CommunityImplementation.initialize.selector,
                 name,
                 symbol,
                 maxSupply,

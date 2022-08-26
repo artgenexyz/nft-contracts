@@ -15,7 +15,7 @@ struct MintConfig {
     bool shouldUseJsonExtension;
 }
 
-interface IERC721CommunityImplementation {
+interface IERC721Community {
     function DEVELOPER() external pure returns (string memory _url);
 
     function DEVELOPER_ADDRESS() external pure returns (address payable _dev);
@@ -62,7 +62,7 @@ interface IERC721CommunityImplementation {
     function setRoyaltyFee(uint256 fee) external;
 }
 
-interface IERC721CommunityImplementationImplementation {
+interface IERC721CommunityImplementation {
     function initialize(
         string memory _name,
         string memory _symbol,
