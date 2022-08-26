@@ -96,7 +96,7 @@ describe("Allowlist Factory", () => {
 
     // // it should mint successfully
     it("should mint successfully", async function () {
-        const NFT = await ethers.getContractFactory("MetaverseBaseNFT");
+        const NFT = await ethers.getContractFactory("ERC721CommunityBase");
 
         const [ minter1, minter2, minter3 ] = await ethers.getSigners();
 

@@ -22,14 +22,14 @@ Features include:
 - Deployed by Factory using Clones
 - Supports `NFTExtension` to upgrade mint and tokenURI functions
 
-## MetaverseBaseNFT.sol
+## ERC721CommunityBase.sol
 - Same features as ERC721CommunityImplementation
 - Import and inherit in your own projects
 
 ```solidity
-contract MyPFPNFT is MetaverseBaseNFT {
+contract MyPFPNFT is ERC721CommunityBase {
 
-    constructor() MetaverseBaseNFT(
+    constructor() ERC721CommunityBase(
         0.1 ether, // public mint price, you can change later
         10000, // total supply
         100, // reserved
@@ -79,8 +79,8 @@ npx hardhat test
 ### Checking different versions of ERC721CommunityImplementation:
 
 ```bash
-colordiff contracts/MetaverseBaseNFT.sol contracts/ERC721CommunityImplementation.sol --context=1
-colordiff contracts/MetaverseBaseNFT_ERC1155.sol contracts/MetaverseBaseNFT.sol --context=1
+colordiff contracts/ERC721CommunityBase.sol contracts/ERC721CommunityImplementation.sol --context=1
+colordiff contracts/ERC721CommunityBase_ERC1155.sol contracts/ERC721CommunityBase.sol --context=1
 ```
 
 ### Deploy to production

@@ -47,7 +47,7 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseBaseNFT is
+contract ERC721CommunityBase is
     ERC721A,
     ReentrancyGuard,
     Ownable,

@@ -9,7 +9,7 @@ const { parseEther } = require("ethers").utils;
 const { getGasCost, createNFTSale } = require("./utils");
 
 const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -37,7 +37,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
     beforeEach(async () => {
         if (!pass) {
-            pass = await createNFTSale(MetaverseBaseNFT);
+            pass = await createNFTSale(ERC721CommunityBase);
             await pass.claim(2, owner);
         }
 

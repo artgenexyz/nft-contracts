@@ -5,7 +5,7 @@ The architecture works as follows:
 - ERC721CommunityImplementationFactory is a base contract that manages the creation of NFTs. It takes small gas fee (about 500k gas) to create a new NFT smart-contract.
 - ERC721CommunityImplementation is an NFT sale contract. It can mint NFTs and allows other contracts to connect to it for minting. It includes public sale options by default.
 - INFTExtension is an interface that is allowed to connect to ERC721CommunityImplementation and mint on their behalf
-- MetaverseBaseNFT is a standalone contract that can be deployed without Factory. It has all the features from ERC721CommunityImplementation, but allows to be extended and deployed separately.
+- ERC721CommunityBase is a standalone contract that can be deployed without Factory. It has all the features from ERC721CommunityImplementation, but allows to be extended and deployed separately.
 
 ## How to connect extension to ERC721CommunityImplementation
 
@@ -29,16 +29,16 @@ Features:
 - can be extended to include other features
 
 
-## MetaverseBaseNFT
+## ERC721CommunityBase
 
-Sometimes you need to override functionality. We published a `MetaverseBaseNFT` that can be used as a base for your own NFT smart-contract.
+Sometimes you need to override functionality. We published a `ERC721CommunityBase` that can be used as a base for your own NFT smart-contract.
 
 It's a copy of `ERC721CommunityImplementation`, but uses non-upgradeable versions of ERC721 and Ownable.
 
 Check that the code is identical:
 
 ```bash
-colordiff contracts/MetaverseBaseNFT.sol contracts/ERC721CommunityImplementation.sol
+colordiff contracts/ERC721CommunityBase.sol contracts/ERC721CommunityImplementation.sol
 ```
 
 ## INFTExtension

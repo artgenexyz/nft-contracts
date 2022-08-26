@@ -6,7 +6,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost, getMintConfig } = require("./utils");
 
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -16,13 +16,13 @@ const ether = new BigNumber(1e18);
 
 const { arrayify, hexZeroPad } = ethers.utils; 
 
-contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
+contract("ERC721CommunityBase_ERC1155 - Extensions", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   beforeEach(async () => {
-    nft = await MetaverseBaseNFT.new(
+    nft = await ERC721CommunityBase.new(
       "Test", "NFT",
       1000, 3,
       false,
@@ -94,7 +94,7 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
   xit("should be able to use OffchainAllowListExtension to mint", async () => {
     const [ admin ] = await ethers.getSigners();
 
-    const nft = await MetaverseBaseNFT.new(
+    const nft = await ERC721CommunityBase.new(
       "Test", "NFT",
       1000, 3,
       false,

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "../MetaverseBaseNFT.sol";
+import "../ERC721CommunityBase.sol";
 
-contract GaslessNFT is MetaverseBaseNFT {
+contract GaslessNFT is ERC721CommunityBase {
     uint256 constant GAS_TRANSFER = 21000;
     uint256 constant GAS_OFFSET = 0; // 10571;
 
     constructor()
-        MetaverseBaseNFT(
+        ERC721CommunityBase(
             "GaslessClub",
             "GASFREE",
             10000,
