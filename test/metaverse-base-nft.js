@@ -472,4 +472,12 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
     );
   });
 
+  // it should autoapprove opensea
+  it("should autoapprove opensea", async () => {
+    const conduit = "0x1E0049783F008A0085193E00003D00cd54003c71";
+
+    // check isApprovedForAll
+    assert.equal(await nft.isApprovedForAll(owner, conduit), true);
+  });
+
 });
