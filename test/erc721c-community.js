@@ -526,7 +526,7 @@ contract("ERC721Community - Implementation", (accounts) => {
     expect(await nft.ownerOf(1)).to.be.equal(user2);
   });
 
-  it("should spend less than 600k gas with null config", async () => {
+  it("should spend less than 600k gas with null config [ @skip-on-coverage ]", async () => {
 
     const nft = await ERC721Community.new(
       "Test", // name
@@ -557,7 +557,7 @@ contract("ERC721Community - Implementation", (accounts) => {
 
   });
 
-  it("should spend less than 750k gas for DemoCollection", async () => {
+  it("should spend less than 750k gas for DemoCollection [ @skip-on-coverage ]", async () => {
     const demo = await DemoCollection.new();
 
     const tx1 = demo.transactionHash;

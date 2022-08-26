@@ -9,7 +9,7 @@
     "compile": "hardhat compile",
     "typechain": "hardhat typechain",
     "test": "hardhat test",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage && open coverage/index.html"
   },
   "dependencies": {
     "@divergencetech/ethier": "^0.33.0",
@@ -57,7 +57,7 @@
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.7",
     "solhint-plugin-prettier": "^0.0.5",
-    "solidity-coverage": "^0.7.17",
+    "solidity-coverage": "^0.7.21",
     "truffle": "^5.4.8",
     "truffle-contract-size": "^2.0.1",
     "truffle-flattener": "^1.6.0",
