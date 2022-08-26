@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFTExtension.sol";
-import "./interfaces/IMetaverseNFT.sol";
+import "./interfaces/IERC721CommunityImplementation.sol";
 import "./utils/OpenseaProxy.sol";
 
 //      Want to launch your own collection?
@@ -51,7 +51,7 @@ contract MetaverseBaseNFT is
     ERC721A,
     ReentrancyGuard,
     Ownable,
-    IMetaverseNFT // implements IERC2981
+    IERC721CommunityImplementation // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -594,7 +594,7 @@ contract MetaverseBaseNFT is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
-            interfaceId == type(IMetaverseNFT).interfaceId ||
+            interfaceId == type(IERC721CommunityImplementation).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

@@ -12,7 +12,7 @@ USE AT YOUR OWN RISK. Most of the features are in production already, however th
 
 Features include:
 
-## MetaverseNFT.sol
+## ERC721CommunityImplementation.sol
 - Limited supply
 - Mint N tokens in one transaction
 - Generative art
@@ -23,7 +23,7 @@ Features include:
 - Supports `NFTExtension` to upgrade mint and tokenURI functions
 
 ## MetaverseBaseNFT.sol
-- Same features as MetaverseNFT
+- Same features as ERC721CommunityImplementation
 - Import and inherit in your own projects
 
 ```solidity
@@ -76,10 +76,10 @@ Then, to test your code:
 npx hardhat test
 ```
 
-### Checking different versions of MetaverseNFT:
+### Checking different versions of ERC721CommunityImplementation:
 
 ```bash
-colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol --context=1
+colordiff contracts/MetaverseBaseNFT.sol contracts/ERC721CommunityImplementation.sol --context=1
 colordiff contracts/MetaverseBaseNFT_ERC1155.sol contracts/MetaverseBaseNFT.sol --context=1
 ```
 

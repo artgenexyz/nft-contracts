@@ -8,7 +8,7 @@ const { parseEther } = require("ethers").utils;
 
 const { getGasCost, createNFTSale } = require("./utils");
 
-const MetaverseNFT = artifacts.require("MetaverseNFT");
+const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -19,7 +19,7 @@ const { main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseNFT – Implementation", accounts => {
+contract("ERC721CommunityImplementation – Implementation", accounts => {
     let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
@@ -62,7 +62,7 @@ contract("MetaverseNFT – Implementation", accounts => {
 
         // const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
 
-        nft = await MetaverseNFT.at(nft_.address);
+        nft = await ERC721CommunityImplementation.at(nft_.address);
     });
 
     // it should deploy successfully
@@ -417,7 +417,7 @@ contract("MetaverseNFT – Implementation", accounts => {
             }
         );
 
-        const nft = await MetaverseNFT.at(nft_.address);
+        const nft = await ERC721CommunityImplementation.at(nft_.address);
 
         await nft.startSale();
 
