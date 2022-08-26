@@ -108,37 +108,86 @@ contract MetaverseBaseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     constructor(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
         string memory _name,
         string memory _symbol,
-        bool _startAtOne
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory _uri,
+        MintConfig memory _config
     ) ERC721A(_name, _symbol) {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
 
-        price = _price;
         reserved = _nReserved;
-        maxPerMint = _maxPerMint;
-        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
-        royaltyFee = _royaltyFee;
-
-        isOpenSeaProxyActive = true;
-
         require(
-            startAtOne == false,
+            _startAtOne == false,
             "Doesn't support starting at one with ERC721A"
         );
         startAtOne = _startAtOne;
 
-        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        // defaults
+        startTimestamp = SALE_STARTS_AT_INFINITY;
+        maxPerMint = MAX_PER_MINT_LIMIT;
+        isOpenSeaProxyActive = true;
+
+        _configure(
+            _config.publicPrice,
+            _config.maxTokensPerMint,
+            _config.maxTokensPerWallet,
+            _config.royaltyFee,
+            _config.payoutReceiver,
+            _config.shouldLockPayoutReceiver,
+            _config.shouldStartSale,
+            _config.shouldUseJsonExtension
+        );
     }
+
+    function _configure(
+        uint256 publicPrice,
+        uint256 maxTokensPerMint,
+        uint256 maxTokensPerWallet,
+        uint256 _royaltyFee,
+        address _payoutReceiver,
+        bool shouldLockPayoutReceiver,
+        bool shouldStartSale,
+        bool shouldUseJsonExtension
+    ) internal {
+        if (publicPrice != 0) {
+            price = publicPrice;
+        }
+
+        if (maxTokensPerMint > 0) {
+            maxPerMint = maxTokensPerMint;
+        }
+        if (maxTokensPerWallet > 0) {
+            maxPerWallet = maxTokensPerWallet;
+        }
+
+        if (_royaltyFee > 0) {
+            royaltyFee = _royaltyFee;
+        }
+
+        if (_payoutReceiver != address(0)) {
+            payoutReceiver = _payoutReceiver;
+        }
+
+        if (shouldLockPayoutReceiver) {
+            isPayoutChangeLocked = true;
+        }
+
+        if (shouldStartSale) {
+            // start sale right now
+            startTimestamp = block.timestamp;
+        }
+
+        if (shouldUseJsonExtension) {
+            URI_POSTFIX = ".json";
+        }
+    }
+
 
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
@@ -192,7 +241,7 @@ contract MetaverseBaseNFT is
         CONTRACT_URI = uri;
     }
 
-    function setPostfixURI(string calldata postfix) public onlyOwner {
+    function setPostfixURI(string memory postfix) public onlyOwner {
         URI_POSTFIX = postfix;
     }
 
@@ -219,7 +268,7 @@ contract MetaverseBaseNFT is
     }
 
     // Lock changing withdraw address
-    function lockPayoutChange() public onlyOwner {
+    function lockPayoutReceiver() public onlyOwner {
         isPayoutChangeLocked = true;
     }
 
@@ -395,7 +444,7 @@ contract MetaverseBaseNFT is
     // ---- Mint configuration
 
     function updateMaxPerMint(uint256 _maxPerMint)
-        external
+        public
         onlyOwner
         nonReentrant
     {
@@ -405,7 +454,7 @@ contract MetaverseBaseNFT is
 
     // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
-        external
+        public
         onlyOwner
         nonReentrant
     {

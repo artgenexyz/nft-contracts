@@ -116,15 +116,22 @@ describe("Allowlist Factory", () => {
         ]
 
         const nft1 = await NFT.deploy(
-            parseEther("0.01"),
-            100,
-            1,
-            1,
-            100, // 1%
             "Test NFT",
             "TEST",
-            "https://example.com",
+            100,
+            1,
             false,
+            "https://example.com",
+            {
+                publicPrice: parseEther("0.1"),
+                maxTokensPerMint: 5,
+                maxTokensPerWallet: 5,
+                royaltyFee: 500,
+                payoutReceiver: "0x0000000000000000000000000000000000000000",
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false,
+            }
         );
 
         const tx = await factory.createAllowlist(

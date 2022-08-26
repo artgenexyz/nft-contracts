@@ -9,15 +9,22 @@ contract GaslessNFT is MetaverseBaseNFT {
 
     constructor()
         MetaverseBaseNFT(
-            0.1 ether,
-            10000,
-            100,
-            20,
-            0,
-            "https://metadata.buildship.xyz/api/token/GASFREE/",
             "GaslessClub",
             "GASFREE",
-            false
+            10000,
+            100,
+            false, // should start at one
+            "https://metadata.buildship.xyz/api/token/GASFREE/",
+            MintConfig(
+                0.1 ether, // public price
+                20, // maxTokensPerMint,
+                20, // maxTokensPerWallet,
+                0, // basis points royalty fee
+                msg.sender, // payout receiver
+                false, // should lock payout receiver
+                false, // should start sale
+                false // should use json extension
+            )
         )
     {}
 

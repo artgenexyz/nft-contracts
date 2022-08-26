@@ -3,7 +3,7 @@ const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("./utils");
+const { getGasCost, getMintConfig } = require("./utils");
 
 const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
 const NFTExtension = artifacts.require("NFTExtension");
@@ -19,15 +19,15 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
 
   beforeEach(async () => {
     nft = await MetaverseBaseNFT.new(
-      ether.times(0.03),
-      1000,
-      3, // reserved
-      20, // per tx
-      500, // 5%
+      "Test", "NFT",
+      1000, 3,
+      false,
       "ipfs://factory-test/",
-      "Test",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: ether.times(0.03).toString(),
+        maxTokensPerMint: 20,
+      }
     );
   });
 
@@ -312,15 +312,15 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
     const nft = await MetaverseBaseNFT.new(
-      "1000000000000000",
-      200,
-      40,
-      20,
-      500, // royalty
+      "Avatar Collection NFT", "NFT",
+      200, 40,
+      false,
       "https://metadata.buildship.xyz/",
-      "Avatar Collection NFT",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: "1000000000000000",
+        maxTokensPerMint: 20,
+      }
     );
 
     await nft.startSale();
