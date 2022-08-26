@@ -5,7 +5,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost } = require("./utils");
 
-const MetaverseNFT = artifacts.require("MetaverseNFT");
+const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
 const ERC721Community = artifacts.require("ERC721Community");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -57,7 +57,7 @@ contract("ERC721Community - Implementation", (accounts) => {
       },
     );
 
-    nft = await MetaverseNFT.at(nft.address);
+    nft = await ERC721CommunityImplementation.at(nft.address);
 
     // await nft.setup(
     //   ether.times(0.03).toString(),
@@ -100,7 +100,7 @@ contract("ERC721Community - Implementation", (accounts) => {
       },
     );
 
-    const nft_ = (await MetaverseNFT.at(nft.address))
+    const nft_ = (await ERC721CommunityImplementation.at(nft.address))
 
     // const setupTx = await nft_.setup(
     //   ether.times(0.03).toString(),
@@ -420,7 +420,7 @@ contract("ERC721Community - Implementation", (accounts) => {
       },
     );
 
-    const nft = await MetaverseNFT.at(_nft.address);
+    const nft = await ERC721CommunityImplementation.at(_nft.address);
 
     // await nft.setup(
     //   "1000000000000000",

@@ -5,20 +5,20 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const { getGasCost, getMintConfig } = require("./utils");
 
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseBaseNFT - Implementation", (accounts) => {
+contract("ERC721CommunityBase - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   beforeEach(async () => {
-    nft = await MetaverseBaseNFT.new(
+    nft = await ERC721CommunityBase.new(
       "Test", "NFT",
       1000, 3,
       false,
@@ -311,7 +311,7 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
   });
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-    const nft = await MetaverseBaseNFT.new(
+    const nft = await ERC721CommunityBase.new(
       "Avatar Collection NFT", "NFT",
       200, 40,
       false,
