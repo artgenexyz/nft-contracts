@@ -3,32 +3,31 @@ const delay = require("delay");
 const { assert, expect } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost, getMintConfig } = require("./utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseBaseNFT - Implementation", (accounts) => {
+contract("ERC721CommunityBase - Implementation", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   beforeEach(async () => {
-    nft = await MetaverseBaseNFT.new(
-      ether.times(0.03),
-      1000,
-      3, // reserved
-      20, // per tx
-      500, // 5%
+    nft = await ERC721CommunityBase.new(
+      "Test", "NFT",
+      1000, 3,
+      false,
       "ipfs://factory-test/",
-      "Test",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: ether.times(0.03).toString(),
+        maxTokensPerMint: 20,
+      }
     );
   });
 
@@ -312,16 +311,16 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
   });
 
   it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-    const nft = await MetaverseBaseNFT.new(
-      "1000000000000000",
-      200,
-      40,
-      20,
-      500, // royalty
+    const nft = await ERC721CommunityBase.new(
+      "Avatar Collection NFT", "NFT",
+      200, 40,
+      false,
       "https://metadata.buildship.xyz/",
-      "Avatar Collection NFT",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: "1000000000000000",
+        maxTokensPerMint: 20,
+      }
     );
 
     await nft.startSale();
@@ -471,6 +470,14 @@ contract("MetaverseBaseNFT - Implementation", (accounts) => {
       nft.updateMaxPerMint(100),
       "Too many tokens per mint",
     );
+  });
+
+  // it should autoapprove opensea
+  it("should autoapprove opensea", async () => {
+    const conduit = "0x1E0049783F008A0085193E00003D00cd54003c71";
+
+    // check isApprovedForAll
+    assert.equal(await nft.isApprovedForAll(owner, conduit), true);
   });
 
 });

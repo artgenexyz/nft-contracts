@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFTExtension.sol";
-import "./interfaces/IMetaverseNFT.sol";
+import "./interfaces/IERC721Community.sol";
 import "./utils/OpenseaProxy.sol";
 
 //      Want to launch your own collection?
@@ -47,11 +47,12 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract MetaverseNFT is
+contract ERC721CommunityImplementation is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    IMetaverseNFT // implements IERC2981
+    IERC721CommunityImplementation,
+    IERC721Community // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -59,9 +60,11 @@ contract MetaverseNFT is
 
     Counters.Counter private _tokenIndexCounter; // token index counter
 
-    uint256 public constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 public constant DEVELOPER_FEE = 500; // of 10,000 = 5%
-    uint256 public constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
+    uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
+    uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
+    address internal constant OPENSEA_CONDUIT =
+        0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -106,36 +109,84 @@ contract MetaverseNFT is
     event ExtensionURIAdded(address indexed extensionAddress);
 
     function initialize(
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _nReserved,
-        uint256 _maxPerMint,
-        uint256 _royaltyFee,
-        string memory _uri,
         string memory _name,
         string memory _symbol,
-        bool _startAtOne
+        uint256 _maxSupply,
+        uint256 _nReserved,
+        bool _startAtOne,
+        string memory _uri,
+        MintConfig memory _config
     ) public initializerERC721A initializer {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-
-        price = _price;
         reserved = _nReserved;
-        maxPerMint = _maxPerMint;
-        maxPerWallet = _maxPerMint;
         maxSupply = _maxSupply;
 
-        royaltyFee = _royaltyFee;
-
-        isOpenSeaProxyActive = true;
-
+        // should be set before calling ERC721A_init !
         startAtOne = _startAtOne;
 
-        // Need help with uploading metadata? Try https://buildship.xyz
         BASE_URI = _uri;
+
+        // defaults
+        startTimestamp = SALE_STARTS_AT_INFINITY;
+        maxPerMint = MAX_PER_MINT_LIMIT;
+        isOpenSeaProxyActive = true;
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
+
+        _configure(
+            _config.publicPrice,
+            _config.maxTokensPerMint,
+            _config.maxTokensPerWallet,
+            _config.royaltyFee,
+            _config.payoutReceiver,
+            _config.shouldLockPayoutReceiver,
+            _config.shouldStartSale,
+            _config.shouldUseJsonExtension
+        );
+    }
+
+    function _configure(
+        uint256 publicPrice,
+        uint256 maxTokensPerMint,
+        uint256 maxTokensPerWallet,
+        uint256 _royaltyFee,
+        address _payoutReceiver,
+        bool shouldLockPayoutReceiver,
+        bool shouldStartSale,
+        bool shouldUseJsonExtension
+    ) internal {
+        if (publicPrice != 0) {
+            price = publicPrice;
+        }
+
+        if (maxTokensPerMint > 0) {
+            maxPerMint = maxTokensPerMint;
+        }
+        if (maxTokensPerWallet > 0) {
+            maxPerWallet = maxTokensPerWallet;
+        }
+
+        if (_royaltyFee > 0) {
+            royaltyFee = _royaltyFee;
+        }
+
+        if (_payoutReceiver != address(0)) {
+            payoutReceiver = _payoutReceiver;
+        }
+
+        if (shouldLockPayoutReceiver) {
+            isPayoutChangeLocked = true;
+        }
+
+        if (shouldStartSale) {
+            // start sale right now
+            startTimestamp = block.timestamp;
+        }
+
+        if (shouldUseJsonExtension) {
+            URI_POSTFIX = ".json";
+        }
     }
 
     // This constructor ensures that this contract can only be used as a master copy
@@ -197,7 +248,7 @@ contract MetaverseNFT is
         CONTRACT_URI = uri;
     }
 
-    function setPostfixURI(string calldata postfix) public onlyOwner {
+    function setPostfixURI(string memory postfix) public onlyOwner {
         URI_POSTFIX = postfix;
     }
 
@@ -224,7 +275,7 @@ contract MetaverseNFT is
     }
 
     // Lock changing withdraw address
-    function lockPayoutChange() public onlyOwner {
+    function lockPayoutReceiver() public onlyOwner {
         isPayoutChangeLocked = true;
     }
 
@@ -400,7 +451,7 @@ contract MetaverseNFT is
     // ---- Mint configuration
 
     function updateMaxPerMint(uint256 _maxPerMint)
-        external
+        public
         onlyOwner
         nonReentrant
     {
@@ -410,7 +461,7 @@ contract MetaverseNFT is
 
     // set to 0 to save gas, mintedBy is not used
     function updateMaxPerWallet(uint256 _maxPerWallet)
-        external
+        public
         onlyOwner
         nonReentrant
     {
@@ -550,7 +601,7 @@ contract MetaverseNFT is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
-            interfaceId == type(IMetaverseNFT).interfaceId ||
+            interfaceId == type(IERC721Community).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -564,16 +615,7 @@ contract MetaverseNFT is
         override
         returns (bool)
     {
-        // Get a reference to OpenSea's proxy registry contract by instantiating
-        // the contract using the already existing address.
-        ProxyRegistry proxyRegistry = ProxyRegistry(
-            0xa5409ec958C83C3f309868babACA7c86DCB077c1
-        );
-
-        if (
-            isOpenSeaProxyActive &&
-            address(proxyRegistry.proxies(owner)) == operator
-        ) {
+        if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
 

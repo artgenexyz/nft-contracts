@@ -4,45 +4,65 @@ const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert } = require("chai");
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { parseEther } = require("ethers").utils;
 
-const { getGasCost, createNFTSale } = require("../utils");
+const { getGasCost, createNFTSale } = require("./utils");
 
-const NFTFactory = artifacts.require("MetaverseNFTFactory");
-const MetaverseNFT = artifacts.require("MetaverseNFT");
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
+const ERC721Community = artifacts.require("ERC721Community");
+
+const { VANITY_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
-contract("MetaverseNFT – Implementation", accounts => {
+contract("ERC721CommunityImplementation – Implementation", accounts => {
     let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
 
-    beforeEach(async () => {
-        if (!pass || !factory) {
-            pass = await createNFTSale(MetaverseBaseNFT);
-            await pass.claim(2, owner);
+    before(async () => {
+        // check if there is contract code at VANITY_ADDRESS
+        const code = await web3.eth.getCode(VANITY_ADDRESS);
 
-            factory = await NFTFactory.new(pass.address);
+        if (code === "0x") {
+            await getImplementation();
         }
 
-        tx = await factory.createNFT(
-            ether.times(0.03),
-            1000,
-            3, // reserved
-            20, // per tx
-            500, // 5%
-            "ipfs://factory-test/",
+        assert.notEqual(await web3.eth.getCode(VANITY_ADDRESS), "0x", "No contract code at " + VANITY_ADDRESS);
+    });
+
+    beforeEach(async () => {
+        if (!pass) {
+            pass = await createNFTSale(ERC721CommunityBase);
+            await pass.claim(2, owner);
+        }
+
+        nft_ = await ERC721Community.new(
             "Test",
             "NFT",
+            1000,
+            3, // reserved
+            false,
+            "ipfs://factory-test/",
+            { 
+                publicPrice: parseEther("0.03"),
+                maxTokensPerMint: 20,
+                maxTokensPerWallet: 0,
+                royaltyFee: 500,
+                payoutReceiver: owner,
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false
+            }
         );
 
-        const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
+        // const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
 
-        nft = await MetaverseNFT.at(deployedAddress);
+        nft = await ERC721CommunityImplementation.at(nft_.address);
     });
 
     // it should deploy successfully
@@ -378,19 +398,26 @@ contract("MetaverseNFT – Implementation", accounts => {
 
 
     it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-        const tx = await factory.createNFT(
-            "1000000000000000",
+        const nft_ = await ERC721Community.new(
+            "Test",
+            "NFT",
             200,
-            40,
-            20,
-            500, // royalty
-            "https://metadata.buildship.xyz/",
-            "Avatar Collection NFT", "NFT",
+            40, // reserved
+            false,
+            "ipfs://factory-test/",
+            {
+                publicPrice: parseEther("0.03"),
+                maxTokensPerMint: 20,
+                maxTokensPerWallet: 0,
+                royaltyFee: 500,
+                payoutReceiver: owner,
+                shouldLockPayoutReceiver: false,
+                shouldStartSale: false,
+                shouldUseJsonExtension: false
+            }
         );
 
-        const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
-
-        const nft = await MetaverseNFT.at(deployedAddress);
+        const nft = await ERC721CommunityImplementation.at(nft_.address);
 
         await nft.startSale();
 
@@ -537,6 +564,14 @@ contract("MetaverseNFT – Implementation", accounts => {
             nft.updateMaxPerMint(100),
             "Too many tokens per mint",
         );
+    });
+
+    // it should autoapprove opensea
+    it("should autoapprove opensea", async () => {
+        const conduit = "0x1E0049783F008A0085193E00003D00cd54003c71";
+
+        // check isApprovedForAll
+        assert.equal(await nft.isApprovedForAll(owner, conduit), true);
     });
 
 })

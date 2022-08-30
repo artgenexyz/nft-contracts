@@ -4,15 +4,15 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 
 import "../../../interfaces/INFTExtension.sol";
-import "../../../interfaces/IMetaverseNFT.sol";
+import "../../../interfaces/IERC721Community.sol";
 
 contract NFTExtensionUpgradeable is INFTExtension, ERC165Upgradeable {
-    IMetaverseNFT public nft;
+    IERC721Community public nft;
 
     function initialize(address _nft) internal onlyInitializing {
         __ERC165_init();
 
-        nft = IMetaverseNFT(_nft);
+        nft = IERC721Community(_nft);
     }
 
     function beforeMint() internal view {

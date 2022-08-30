@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
 
-interface NFT is IMetaverseNFT {
+interface NFT is IERC721Community {
     function maxSupply() external view returns (uint256);
 
     function totalSupply() external view returns (uint256);

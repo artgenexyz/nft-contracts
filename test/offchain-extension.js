@@ -4,9 +4,9 @@ const { assert } = require("chai");
 const { ethers, hre, web3 } = require("hardhat");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 
-const { getGasCost } = require("../utils");
+const { getGasCost, getMintConfig } = require("./utils");
 
-const MetaverseBaseNFT = artifacts.require("MetaverseBaseNFT");
+const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
@@ -16,22 +16,22 @@ const ether = new BigNumber(1e18);
 
 const { arrayify, hexZeroPad } = ethers.utils; 
 
-contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
+contract("ERC721CommunityBase_ERC1155 - Extensions", (accounts) => {
   let nft;
   const [owner, user1, user2] = accounts;
   const beneficiary = owner;
 
   beforeEach(async () => {
-    nft = await MetaverseBaseNFT.new(
-      ether.times(0.03),
-      1000,
-      3, // reserved
-      20, // per tx
-      500, // 5%
+    nft = await ERC721CommunityBase.new(
+      "Test", "NFT",
+      1000, 3,
+      false,
       "ipfs://factory-test/",
-      "Test",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: ether.times(0.03).toString(),
+        maxTokensPerMint: 20,
+      }
     );
 
     // await nft.createTokenSeries(Array(1000).fill(3));
@@ -94,16 +94,16 @@ contract("MetaverseBaseNFT_ERC1155 - Extensions", (accounts) => {
   xit("should be able to use OffchainAllowListExtension to mint", async () => {
     const [ admin ] = await ethers.getSigners();
 
-    const nft = await MetaverseBaseNFT.new(
-      ether.times(0.03),
-      1000,
-      3, // reserved
-      20, // per tx
-      500, // 5%
+    const nft = await ERC721CommunityBase.new(
+      "Test", "NFT",
+      1000, 3,
+      false,
       "ipfs://factory-test/",
-      "Test",
-      "NFT",
-      false
+      {
+        ...getMintConfig(),
+        publicPrice: ether.times(0.03),
+        maxTokensPerMint: 20,
+      }
     )
 
     const extension = await OffchainAllowListExtension.new(
