@@ -20,7 +20,7 @@ import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
 
-import "./scripts/upload";
+import "@buildship/hardhat-ipfs-upload";
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
