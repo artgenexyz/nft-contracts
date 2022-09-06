@@ -12,6 +12,7 @@
     "coverage": "hardhat coverage && open coverage/index.html"
   },
   "dependencies": {
+    "@buildship/hardhat-ipfs-upload": "^0.0.10",
     "@divergencetech/ethier": "^0.33.0",
     "@openzeppelin/contracts": "^4.3.1",
     "@openzeppelin/contracts-upgradeable": "^4.6.0",
@@ -52,7 +53,6 @@
     "merkletreejs": "^0.2.27",
     "minimist": "^1.2.5",
     "mocha": "^9.1.1",
-    "nft.storage": "^3.3.0",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.7",
