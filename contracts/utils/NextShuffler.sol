@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2021 the ethier authors (github.com/divergencetech/ethier)
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.9;
 
 import "@divergencetech/ethier/contracts/random/PRNG.sol";
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 import "@divergencetech/ethier/contracts/random/PRNG.sol";
 import "./NextShuffler.sol";
