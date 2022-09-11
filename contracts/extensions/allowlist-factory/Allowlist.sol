@@ -40,12 +40,15 @@ contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
 
     bytes32 public whitelistRoot;
 
+    string public title;
+
     mapping(address => uint256) public claimedByAddress;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
     function initialize(
+        string memory _title,
         address _nft,
         bytes32 _whitelistRoot,
         uint256 _price,
@@ -54,6 +57,7 @@ contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
         NFTExtensionUpgradeable.initialize(_nft);
         SaleControlUpgradeable.initialize();
 
+        title = _title;
         price = _price;
         maxPerAddress = _maxPerAddress;
         whitelistRoot = _whitelistRoot;

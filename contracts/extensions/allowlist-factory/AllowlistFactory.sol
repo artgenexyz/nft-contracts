@@ -33,7 +33,7 @@ contract AllowlistFactory {
 
         Allowlist list = Allowlist(clone);
 
-        list.initialize(nft, root, price, maxPerAddress);
+        list.initialize(title, nft, root, price, maxPerAddress);
 
         if (startSale) {
             list.startSale();
