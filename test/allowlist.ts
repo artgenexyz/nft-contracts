@@ -94,6 +94,32 @@ describe("Allowlist Factory", () => {
 
     });
 
+    it("should have title for each allowlist", async function () {
+        const [owner, user1, user2] = await ethers.getSigners();
+
+        const nftAddress = user1.address;
+        
+        const tx = await factory.createAllowlist(
+            "Test List",
+            nftAddress,
+            "0xbd204967d5ef69fe133d1e2e9509f68bf3ee681006804e37b0bd51a64aea0116",
+            parseEther("0"),
+            1,
+            false,
+        );
+
+        const res = await tx.wait();
+
+        const event = res.events?.find(e => e.event === "ContractDeployed")
+
+        const contract = await ethers.getContractAt(
+            "Allowlist",
+            event?.args?.deployedAddress,
+        );
+
+        expect(await contract.title()).to.equal("Test List");
+    });
+
     // // it should mint successfully
     it("should mint successfully", async function () {
         const NFT = await ethers.getContractFactory("ERC721CommunityBase");
