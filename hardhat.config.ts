@@ -67,6 +67,12 @@ const config: HardhatUserConfig = {
                 url: ALCHEMY_RINKEBY_API,
             } : undefined,
         },
+        goerli: {
+            url: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+            accounts: {
+                mnemonic,
+            },
+        },
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
             accounts: {
