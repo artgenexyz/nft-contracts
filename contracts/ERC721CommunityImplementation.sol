@@ -389,7 +389,7 @@ contract ERC721CommunityImplementation is
 
     modifier onlyExtension() {
         require(
-            isExtensionAdded(msg.sender),
+            isExtensionAdded(_msgSender()),
             "Extension should be added to contract before minting"
         );
         _;
@@ -407,12 +407,12 @@ contract ERC721CommunityImplementation is
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                mintedBy[msg.sender] + nTokens <= maxPerWallet,
+                mintedBy[_msgSender()] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
 
             // only store minted amounts after limit is enabled to save gas
-            mintedBy[msg.sender] += nTokens;
+            mintedBy[_msgSender()] += nTokens;
         }
 
         require(
@@ -422,7 +422,7 @@ contract ERC721CommunityImplementation is
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, 0x0);
+        _mintConsecutive(nTokens, _msgSender(), 0x0);
     }
 
     // Owner can claim free tokens
@@ -546,7 +546,7 @@ contract ERC721CommunityImplementation is
 
     modifier onlyBuildship() {
         require(
-            payable(msg.sender) == DEVELOPER_ADDRESS(),
+            payable(_msgSender()) == DEVELOPER_ADDRESS(),
             "Caller is not Buildship"
         );
         _;
