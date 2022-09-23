@@ -118,6 +118,7 @@ const config: HardhatUserConfig = {
         apiKey: {
             mainnet: ETHERSCAN_API_KEY,
             rinkeby: ETHERSCAN_API_KEY,
+            goerli: ETHERSCAN_API_KEY,
             polygon: POLYGONSCAN_API_KEY,
             bsc: BSCSCAN_API_KEY,
             moonbeam: MOONBEAM_API_KEY,
