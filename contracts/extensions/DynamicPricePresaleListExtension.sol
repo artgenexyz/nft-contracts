@@ -62,7 +62,7 @@ contract DynamicPricePresaleListExtension is NFTExtension, Ownable, SaleControl 
             "Cannot claim more per address"
         );
 
-        require(msg.value >= price(nTokens), "Not enough ETH to mint");
+        require(msg.value >= price(nTokens + claimedByAddress[msg.sender]), "Not enough ETH to mint");
 
         claimedByAddress[msg.sender] += nTokens;
 
