@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
@@ -9,7 +8,11 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
 
-contract DynamicPricePresaleListExtension is NFTExtension, Ownable, SaleControl {
+contract DynamicPricePresaleListExtension is
+    NFTExtension,
+    Ownable,
+    SaleControl
+{
     uint256 public pricePerOne;
     uint256 public maxPerAddress;
 
@@ -62,7 +65,12 @@ contract DynamicPricePresaleListExtension is NFTExtension, Ownable, SaleControl 
             "Cannot claim more per address"
         );
 
-        require(msg.value >= price(nTokens + claimedByAddress[msg.sender]), "Not enough ETH to mint");
+        uint claimed = claimedByAddress[msg.sender];
+
+        require(
+            msg.value >= price(nTokens + claimed) - price(claimed),
+            "Not enough ETH to mint"
+        );
 
         claimedByAddress[msg.sender] += nTokens;
 
