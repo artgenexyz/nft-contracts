@@ -116,7 +116,7 @@ export async function main() {
       // // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("0.4gi"),
+        value: hre.ethers.utils.parseEther("0.4"),
       });
     }
   }
