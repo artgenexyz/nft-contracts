@@ -14,6 +14,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -51,6 +52,7 @@ contract ERC721CommunityBase is
     ERC721A,
     ReentrancyGuard,
     Ownable,
+    Multicall,
     IERC721Community // implements IERC2981
 {
     using Address for address;
