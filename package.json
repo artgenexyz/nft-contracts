@@ -16,6 +16,7 @@
     "@divergencetech/ethier": "^0.33.0",
     "@openzeppelin/contracts": "^4.3.1",
     "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "@paperxyz/contracts": "^0.1.2",
     "bip39": "^3.0.4",
     "dotenv": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2"
