@@ -7,11 +7,13 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
+import "./base/LimitedSupply.sol";
 
 contract DynamicPricePresaleListExtension is
     NFTExtension,
     Ownable,
-    SaleControl
+    SaleControl,
+    LimitedSupply
 {
     uint256 public pricePerOne;
     uint256 public maxPerAddress;
@@ -24,8 +26,9 @@ contract DynamicPricePresaleListExtension is
         address _nft,
         bytes32 _whitelistRoot,
         uint256 _pricePerOne,
-        uint256 _maxPerAddress
-    ) NFTExtension(_nft) SaleControl() {
+        uint256 _maxPerAddress,
+        uint256 _extensionSupply
+    ) NFTExtension(_nft) SaleControl() LimitedSupply(_extensionSupply) {
         stopSale();
 
         pricePerOne = _pricePerOne;
@@ -54,6 +57,7 @@ contract DynamicPricePresaleListExtension is
         external
         payable
         whenSaleStarted
+        whenLimitedSupplyNotReached(nTokens)
     {
         require(
             isWhitelisted(whitelistRoot, msg.sender, proof),
