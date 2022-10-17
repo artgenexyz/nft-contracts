@@ -185,10 +185,10 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
         const nftBalance = await web3.eth.getBalance(nft.address);
         assert.notEqual(nftBalance, 0);
 
-        // it should not allow owner to call forceWithdrawBuildship
+        // it should not allow owner to call forceWithdrawDeveloper
         await expectRevert(
-            nft.forceWithdrawBuildship({ from: owner }),
-            "Caller is not Buildship"
+            nft.forceWithdrawDeveloper({ from: owner }),
+            "Caller is not developer"
         );
 
         const buildship = await nft.DEVELOPER_ADDRESS();
@@ -202,7 +202,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
         await network.provider.request({ method: "hardhat_impersonateAccount", params: [buildship] })
 
-        await nft.forceWithdrawBuildship({ from: buildship });
+        await nft.forceWithdrawDeveloper({ from: buildship });
 
         const nftBalanceAfter = await web3.eth.getBalance(nft.address);
         assert.equal(nftBalanceAfter, 0);
