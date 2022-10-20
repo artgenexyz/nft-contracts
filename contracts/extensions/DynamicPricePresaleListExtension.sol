@@ -37,6 +37,10 @@ contract DynamicPricePresaleListExtension is
     }
 
     function price(uint256 nTokens) public view returns (uint256) {
+        if (nTokens == 0) {
+            return 0;
+        }
+
         // one for free, 2+ for price
         return pricePerOne * (nTokens - 1);
     }
