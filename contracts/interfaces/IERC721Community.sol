@@ -16,9 +16,6 @@ struct MintConfig {
 }
 
 interface IERC721Community {
-    function DEVELOPER() external pure returns (string memory _url);
-
-    function DEVELOPER_ADDRESS() external pure returns (address payable _dev);
 
     // ------ View functions ------
     function saleStarted() external view returns (bool);
