@@ -10,10 +10,10 @@
 
 ## Methods
 
-### mint
+### mintToOwner
 
 ```solidity
-function mint(uint256 nTokens) external nonpayable
+function mintToOwner(contract IERC721Community nft, uint256 nTokens) external nonpayable
 ```
 
 
@@ -24,57 +24,13 @@ function mint(uint256 nTokens) external nonpayable
 
 | Name | Type | Description |
 |---|---|---|
+| nft | contract IERC721Community | undefined |
 | nTokens | uint256 | undefined |
 
-### nft
+### multimintMany
 
 ```solidity
-function nft() external view returns (contract IERC721Community)
-```
-
-
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | contract IERC721Community | undefined |
-
-### owner
-
-```solidity
-function owner() external view returns (address)
-```
-
-
-
-*Returns the address of the current owner.*
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### renounceOwnership
-
-```solidity
-function renounceOwnership() external nonpayable
-```
-
-
-
-*Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.*
-
-
-### supportsInterface
-
-```solidity
-function supportsInterface(bytes4 interfaceId) external view returns (bool)
+function multimintMany(contract IERC721Community nft, address[] recipients, uint256[] amounts) external nonpayable
 ```
 
 
@@ -85,50 +41,63 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 
 | Name | Type | Description |
 |---|---|---|
-| interfaceId | bytes4 | undefined |
+| nft | contract IERC721Community | undefined |
+| recipients | address[] | undefined |
+| amounts | uint256[] | undefined |
 
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
-
-### transferOwnership
+### multimintOne
 
 ```solidity
-function transferOwnership(address newOwner) external nonpayable
+function multimintOne(contract IERC721Community nft, address[] recipients) external nonpayable
 ```
 
 
 
-*Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.*
+*Mint tokens to a list of recipients*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| newOwner | address | undefined |
+| nft | contract IERC721Community | The NFT contract |
+| recipients | address[] | The list of recipients, each getting exactly one token |
 
-
-
-## Events
-
-### OwnershipTransferred
+### multisend
 
 ```solidity
-event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+function multisend(contract IERC721Community nft, uint256[] ids, address[] recipients) external nonpayable
 ```
 
 
 
-
+*Send a batch of tokens to a list of recipientsThe sender must have approved this contract to transfer the tokensUse `multisendBatch` for ERC721A-optimized transfer*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| previousOwner `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
+| nft | contract IERC721Community | The NFT contract |
+| ids | uint256[] | Token IDs to send |
+| recipients | address[] | The list of recipients |
+
+### multisendBatch
+
+```solidity
+function multisendBatch(contract IERC721Community nft, uint256 startTokenId, address[] recipients) external nonpayable
+```
+
+
+
+*Sequentially sends tokens to a list of recipients, starting from `startTokenId`The sender must have approved this contract to transfer the tokensOptimized for ERC721A: when you transfer tokenIds sequentially, the gas cost is lower*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| nft | contract IERC721Community | The NFT contract |
+| startTokenId | uint256 | The first token ID to send |
+| recipients | address[] | The list of recipients |
+
 
 
 
