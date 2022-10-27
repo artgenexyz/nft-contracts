@@ -8,6 +8,7 @@ import { Signer } from "ethers";
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const VANITY_ADDRESS = "0x721721001Ac55A3Ef34565b9320B29B47135597f";
+export const VANITY_DEPLOYER_ADDRESS = "0xb00919B963c5668c5eB526C034b3c3eA92FB3bB9";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
@@ -23,7 +24,17 @@ export const sendAllFunds = async (account: Signer, to: Address) => {
   });
 }
 
-export const computeVanityAddress = async () => {
+export const getVanityDeployer = async () => {
+
+  if (hre.network.name === "hardhat") {
+    // impersonate the vanity deployer
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [VANITY_DEPLOYER_ADDRESS],
+    });
+
+    return await hre.ethers.getSigner(VANITY_DEPLOYER_ADDRESS);
+  }
 
   // load account from process.env.VANITY_PRIVATE_DEPLOYER
   const vanityKey = process.env.VANITY_PRIVATE_DEPLOYER;
@@ -32,7 +43,13 @@ export const computeVanityAddress = async () => {
     throw new Error("VANITY_PRIVATE_DEPLOYER is not set");
   }
 
-  const vanityDeployer = new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
+  return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
+
+}
+
+export const computeVanityAddress = async () => {
+  const vanityDeployer = await getVanityDeployer();
+
   const transactionCount = await vanityDeployer.getTransactionCount();
 
   const vanityAddress = getContractAddress({
@@ -45,13 +62,6 @@ export const computeVanityAddress = async () => {
 
 export async function main() {
   const [admin] = await hre.ethers.getSigners();
-
-  // load account from process.env.VANITY_PRIVATE_DEPLOYER
-  const vanityKey = process.env.VANITY_PRIVATE_DEPLOYER;
-
-  if (!vanityKey) {
-    throw new Error("VANITY_PRIVATE_DEPLOYER is not set");
-  }
 
   // // skip waiting if running on hardhat network
   // if (hre.network.name == "hardhat") {
@@ -87,7 +97,7 @@ export async function main() {
     throw new Error(`Address does not match vanity address: ${futureAddress} != ${VANITY_ADDRESS}`);
   }
 
-  const vanity = new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
+  const vanity = await getVanityDeployer();
 
   // check nonce of vanity account and if > 0, exit
   const vanityNonce = await vanity.getTransactionCount();
