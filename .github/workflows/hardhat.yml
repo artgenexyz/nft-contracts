@@ -40,6 +40,11 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Generate Typechain
         run: npm run typechain
 
