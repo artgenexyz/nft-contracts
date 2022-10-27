@@ -559,11 +559,11 @@ contract ERC721CommunityImplementation_ is
         token.safeTransfer(dev, balance - amount);
     }
 
-    function DEVELOPER() public pure returns (string memory _url) {
+    function DEVELOPER() internal pure returns (string memory _url) {
         _url = "";
     }
 
-    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
+    function DEVELOPER_ADDRESS() internal pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
