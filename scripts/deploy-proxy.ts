@@ -135,9 +135,11 @@ export async function main() {
 
   // deploy with gas = 15 gwei
   const implementation = await ERC721CommunityImplementation.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits("20", "gwei"),
-    gasLimit: 6_000_000,
+    gasPrice: ethers.utils.parseUnits("15", "gwei"),
     nonce: vanityNonce,
+    ...(hre.network.name == "mainnet" && {
+      gasLimit: 6_000_000,
+    })
   });
 
   await implementation.deployed();
