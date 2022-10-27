@@ -11,6 +11,7 @@ import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-solhint";
 
 import "@tenderly/hardhat-tenderly";
 
@@ -19,8 +20,13 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
+import "hardhat-nodemon";
+import "hardhat-preprocessor";
+
+import "hardhat-output-validator";
 
 import "@buildship/hardhat-ipfs-upload";
+import "@primitivefi/hardhat-dodoc";
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -43,7 +49,7 @@ stdout.isTTY && console.log('Using env variables', {
     ALCHEMY_RINKEBY_API: ALCHEMY_RINKEBY_API ? '✅' : '❌',
     ALCHEMY_API: ALCHEMY_API ? '✅' : '❌',
     FORK: FORK ? '✅' : '❌',
-    MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
+    MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0, 4) + '...' + MNEMONIC.slice(-4) : '❌',
 });
 
 const mnemonic = (() => {
@@ -57,6 +63,14 @@ const mnemonic = (() => {
         return generateMnemonic()
     }
 })();
+
+const getRemappings = () => {
+    return fs
+        .readFileSync("remappings.txt", "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => line.trim().split("="));
+};
 
 const config: HardhatUserConfig = {
     networks: {
@@ -125,6 +139,31 @@ const config: HardhatUserConfig = {
             moonriver: MOONRIVER_API_KEY,
             moonbaseAlpha: MOONRIVER_API_KEY,
         },
+    },
+
+    // This fully resolves paths for imports in the ./lib directory for Hardhat
+    preprocess: {
+        eachLine: (hre) => ({
+            transform: (line: string) => {
+                if (line.match(/^\s*import /i)) {
+                    for (const [from, to] of getRemappings()) {
+                        if (line.includes(from)) {
+                            line = line.replace(from, to);
+                            break;
+                        }
+                    }
+                }
+                return line;
+            },
+        }),
+    },
+
+    dodoc: {
+        exclude: [
+            "-std",
+            "-test",
+            "dry",
+        ],
     },
 
 };
