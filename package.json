@@ -51,7 +51,7 @@
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-deploy": "^0.11.2",
     "hardhat-gas-reporter": "^1.0.8",
-    "hardhat-nodemon": "^1.0.3",
+    "hardhat-nodemon": "github:caffeinum/hardhat-nodemon#patch-1",
     "hardhat-output-validator": "^0.1.19",
     "hardhat-preprocessor": "^0.1.5",
     "hardhat-tracer": "^1.1.0-rc.2",
