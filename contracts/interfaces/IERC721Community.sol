@@ -35,7 +35,7 @@ interface IERC721Community {
         Mint from NFTExtension contract. Optionally provide data parameter.
      */
     function mintExternal(
-        uint256 tokenId,
+        uint256 amount,
         address to,
         bytes32 data
     ) external payable;
