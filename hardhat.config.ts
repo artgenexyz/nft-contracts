@@ -146,15 +146,24 @@ const config: HardhatUserConfig = {
         eachLine: (hre) => ({
             transform: (line: string) => {
                 if (line.match(/^\s*import /i)) {
-                    getRemappings().forEach(([find, replace]) => {
-                        if (line.match(find)) {
-                            line = line.replace(find, replace);
+                    for (const [from, to] of getRemappings()) {
+                        if (line.includes(from)) {
+                            line = line.replace(from, to);
+                            break;
                         }
-                    });
+                    }
                 }
                 return line;
             },
         }),
+    },
+
+    dodoc: {
+        exclude: [
+            "-std",
+            "-test",
+            "dry",
+        ],
     },
 
 };
