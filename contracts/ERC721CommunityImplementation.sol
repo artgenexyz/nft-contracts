@@ -13,7 +13,6 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/utils/MulticallUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -58,9 +57,6 @@ contract ERC721CommunityImplementation is
 {
     using Address for address;
     using SafeERC20 for IERC20;
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
