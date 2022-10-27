@@ -45,6 +45,12 @@ jobs:
         with:
           version: nightly
 
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+
       - name: Generate Typechain
         run: npm run typechain
 
