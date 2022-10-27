@@ -27,9 +27,18 @@ jobs:
           node-version: '16.x'
           cache: 'npm'
 
-      - name: Install Node dependencies
-        run: |
-          npm ci
+      - name: Cache npm dependencies
+        id: cache-npm-deps
+        uses: actions/cache@v2
+        with:
+          # we cache node_modules directly, it may have downsides, but much faster
+          # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
+          path: ./node_modules
+          key: modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -64,10 +73,19 @@ jobs:
           node-version: '16.x'
           cache: 'npm'
 
-      - name: Install Node dependencies
-        run: |
-          npm ci
-        
+      - name: Cache npm dependencies
+        id: cache-npm-deps
+        uses: actions/cache@v2
+        with:
+          # we cache node_modules directly, it may have downsides, but much faster
+          # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
+          path: ./node_modules
+          key: modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
       - name: Run Hardhat tests
         run: |
           npm run test
