@@ -21,6 +21,7 @@ import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
 import "hardhat-nodemon";
+import "hardhat-preprocessor";
 
 import "hardhat-output-validator";
 
@@ -62,6 +63,14 @@ const mnemonic = (() => {
         return generateMnemonic()
     }
 })();
+
+const getRemappings = () => {
+    return fs
+        .readFileSync("remappings.txt", "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => line.trim().split("="));
+};
 
 const config: HardhatUserConfig = {
     networks: {
@@ -130,6 +139,31 @@ const config: HardhatUserConfig = {
             moonriver: MOONRIVER_API_KEY,
             moonbaseAlpha: MOONRIVER_API_KEY,
         },
+    },
+
+    // This fully resolves paths for imports in the ./lib directory for Hardhat
+    preprocess: {
+        eachLine: (hre) => ({
+            transform: (line: string) => {
+                if (line.match(/^\s*import /i)) {
+                    for (const [from, to] of getRemappings()) {
+                        if (line.includes(from)) {
+                            line = line.replace(from, to);
+                            break;
+                        }
+                    }
+                }
+                return line;
+            },
+        }),
+    },
+
+    dodoc: {
+        exclude: [
+            "-std",
+            "-test",
+            "dry",
+        ],
     },
 
 };
