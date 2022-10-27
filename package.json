@@ -21,6 +21,7 @@
     "mocha-junit-reporter": "^2.0.2"
   },
   "devDependencies": {
+    "@foundry-rs/hardhat-forge": "^0.1.17",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-ganache": "^2.0.1",
@@ -52,6 +53,7 @@
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-nodemon": "^1.0.3",
     "hardhat-output-validator": "^0.1.19",
+    "hardhat-preprocessor": "^0.1.5",
     "hardhat-tracer": "^1.1.0-rc.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
