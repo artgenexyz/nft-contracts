@@ -400,15 +400,34 @@ contract ERC721CommunityImplementation is
         nonReentrant
         whenSaleStarted
     {
+        return _mintTo(nTokens, msg.sender);
+    }
+
+    function mintTo(uint256 nTokens, address to)
+        external
+        payable
+        nonReentrant
+        whenSaleStarted
+    {
+        return _mintTo(nTokens, to);
+    }
+
+    // Contract can sell tokens
+    function _mintTo(uint256 nTokens, address recipient)
+        private
+        // payable
+        // nonReentrant
+        whenSaleStarted
+    {
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
-                mintedBy[msg.sender] + nTokens <= maxPerWallet,
+                mintedBy[recipient] + nTokens <= maxPerWallet,
                 "You cannot mint more than maxPerWallet tokens for one address!"
             );
 
             // only store minted amounts after limit is enabled to save gas
-            mintedBy[msg.sender] += nTokens;
+            mintedBy[recipient] += nTokens;
         }
 
         require(
@@ -418,7 +437,7 @@ contract ERC721CommunityImplementation is
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, 0x0);
+        _mintConsecutive(nTokens, recipient, 0x0);
     }
 
     // Owner can claim free tokens

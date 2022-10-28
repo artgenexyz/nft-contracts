@@ -458,6 +458,23 @@ function mintExternal(uint256 nTokens, address to, bytes32 extraData) external p
 | to | address | undefined |
 | extraData | bytes32 | undefined |
 
+### mintTo
+
+```solidity
+function mintTo(uint256 nTokens, address to) external payable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| nTokens | uint256 | undefined |
+| to | address | undefined |
+
 ### mintedBy
 
 ```solidity
