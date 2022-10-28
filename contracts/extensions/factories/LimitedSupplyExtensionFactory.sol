@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./LimitedSupplyExtension.sol";
 
+// contract by buildship.xyz
+
 contract LimitedSupplyExtensionFactory {
 
     event ContractDeployed(
