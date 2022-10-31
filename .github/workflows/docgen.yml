@@ -63,7 +63,6 @@ jobs:
           ls -a .
 
           npx hardhat dodoc
-          cp -rf wiki/reference .wiki/reference
 
           echo "ls .wiki/reference"
           ls .wiki/reference
