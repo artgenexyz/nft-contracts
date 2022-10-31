@@ -9,7 +9,9 @@
     "compile": "hardhat compile",
     "typechain": "hardhat typechain",
     "test": "hardhat test",
-    "coverage": "hardhat coverage && open coverage/index.html"
+    "coverage": "hardhat coverage && open coverage/index.html",
+    "predocupdate": "hardhat dodoc",
+    "docupdate": "cd wiki && git pull && git add . && git commit -m 'update wiki' && git push && cd .."
   },
   "dependencies": {
     "@buildship/hardhat-ipfs-upload": "^0.1.0",

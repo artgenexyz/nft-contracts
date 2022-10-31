@@ -31,6 +31,9 @@ tmp
 TODO.md
 DUMP.md
 
+# autogen docs
+.wiki/
+
 # Ignores development broadcast logs
 !/broadcast
 /broadcast/*/31337/
