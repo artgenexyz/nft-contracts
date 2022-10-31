@@ -3,7 +3,7 @@ name: Foundry Tests
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 env:
@@ -24,8 +24,8 @@ jobs:
       - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          cache: 'npm'
+          node-version: "16.x"
+          cache: "npm"
 
       - name: Cache npm dependencies
         id: cache-npm-deps
@@ -56,8 +56,11 @@ jobs:
           forge test -vvv
         id: forge-test
 
+      - name: Run snapshot
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY
+
       - name: Run Coverage
-        run: forge coverage
+        run: forge coverage --report lcov
         id: coverage
 
       - name: Codecov
@@ -77,8 +80,8 @@ jobs:
       - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          cache: 'npm'
+          node-version: "16.x"
+          cache: "npm"
 
       - name: Cache npm dependencies
         id: cache-npm-deps
