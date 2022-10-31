@@ -3,7 +3,7 @@ name: Foundry Tests
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 env:
@@ -24,12 +24,12 @@ jobs:
       - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          cache: 'npm'
+          node-version: "16.x"
+          cache: "npm"
 
       - name: Cache npm dependencies
         id: cache-npm-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # we cache node_modules directly, it may have downsides, but much faster
           # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
@@ -56,6 +56,16 @@ jobs:
           forge test -vvv
         id: forge-test
 
+      - name: Run snapshot
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Coverage
+        run: forge coverage --report lcov
+        id: coverage
+
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.0
+
   hardhat:
     strategy:
       fail-fast: true
@@ -70,12 +80,12 @@ jobs:
       - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-          cache: 'npm'
+          node-version: "16.x"
+          cache: "npm"
 
       - name: Cache npm dependencies
         id: cache-npm-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # we cache node_modules directly, it may have downsides, but much faster
           # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
