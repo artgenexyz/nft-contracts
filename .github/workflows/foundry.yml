@@ -56,6 +56,13 @@ jobs:
           forge test -vvv
         id: forge-test
 
+      - name: Run Coverage
+        run: forge coverage
+        id: coverage
+
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.0
+
   hardhat:
     strategy:
       fail-fast: true
