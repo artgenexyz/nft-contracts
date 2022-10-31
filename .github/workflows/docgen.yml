@@ -10,16 +10,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-
 jobs:
-
   docs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
@@ -46,11 +43,32 @@ jobs:
           forge --version
           forge build --sizes
         id: build
- 
+
+      - name: Checkout the wiki repository
+        uses: actions/checkout@v2
+        with:
+          repository: "${{ github.repository }}.wiki"
+          # As of Jul 2021, the default branch of a GitHub wiki is `master`, not `main`
+          ref: master
+          path: .wiki
+
       - name: Generate Docs
         run: npx hardhat dodoc
 
-      - uses: caffeinum/update-wiki-action@v1
-        with:
-          path: 'wiki'
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure the GitHub wiki identity
+        working-directory: .wiki
+        # "${GITHUB_ACTOR}@users.noreply.github.com" is associated to the actor without real emails
+        run: |
+          set -xe
+          git config user.name  "[bot] ${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Update the wiki page
+        working-directory: .wiki
+        # --allow-empty may be good enough for almost all the situations,
+        # but maybe you want to do `if git commit ... ; then` if you don't want to record an empty commit
+        run: |
+          set -xe
+          git add .
+          git commit --allow-empty -m "update the wiki page by bot (${GITHUB_WORKFLOW})"
+          git push origin master
