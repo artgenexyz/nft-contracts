@@ -159,6 +159,8 @@ const config: HardhatUserConfig = {
     },
 
     dodoc: {
+        runOnCompile: false,
+        outputDir: "./wiki",
         exclude: [
             "-std",
             "-test",
