@@ -5,10 +5,15 @@ node_modules
 .env
 .mnemonic
 
+# hh coverage
 coverage
 coverage.json
 
 .coverage_*
+
+# forge coverage
+lcov.info
+
 
 cache
 forge-cache
