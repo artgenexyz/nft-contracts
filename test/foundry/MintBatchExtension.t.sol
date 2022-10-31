@@ -2,7 +2,6 @@
 pragma solidity 0.8.9;
 
 import "forge-std/Test.sol";
-// import "forge-std/Console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -46,7 +45,6 @@ contract MintBatchExtensionTest is Test {
     }
 
     function testMintToOwner() public {
-
         nft.addExtension(address(mintBatchExtension));
 
         mintBatchExtension.mintToOwner(nft, 10);
@@ -58,9 +56,7 @@ contract MintBatchExtensionTest is Test {
         vm.expectRevert("Extension should be added to contract before minting");
         mintBatchExtension.mintToOwner(nft, 5);
 
-        vm.expectRevert(
-            "Extension should be added to contract before minting"
-        );
+        vm.expectRevert("Extension should be added to contract before minting");
         mintBatchExtension.mintToOwner(nft, 10);
 
         assertEq(nft.balanceOf(owner), 0);
@@ -103,24 +99,21 @@ contract MintBatchExtensionTest is Test {
     }
 
     function xxxtestMultimintMany(
-        address[] calldata recipients,
-        uint256[] calldata amounts
+        address[] memory recipients,
+        uint256[] memory amounts
     ) public {
         nft.addExtension(address(mintBatchExtension));
 
-        // address[] memory recipients = [bob];
-        // uint256[] memory amounts = [10];
-
         vm.assume(recipients.length == amounts.length);
-        vm.assume(recipients.length > 0);
-        vm.assume(recipients.length < 100);
+        vm.assume(recipients.length > 4);
+        vm.assume(recipients.length < 30);
 
-        // assume amounts are > 0
-        // assume total amount is less than nft.maxSupply
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < amounts.length; i++) {
-            vm.assume(amounts[i] > 0);
-            vm.assume(amounts[i] <= nft.maxSupply());
+            recipients[i] = recipients[i] != address(0)
+                ? recipients[i]
+                : makeAddr(string(abi.encodePacked("Recipient ", i)));
+            amounts[i] = bound(amounts[i], 1, 100);
             totalAmount += amounts[i];
         }
         vm.assume(totalAmount <= nft.maxSupply());
