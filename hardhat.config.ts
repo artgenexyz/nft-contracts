@@ -160,8 +160,7 @@ const config: HardhatUserConfig = {
 
     dodoc: {
         runOnCompile: false,
-        outputDir: "./wiki",
-        freshOutput: false,
+        outputDir: "./wiki/reference",
         exclude: [
             "forge",
             "utils",
@@ -171,6 +170,7 @@ const config: HardhatUserConfig = {
             "interfaces",
             "mocks",
             "chiru-labs",
+            "erc721a",
             "hardhat"
         ],
     },
