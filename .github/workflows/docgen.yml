@@ -50,7 +50,7 @@ jobs:
       - name: Generate Docs
         run: npx hardhat dodoc
 
-      - uses: OrlovM/Wiki-Action@v1
+      - uses: caffeinum/update-wiki-action@v1
         with:
           path: 'wiki'
           token: ${{ secrets.GITHUB_TOKEN }}
