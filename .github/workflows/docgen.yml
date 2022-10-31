@@ -50,7 +50,7 @@ jobs:
       - name: Generate Docs
         run: npx hardhat dodoc
 
-      - uses: caffeinum/update-wiki-action@v1
+      - uses: caffeinum/update-wiki-action@main
         with:
           path: 'wiki'
           token: ${{ secrets.GITHUB_TOKEN }}
