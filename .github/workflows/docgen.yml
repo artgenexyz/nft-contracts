@@ -51,12 +51,21 @@ jobs:
           # As of Jul 2021, the default branch of a GitHub wiki is `master`, not `main`
           ref: master
           path: .wiki
-
-      - run: |
+  
+      - name: Generate the Wiki Page using dodoc
+        run: |
+          set -xe
           mkdir -p wiki/reference
 
-      - name: Generate Docs
-        run: npx hardhat dodoc
+          echo "pwd"
+          pwd
+          echo "ls ."
+          ls .
+          npx hardhat dodoc
+          echo "ls wiki/reference"
+          ls wiki/reference
+          echo "ls wiki/.git"
+          ls wiki/.git
 
       - name: Configure the GitHub wiki identity
         working-directory: .wiki
