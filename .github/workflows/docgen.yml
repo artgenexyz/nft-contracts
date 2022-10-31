@@ -1,0 +1,56 @@
+# Github Workflow to autogenerate docs and push to repository wiki
+
+name: Autogenerate docs
+
+on:
+  push:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+jobs:
+
+  docs:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Cache npm dependencies
+        id: cache-npm-deps
+        uses: actions/cache@v2
+        with:
+          # we cache node_modules directly, it may have downsides, but much faster
+          # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
+          path: ./node_modules
+          key: modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+ 
+      - name: Generate Docs
+        run: npx hardhat dodoc
+
+      - uses: OrlovM/Wiki-Action@v1
+        with:
+          path: 'wiki'
+          token: ${{ secrets.GITHUB_TOKEN }}
