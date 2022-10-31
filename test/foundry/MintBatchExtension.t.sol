@@ -54,7 +54,7 @@ contract MintBatchExtensionTest is Test {
         assertEq(nft.balanceOf(owner), 10);
     }
 
-    function testFailMintExtensionNotAdded() public {
+    function testCannotMintExtensionNotAdded() public {
         vm.expectRevert("Extension should be added to contract before minting");
         mintBatchExtension.mintToOwner(nft, 5);
 
@@ -64,23 +64,16 @@ contract MintBatchExtensionTest is Test {
         mintBatchExtension.mintToOwner(nft, 10);
 
         assertEq(nft.balanceOf(owner), 0);
-
-        // nft.addExtension(address(mintBatchExtension));
-
-        // vm.expectRevert();
-        // mintBatchExtension.mintToOwner(nft, 10);
-
-        // assertEq(nft.balanceOf(owner), 10);
     }
 
-    function testFailMintNonOwner() public {
+    function testCannotMintNonOwner() public {
         nft.addExtension(address(mintBatchExtension));
 
         vm.stopPrank();
         vm.startPrank(makeAddr("Alice"));
 
         vm.expectRevert("MintBatchExtension: Not NFT owner");
-        mintBatchExtension.mintToOwner(nft, 0);
+        mintBatchExtension.mintToOwner(nft, 10);
 
         assertEq(nft.balanceOf(makeAddr("Alice")), 0);
     }
