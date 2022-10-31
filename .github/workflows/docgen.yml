@@ -55,19 +55,7 @@ jobs:
       - name: Generate the Wiki Page using dodoc
         run: |
           set -xe
-
-          echo "pwd"
-          pwd
-
-          echo "ls -a ."
-          ls -a .
-
           npx hardhat dodoc
-
-          echo "ls .wiki/reference"
-          ls .wiki/reference
-          echo "ls .wiki/.git"
-          ls .wiki/.git
 
       - name: Configure the GitHub wiki identity
         working-directory: .wiki
