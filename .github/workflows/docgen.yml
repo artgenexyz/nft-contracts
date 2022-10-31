@@ -55,16 +55,18 @@ jobs:
       - name: Generate the Wiki Page using dodoc
         run: |
           set -xe
-          mkdir -p .wiki/reference
 
           echo "pwd"
           pwd
+
           echo "ls -a ."
           ls -a .
+
           npx hardhat dodoc
-          echo "ls wiki/reference"
           cp -rf wiki/reference .wiki/reference
-          ls wiki/reference
+
+          echo "ls .wiki/reference"
+          ls .wiki/reference
           echo "ls .wiki/.git"
           ls .wiki/.git
 
