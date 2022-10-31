@@ -160,7 +160,7 @@ const config: HardhatUserConfig = {
 
     dodoc: {
         runOnCompile: false,
-        outputDir: "./wiki/reference",
+        outputDir: ".wiki/reference",
         exclude: [
             "forge",
             "utils",
