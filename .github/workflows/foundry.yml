@@ -60,7 +60,7 @@ jobs:
         run: forge snapshot >> $GITHUB_STEP_SUMMARY
 
       - name: Run Coverage
-        run: forge coverage
+        run: forge coverage --report lcov
         id: coverage
 
       - name: Codecov
