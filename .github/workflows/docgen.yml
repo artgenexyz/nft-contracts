@@ -22,7 +22,7 @@ jobs:
 
       - name: Cache npm dependencies
         id: cache-npm-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # we cache node_modules directly, it may have downsides, but much faster
           # https://www.voorhoede.nl/en/blog/super-fast-npm-install-on-github-actions/#fn1
