@@ -52,6 +52,9 @@ jobs:
           ref: master
           path: .wiki
 
+      - run: |
+          mkdir -p .wiki/reference
+
       - name: Generate Docs
         run: npx hardhat dodoc
 
