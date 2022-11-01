@@ -74,6 +74,7 @@ contract ERC721CommunityBase is
     address public royaltyReceiver;
     address public payoutReceiver;
     address public uriExtension;
+    address public beforeTransferExtension;
 
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive;
@@ -102,6 +103,7 @@ contract ERC721CommunityBase is
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event ExtensionURIAdded(address indexed extensionAddress);
+    event ExtensionBeforeTransferAdded(address indexed extensionAddress);
 
     constructor(
         string memory _name,
@@ -323,6 +325,16 @@ contract ERC721CommunityBase is
         uriExtension = extension;
 
         emit ExtensionURIAdded(extension);
+    }
+
+    function setExtensionBeforeTransfer(address extension) public onlyOwner {
+        require(extension != address(this), "Cannot add self as extension");
+
+        require(extension == address(0), "Not conforms to extension");
+
+        beforeTransferExtension = extension;
+
+        emit ExtensionBeforeTransferAdded(extension);
     }
 
     // function to disable gasless listings for security in case
@@ -609,5 +621,30 @@ contract ERC721CommunityBase is
         }
 
         return super.isApprovedForAll(owner, operator);
+    }
+
+    /**
+     * @dev Ask beforeTransferExtension to make sure the transfer is allowed
+     */
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startId,
+        uint256 quantity
+    ) internal override {
+        super._beforeTokenTransfers(from, to, startId, quantity);
+
+        if (beforeTransferExtension == address(0)) {
+            return;
+        }
+
+        for (uint tokenId = startId; tokenId < startId + quantity; tokenId++) {
+            IERC721CommunityBeforeTransferExtension(beforeTransferExtension).beforeTransfer(
+                from,
+                to,
+                tokenId
+            );
+        }
+
     }
 }
