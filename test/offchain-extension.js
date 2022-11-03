@@ -10,7 +10,7 @@ const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const OffchainAllowListExtension = artifacts.require("OffchainAllowListExtension");
+const OffchainAllowlistExtension = artifacts.require("OffchainAllowListExtension");
 
 const ether = new BigNumber(1e18);
 
@@ -106,7 +106,7 @@ contract("ERC721CommunityBase_ERC1155 - Extensions", (accounts) => {
       }
     )
 
-    const extension = await OffchainAllowListExtension.new(
+    const extension = await OffchainAllowlistExtension.new(
       nft.address,
       admin.address,
       0, // price
