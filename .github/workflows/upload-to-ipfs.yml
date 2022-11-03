@@ -56,3 +56,17 @@ jobs:
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
             {"summary":${{ steps.build-ipfs.outputs.stdout }}}
+
+      - name: Post IPFS links
+        uses: actions/github-script@v6.3.3
+        with:
+          # comment on current pull request using Github API
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `IPFS build:
+
+              ${{steps.build-ipfs.outputs.result}}`
+            })
