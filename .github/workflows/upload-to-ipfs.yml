@@ -54,6 +54,7 @@ jobs:
           name: IPFS Builds Uploads
           conclusion: ${{ job.status }}
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
+          action_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
             {"summary":"${{ steps.build-ipfs.outputs.stdout }}"}
 
