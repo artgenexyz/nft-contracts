@@ -47,7 +47,7 @@ jobs:
         run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
 
       - name: Post IPFS links
-      - uses: LouisBrunner/checks-action@v1.1.1
+        uses: LouisBrunner/checks-action@v1.1.1
         if: always()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
