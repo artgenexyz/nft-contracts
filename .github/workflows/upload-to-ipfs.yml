@@ -55,7 +55,7 @@ jobs:
           conclusion: ${{ job.status }}
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
-            {"summary":${{ steps.build-ipfs.outputs.stdout }}}
+            {"summary":"${{ steps.build-ipfs.outputs.stdout }}"}
 
       - name: Post IPFS links
         uses: actions/github-script@v6.3.3
