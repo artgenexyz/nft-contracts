@@ -14,7 +14,7 @@
     "docupdate": "cd wiki && git pull && git add . && git commit -m 'update wiki' && git push && cd .."
   },
   "dependencies": {
-    "@buildship/hardhat-ipfs-upload": "^0.1.0",
+    "@buildship/hardhat-ipfs-upload": "^0.1.3",
     "@divergencetech/ethier": "^0.33.0",
     "@openzeppelin/contracts": "^4.3.1",
     "@openzeppelin/contracts-upgradeable": "^4.6.0",
