@@ -54,8 +54,6 @@ jobs:
         id: build-ipfs
         env:
           NFT_STORAGE_API_KEY: ${{ secrets.NFT_STORAGE_API_KEY }}
-        with:
-          NFT_STORAGE_API_KEY: ${{ secrets.NFT_STORAGE_API_KEY }}
         run: |
           echo "One or more files in the docs folder has changed."
           echo "List all the files that have changed: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
