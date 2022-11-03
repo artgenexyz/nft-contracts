@@ -3,8 +3,8 @@ pragma solidity ^0.8.9;
 
 import "forge-std/Test.sol";
 
-import "../../contracts/ERC721CommunityBase.sol";
-import "../../contracts/extensions/OffchainAllowlistExtension.sol";
+import "contracts/ERC721CommunityBase.sol";
+import "contracts/extensions/OffchainAllowlistExtension.sol";
 
 contract OffchainAllowlistExtensionTest is Test {
     OffchainAllowlistExtension public extension;
