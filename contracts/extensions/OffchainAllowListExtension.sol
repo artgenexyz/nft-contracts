@@ -62,6 +62,9 @@ contract OffchainAllowListExtension is NFTExtension, Ownable, SaleControl {
             "Cannot claim more per address"
         );
 
+
+        
+
         require(msg.value >= nTokens * price, "Not enough ETH to mint");
 
         claimedByAddress[msg.sender] += nTokens;
