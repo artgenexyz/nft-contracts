@@ -47,17 +47,12 @@ jobs:
         run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
 
       - name: Post IPFS links
-        uses: actions/github-script@v6.3.3
+      - uses: LouisBrunner/checks-action@v1.1.1
+        if: always()
         with:
-          # comment on current pull request using Github API
-          script: |
-            github.rest.pulls.createComment({
-              pull_number: context.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `IPFS build:
-
-              ${{steps.build-ipfs.outputs.result}}`
-            })
-
-
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: IPFS Builds Uploads
+          conclusion: ${{ job.status }}
+          details_url: ${{ steps.build-ipfs.outputs.stdout }}
+          output: |
+            {"summary":${{ steps.build-ipfs.outputs.stdout }}}
