@@ -44,6 +44,17 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+
       - name: Get changed contracts
         id: changed-files-specific
         uses: tj-actions/changed-files@v34
@@ -54,7 +65,6 @@ jobs:
       - name: Build changed contracts and upload to IPFS
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: build-ipfs
-      
         env:
           NFT_STORAGE_API_KEY: ${{ secrets.NFT_STORAGE_API_KEY }}
         run: |
