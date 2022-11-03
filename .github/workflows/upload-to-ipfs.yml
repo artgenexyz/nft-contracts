@@ -40,23 +40,32 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      # - name: Build changed contracts and upload to IPFS
-      #   # find files that have changed in contracts/**/*.sol
-      #   # and run hh upload $file for them
-      #   id: build-contract
-      #   run: npm run hardhat-upload -- contracts/ERC721CommunityImplementationFactory.sol
+      - name: Build changed contracts and upload to IPFS
+        # find files that have changed in contracts/**/*.sol
+        # and run hh upload $file for them
+        id: build-ipfs
+        run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
 
       - name: Post IPFS links
-        uses: actions/github-script@v6
+        uses: LouisBrunner/checks-action@v1.5.0
+        if: always()
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: IPFS Builds Uploads
+          conclusion: ${{ job.status }}
+          details_url: ${{ steps.build-ipfs.outputs.stdout }}
+          action_url: ${{ steps.build-ipfs.outputs.stdout }}
+          output: |
+            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
+
+      - name: Post IPFS links
+        uses: actions/github-script@v6.3.3
+        with:
+          # comment on current pull request using Github API
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `IPFS build:
-
-              ${{steps.build-ipfs.outputs.result}}`
+              body: "IPFS build: ${{steps.build-ipfs.outputs.stdout}}"
             })
-
-
