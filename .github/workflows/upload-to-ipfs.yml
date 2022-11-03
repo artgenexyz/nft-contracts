@@ -26,6 +26,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache npm dependencies
         id: cache-npm-deps
@@ -60,7 +62,7 @@ jobs:
 
       - name: Post IPFS links
         uses: LouisBrunner/checks-action@v1.5.0
-        if: always()
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: IPFS Builds Uploads
@@ -71,6 +73,7 @@ jobs:
             {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
 
       - name: Post IPFS links
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: actions/github-script@v6.3.3
         with:
           # comment on current pull request using Github API
