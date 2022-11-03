@@ -22,10 +22,14 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    environment: Buildship # environment to fetch secrets from
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache npm dependencies
         id: cache-npm-deps
@@ -40,15 +44,42 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - name: Build changed contracts and upload to IPFS
-        # find files that have changed in contracts/**/*.sol
-        # and run hh upload $file for them
-        id: build-ipfs
-        run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
-      - name: Post IPFS links
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+
+      - name: Get changed contracts
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            contracts/**
+
+      - name: Build changed contracts and upload to IPFS
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        id: build-ipfs
+        env:
+          NFT_STORAGE_API_KEY: ${{ secrets.NFT_STORAGE_API_KEY }}
+        run: |
+          echo "One or more files in the docs folder has changed."
+          echo "List all the files that have changed: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
+          for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+            # take output of hardhat upload and output it as "url=..." to $GITHUB_OUTPUT
+            npx hardhat upload $file | tail -n 1 > temp.txt
+            echo url="$(cat temp.txt)" >> $GITHUB_OUTPUT
+          done
+
+      - name: Show checks with IPFS links
         uses: LouisBrunner/checks-action@v1.5.0
-        if: always()
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: IPFS Builds Uploads
@@ -56,9 +87,10 @@ jobs:
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
           action_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
-            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
+            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.url }}"}
 
-      - name: Post IPFS links
+      - name: Create comment with IPFS links
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: actions/github-script@v6.3.3
         with:
           # comment on current pull request using Github API
@@ -67,5 +99,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "IPFS build: ${{steps.build-ipfs.outputs.stdout}}"
+              body: "Deploy: ${{steps.build-ipfs.outputs.url}}"
             })
