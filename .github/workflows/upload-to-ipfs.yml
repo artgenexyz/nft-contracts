@@ -42,7 +42,7 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
-      - name: Get changed files in the docs folder
+      - name: Get changed contracts
         id: changed-files-specific
         uses: tj-actions/changed-files@v34
         with:
@@ -60,7 +60,7 @@ jobs:
             npx hardhat upload $file
           done
 
-      - name: Post IPFS links
+      - name: Show checks with IPFS links
         uses: LouisBrunner/checks-action@v1.5.0
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         with:
@@ -72,7 +72,7 @@ jobs:
           output: |
             {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
 
-      - name: Post IPFS links
+      - name: Create comment with IPFS links
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: actions/github-script@v6.3.3
         with:
