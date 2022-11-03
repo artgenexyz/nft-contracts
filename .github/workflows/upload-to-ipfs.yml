@@ -68,5 +68,5 @@ jobs:
               repo: context.repo.repo,
               body: `IPFS build:
 
-              ${{steps.build-ipfs.outputs.result}}`
+              ${{steps.build-ipfs.outputs.stdout}}`
             })
