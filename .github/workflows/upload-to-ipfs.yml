@@ -74,7 +74,7 @@ jobs:
           for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
             # take output of hardhat upload and output it as "url=..." to $GITHUB_OUTPUT
             npx hardhat upload $file | tail -n 1 > temp.txt
-            cat "url=$(cat temp.txt)" >> $GITHUB_OUTPUT
+            echo url="$(cat temp.txt)" >> $GITHUB_OUTPUT
           done
 
       - name: Show checks with IPFS links
