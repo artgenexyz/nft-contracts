@@ -72,7 +72,7 @@ jobs:
           echo "List all the files that have changed: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
 
           for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
-            npx hardhat upload $file
+            npx hardhat upload $file >> $GITHUB_OUTPUT
           done
 
       - name: Show checks with IPFS links
