@@ -47,7 +47,7 @@ jobs:
         run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
 
       - name: Post IPFS links
-        uses: LouisBrunner/checks-action@v1.1.1
+        uses: LouisBrunner/checks-action@v1.5.0
         if: always()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,7 +56,7 @@ jobs:
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
           action_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
-            {"summary":"${{ steps.build-ipfs.outputs.stdout }}"}
+            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
 
       - name: Post IPFS links
         uses: actions/github-script@v6.3.3
@@ -67,7 +67,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `IPFS build:
-
-              ${{steps.build-ipfs.outputs.stdout}}`
+              body: "IPFS build: ${{steps.build-ipfs.outputs.stdout}}"
             })
