@@ -10,7 +10,7 @@ const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const OffchainAllowlistExtension = artifacts.require("OffchainAllowListExtension");
+const OffchainAllowlistExtension = artifacts.require("OffchainAllowlistExtension");
 
 const ether = new BigNumber(1e18);
 
