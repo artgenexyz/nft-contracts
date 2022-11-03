@@ -47,11 +47,12 @@ jobs:
         run: git diff --name-only origin/main | grep contracts | grep .sol | xargs -I {} hh upload {}
 
       - name: Post IPFS links
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.3.3
         with:
+          # comment on current pull request using Github API
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            github.rest.pulls.createComment({
+              pull_number: context.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `IPFS build:
