@@ -87,7 +87,7 @@ jobs:
           details_url: ${{ steps.build-ipfs.outputs.stdout }}
           action_url: ${{ steps.build-ipfs.outputs.stdout }}
           output: |
-            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.stdout }}"}
+            {"summary":"Uploaded! 🎉","text_description":"${{ steps.build-ipfs.outputs.url }}"}
 
       - name: Create comment with IPFS links
         if: steps.changed-files-specific.outputs.any_changed == 'true'
