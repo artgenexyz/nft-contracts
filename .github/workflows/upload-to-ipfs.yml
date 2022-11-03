@@ -40,11 +40,23 @@ jobs:
         if: steps.cache-npm-deps.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
 
+      - name: Get changed files in the docs folder
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            contracts/**
+
       - name: Build changed contracts and upload to IPFS
-        # find files that have changed in contracts/**/*.sol
-        # and run hh upload $file for them
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: build-ipfs
-        run: git diff --name-only main | grep contracts | grep .sol | xargs -I {} hh upload {}
+        run: |
+          echo "One or more files in the docs folder has changed."
+          echo "List all the files that have changed: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
+          for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+            npx hardhat upload $file
+          done
 
       - name: Post IPFS links
         uses: LouisBrunner/checks-action@v1.5.0
