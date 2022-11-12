@@ -240,7 +240,7 @@ contract ERC721CommunityImplementation is
 
     // ----- Admin functions -----
 
-    function toggleOperatorFilter() public onlyOwner {
+    function toggleOpenSeaTransferFilter() public onlyOwner {
         isOpenSeaTransferFilterEnabled = !isOpenSeaTransferFilterEnabled;
     }
 
