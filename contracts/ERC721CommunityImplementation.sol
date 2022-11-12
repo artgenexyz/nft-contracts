@@ -21,6 +21,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IERC721Community.sol";
 import "./utils/OpenseaProxy.sol";
+import "./operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -50,6 +51,7 @@ contract ERC721CommunityImplementation is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
+    DefaultOperatorFiltererUpgradeable,
     IERC721CommunityImplementation,
     IERC721Community // implements IERC2981
 {
@@ -129,6 +131,7 @@ contract ERC721CommunityImplementation is
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
+        __DefaultOperatorFilterer_init();
 
         _configure(
             _config.publicPrice,
@@ -234,6 +237,10 @@ contract ERC721CommunityImplementation is
     }
 
     // ----- Admin functions -----
+
+    function toggleOperatorFilter() public onlyOwner {
+        isOperatorFilterEnabled = !isOperatorFilterEnabled;
+    }
 
     function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
@@ -588,6 +595,22 @@ contract ERC721CommunityImplementation is
     }
 
     // -------- ERC721 overrides --------
+
+    function transferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+        public
+        override
+        onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
