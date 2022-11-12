@@ -64,6 +64,8 @@ contract ERC721CommunityImplementation is
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
 
+    uint256 public constant VERSION = 2;
+
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
@@ -239,7 +241,7 @@ contract ERC721CommunityImplementation is
     // ----- Admin functions -----
 
     function toggleOperatorFilter() public onlyOwner {
-        isOperatorFilterEnabled = !isOperatorFilterEnabled;
+        isOpenSeaTransferFilterEnabled = !isOpenSeaTransferFilterEnabled;
     }
 
     function setBaseURI(string calldata uri) public onlyOwner {

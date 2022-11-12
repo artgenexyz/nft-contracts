@@ -7,7 +7,7 @@ import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/I
 abstract contract OperatorFiltererUpgradeable is Initializable {
   error OperatorNotAllowed(address operator);
 
-  bool public isOperatorFilterEnabled = true;
+  bool public isOpenSeaTransferFilterEnabled = true;
 
   IOperatorFilterRegistry constant operatorFilterRegistry =
     IOperatorFilterRegistry(0x000000000000AAeB6D7670E522A718067333cd4E);
@@ -42,7 +42,7 @@ abstract contract OperatorFiltererUpgradeable is Initializable {
 
   modifier onlyAllowedOperator(address from) virtual {
     // Check if filter operator is enabled
-    if (!isOperatorFilterEnabled) {
+    if (!isOpenSeaTransferFilterEnabled) {
       _;
       return;
     }
