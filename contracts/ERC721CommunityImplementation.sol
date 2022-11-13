@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IERC721Community.sol";
 import "./utils/OpenseaProxy.sol";
-import "./operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
+import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -129,6 +129,7 @@ contract ERC721CommunityImplementation is
         startTimestamp = SALE_STARTS_AT_INFINITY;
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
+        isOpenSeaTransferFilterEnabled = true;
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -598,20 +599,13 @@ contract ERC721CommunityImplementation is
 
     // -------- ERC721 overrides --------
 
-    function transferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
-        super.transferFrom(from, to, tokenId);
-    }
-
-    function safeTransferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
-        super.safeTransferFrom(from, to, tokenId);
-    }
-
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
-        public
-        override
-        onlyAllowedOperator(from)
-    {
-        super.safeTransferFrom(from, to, tokenId, data);
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal override onlyAllowedOperator(from) {
+        super._beforeTokenTransfers(from, to, startTokenId, quantity);
     }
 
     function supportsInterface(bytes4 interfaceId)

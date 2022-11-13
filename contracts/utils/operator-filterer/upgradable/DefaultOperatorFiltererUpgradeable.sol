@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import { OperatorFiltererUpgradeable } from "./OperatorFiltererUpgradeable.sol";
+import "./OperatorFiltererUpgradeable.sol";
 
 abstract contract DefaultOperatorFiltererUpgradeable is
   OperatorFiltererUpgradeable

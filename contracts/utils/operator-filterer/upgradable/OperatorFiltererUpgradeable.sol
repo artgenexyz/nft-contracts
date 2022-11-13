@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import { IOperatorFilterRegistry } from "../IOperatorFilterRegistry.sol";
-import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../IOperatorFilterRegistry.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 abstract contract OperatorFiltererUpgradeable is Initializable {
   error OperatorNotAllowed(address operator);
