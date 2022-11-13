@@ -40,7 +40,7 @@ type StartFromTokenIdOne is bool;
 
 contract ERC721Community is Proxy {
     address internal constant proxyImplementation =
-        0x721721001Ac55A3Ef34565b9320B29B47135597f;
+        0x4b1E77975f6C87Effa595F4ebE1181dD8D0113cD;
 
     StartFromTokenIdOne internal constant START_FROM_ONE = StartFromTokenIdOne.wrap(true);
     StartFromTokenIdOne internal constant START_FROM_ZERO = StartFromTokenIdOne.wrap(false);
