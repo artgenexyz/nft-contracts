@@ -39,7 +39,13 @@ contract OffchainAllowlistExtensionTest is Test {
     }
 
     // test minting with extension by signing message from "Alice"
-    function testMint() public {
+    function testMint(uint256 price, uint8 totalSupply, uint8 mintAmount) public {
+        vm.assume(totalSupply > 0);
+        vm.assume(mintAmount > 0);
+        vm.assume(mintAmount <= totalSupply);
+
+        price = bound(price, 1, 1e9 * 1e18);
+
         address alice = makeAddr("Alice");
 
         (address signer, uint256 signerKey) = makeAddrAndKey("Signer");
@@ -47,26 +53,28 @@ contract OffchainAllowlistExtensionTest is Test {
         extension = new OffchainAllowlistExtension(
             address(nft),
             signer,
-            0.1 ether,
-            1000
+            price,
+            totalSupply
         );
 
         nft.addExtension(address(extension));
 
         extension.startSale();
 
-        bytes32 digest = extension.calculateDigest(alice, uint96(10));
+        bytes32 digest = extension.calculateDigest(alice, address(extension), uint96(mintAmount));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
         SignedAllowance memory allowance = SignedAllowance(
             alice,
-            10,
+            address(extension),
+            mintAmount,
             signature
         );
 
         vm.prank(alice);
-        vm.deal(alice, 1 ether);
-        extension.mint{value: 1 ether}(5, allowance);
+        vm.deal(alice, 2 * price * mintAmount);
+
+        extension.mint{value: price * mintAmount}(mintAmount, allowance);
     }
 }
