@@ -14,6 +14,7 @@ import "./base/LimitedSupply.sol";
 
 struct SignedAllowance {
     address minter;
+    OffchainAllowlistExtension extension;
     uint96 maxAmount;
     bytes signature;
 }
@@ -55,8 +56,8 @@ contract OffchainAllowlistExtension is
         payable
         whenSaleStarted
     {
-        // console.log("SOLIDITY args", amount, allowance.maxAmount);
         require(msg.sender == allowance.minter, "Minter mismatch");
+        require(allowance.extension == this, "Extension mismatch");
 
         require(isValid(allowance), "Not allowed to mint");
 
@@ -72,10 +73,20 @@ contract OffchainAllowlistExtension is
         nft.mintExternal{value: msg.value}(amount, msg.sender, bytes32(0));
     }
 
-    function isValid(SignedAllowance calldata allowance) public view returns (bool) {
-        bytes32 digest = calculateDigest(allowance.minter, allowance.maxAmount);
+    function isValid(SignedAllowance calldata allowance)
+        public
+        view
+        returns (bool)
+    {
+        if (allowance.extension != this) {
+            return false;
+        }
 
-        // console.log("SOLIDITY digest", digest);
+        bytes32 digest = calculateDigest(
+            allowance.minter,
+            allowance.extension,
+            allowance.maxAmount
+        );
 
         return
             SignatureChecker.isValidSignatureNow(
@@ -85,11 +96,11 @@ contract OffchainAllowlistExtension is
             );
     }
 
-    function calculateDigest(address receiver, uint96 amount)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encodePacked(receiver, amount));
+    function calculateDigest(
+        address receiver,
+        OffchainAllowlistExtension extension,
+        uint96 amount
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(receiver, extension, amount));
     }
 }

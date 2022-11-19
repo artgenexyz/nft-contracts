@@ -61,13 +61,13 @@ contract OffchainAllowlistExtensionTest is Test {
 
         extension.startSale();
 
-        bytes32 digest = extension.calculateDigest(alice, address(extension), uint96(mintAmount));
+        bytes32 digest = extension.calculateDigest(alice, extension, uint96(mintAmount));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
         SignedAllowance memory allowance = SignedAllowance(
             alice,
-            address(extension),
+            extension,
             mintAmount,
             signature
         );
@@ -76,5 +76,55 @@ contract OffchainAllowlistExtensionTest is Test {
         vm.deal(alice, 2 * price * mintAmount);
 
         extension.mint{value: price * mintAmount}(mintAmount, allowance);
+    }
+
+    function testCannotMintWrongExtension() public {
+        // create two extensions, use signature from one to mint with the other
+
+        address alice = makeAddr("Alice");
+
+        (address signer, uint256 signerKey) = makeAddrAndKey("Signer");
+
+        extension = new OffchainAllowlistExtension(
+            address(nft),
+            signer,
+            0.1 ether,
+            1000
+        );
+
+        OffchainAllowlistExtension extension2 = new OffchainAllowlistExtension(
+            address(nft),
+            signer,
+            0.999 ether,
+            1000
+        );
+
+        nft.addExtension(address(extension));
+        nft.addExtension(address(extension2));
+
+        extension.startSale();
+        extension2.startSale();
+
+        bytes32 digest = extension.calculateDigest(alice, extension, uint96(10));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
+        SignedAllowance memory allowance = SignedAllowance(
+            alice,
+            extension,
+            10,
+            signature
+        );
+
+        vm.deal(alice, 3 ether);
+        vm.startPrank(alice);
+
+        assertEq(extension.isValid(allowance), true);
+        assertEq(extension2.isValid(allowance), false);
+
+        // should fail because allowance is not for extension2
+        vm.expectRevert("Extension mismatch");
+        extension2.mint{value: 1 ether}(1, allowance);
+
     }
 }
