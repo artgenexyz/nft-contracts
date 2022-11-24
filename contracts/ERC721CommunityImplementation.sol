@@ -602,10 +602,10 @@ contract ERC721CommunityImplementation is
     function _beforeTokenTransfers(
         address from,
         address to,
-        uint256 startTokenId,
+        uint256 startId,
         uint256 quantity
     ) internal override onlyAllowedOperator(from) {
-        super._beforeTokenTransfers(from, to, startTokenId, quantity);
+        super._beforeTokenTransfers(from, to, startId, quantity);
     }
 
     function supportsInterface(bytes4 interfaceId)
