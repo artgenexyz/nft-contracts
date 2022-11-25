@@ -80,9 +80,10 @@ export async function main() {
     console.log("Bytecode includes vanity address", VANITY_ADDRESS);
 
   } else {
-    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, VANITY_ADDRESS);
+    console.warn("Bytecode does not include vanity address", ERC721Community.bytecode, VANITY_ADDRESS);
 
-    throw new Error("ERC721Community bytecode does not include vanity address");
+    // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
+    // throw new Error("ERC721Community bytecode does not include vanity address");
   }
 
   const futureAddress = await computeVanityAddress();
