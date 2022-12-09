@@ -44,28 +44,6 @@ contract MintBatchExtensionTest is Test {
         );
     }
 
-    function testCannotMintExtensionNotAdded() public {
-        vm.expectRevert("Extension should be added to contract before minting");
-        mintBatchExtension.mintToOwner(nft, 5);
-
-        vm.expectRevert("Extension should be added to contract before minting");
-        mintBatchExtension.mintToOwner(nft, 10);
-
-        assertEq(nft.balanceOf(owner), 0);
-    }
-
-    function testCannotMintNonOwner() public {
-        nft.addExtension(address(mintBatchExtension));
-
-        vm.stopPrank();
-        vm.startPrank(makeAddr("Alice"));
-
-        vm.expectRevert("MintBatchExtension: Not NFT owner");
-        mintBatchExtension.mintToOwner(nft, 10);
-
-        assertEq(nft.balanceOf(makeAddr("Alice")), 0);
-    }
-
     function testMultimintMany(uint256[5] memory _amounts) public {
         for (uint256 i = 0; i < _amounts.length; i++) {
             _amounts[i] = bound(_amounts[i], 1, 100);
@@ -133,6 +111,47 @@ contract MintBatchExtensionTest is Test {
 
         assertEq(nft.balanceOf(recipients[3]), 1);
         assertEq(nft.balanceOf(recipients[4]), 1);
+    }
+
+
+    function testCannotMintExtensionNotAdded() public {
+
+        address[] memory recipients = new address[](3);
+        recipients[0] = makeAddr("Alice");
+        recipients[1] = makeAddr("Bob");
+        recipients[2] = makeAddr("Charlie");
+
+        vm.expectRevert("Extension should be added to contract before minting");
+        mintBatchExtension.mintAndSend(nft, recipients);
+
+        vm.expectRevert("Extension should be added to contract before minting");
+        mintBatchExtension.mintAndSend(nft, recipients);
+
+        assertEq(nft.balanceOf(recipients[0]), 0);
+        assertEq(nft.balanceOf(recipients[1]), 0);
+        assertEq(nft.balanceOf(recipients[2]), 0);
+
+    }
+
+    function testCannotMintNonOwner() public {
+
+        address[] memory recipients = new address[](3);
+        recipients[0] = makeAddr("Alice");
+        recipients[1] = makeAddr("Bob");
+        recipients[2] = makeAddr("Charlie");
+
+        nft.addExtension(address(mintBatchExtension));
+
+        vm.stopPrank();
+        vm.startPrank(makeAddr("Alice"));
+
+        vm.expectRevert("MintBatchExtension: Not NFT owner");
+        mintBatchExtension.mintAndSend(nft, recipients);
+
+        assertEq(nft.balanceOf(recipients[0]), 0);
+        assertEq(nft.balanceOf(recipients[1]), 0);
+        assertEq(nft.balanceOf(recipients[2]), 0);
+
     }
 
     function testMultisendBatch() public {
