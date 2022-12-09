@@ -15,13 +15,6 @@ contract MintBatchExtension {
         _;
     }
 
-    function mintToOwner(IERC721Community nft, uint256 nTokens)
-        external
-        onlyNFTOwner(nft)
-    {
-        nft.mintExternal(nTokens, msg.sender, bytes32(0));
-    }
-
     /**
      * @dev Mint one token to each recipient
      * @param nft The NFT contract

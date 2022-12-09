@@ -44,14 +44,6 @@ contract MintBatchExtensionTest is Test {
         );
     }
 
-    function testMintToOwner() public {
-        nft.addExtension(address(mintBatchExtension));
-
-        mintBatchExtension.mintToOwner(nft, 10);
-
-        assertEq(nft.balanceOf(owner), 10);
-    }
-
     function testCannotMintExtensionNotAdded() public {
         vm.expectRevert("Extension should be added to contract before minting");
         mintBatchExtension.mintToOwner(nft, 5);
