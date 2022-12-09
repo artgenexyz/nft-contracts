@@ -89,7 +89,7 @@ contract MintBatchExtensionTest is Test {
             amounts[i] = _amounts[i];
         }
 
-        mintBatchExtension.multimintMany(nft, recipients, amounts);
+        mintBatchExtension.mintAndSendBatch(nft, recipients, amounts);
 
         assertEq(nft.balanceOf(recipients[0]), amounts[0]);
         assertEq(nft.balanceOf(recipients[1]), amounts[1]);
@@ -118,7 +118,7 @@ contract MintBatchExtensionTest is Test {
         }
         vm.assume(totalAmount <= nft.maxSupply());
 
-        mintBatchExtension.multimintMany(nft, recipients, amounts);
+        mintBatchExtension.mintAndSendBatch(nft, recipients, amounts);
 
         assertEq(nft.balanceOf(recipients[0]), amounts[0]);
     }
@@ -133,7 +133,7 @@ contract MintBatchExtensionTest is Test {
         recipients[3] = makeAddr("Dave");
         recipients[4] = makeAddr("Eve");
 
-        mintBatchExtension.multimintOne(nft, recipients);
+        mintBatchExtension.mintAndSend(nft, recipients);
 
         assertEq(nft.balanceOf(recipients[0]), 1);
         assertEq(nft.balanceOf(recipients[1]), 1);

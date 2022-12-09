@@ -22,7 +22,27 @@ contract MintBatchExtension {
         nft.mintExternal(nTokens, msg.sender, bytes32(0));
     }
 
-    function multimintMany(
+    /**
+     * @dev Mint one token to each recipient
+     * @param nft The NFT contract
+     * @param recipients The list of recipients, each getting exactly one token
+     */
+    function mintAndSend(IERC721Community nft, address[] calldata recipients)
+        external
+        onlyNFTOwner(nft)
+    {
+        for (uint256 i = 0; i < recipients.length; i++) {
+            nft.mintExternal(1, recipients[i], bytes32(0));
+        }
+    }
+
+    /**
+     * @dev Mint tokens to a list of recipients
+     * @param nft The NFT contract
+     * @param recipients The list of recipients
+     * @param amounts Amount per each recipient to mint
+     */
+    function mintAndSendBatch(
         IERC721Community nft,
         address[] calldata recipients,
         uint256[] calldata amounts
@@ -33,20 +53,6 @@ contract MintBatchExtension {
         );
         for (uint256 i = 0; i < recipients.length; i++) {
             nft.mintExternal(amounts[i], recipients[i], bytes32(0));
-        }
-    }
-
-    /**
-     * @dev Mint tokens to a list of recipients
-     * @param nft The NFT contract
-     * @param recipients The list of recipients, each getting exactly one token
-     */
-    function multimintOne(IERC721Community nft, address[] calldata recipients)
-        external
-        onlyNFTOwner(nft)
-    {
-        for (uint256 i = 0; i < recipients.length; i++) {
-            nft.mintExternal(1, recipients[i], bytes32(0));
         }
     }
 
