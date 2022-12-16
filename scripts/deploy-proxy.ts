@@ -7,8 +7,8 @@ import { Signer } from "ethers";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const VANITY_ADDRESS = "0x721721001Ac55A3Ef34565b9320B29B47135597f";
-export const VANITY_DEPLOYER_ADDRESS = "0xb00919B963c5668c5eB526C034b3c3eA92FB3bB9";
+export const IMPLEMENTATION_ADDRESS = "0xf3E07A5cBDFE6a257A7caa4Fcb3187A1C2Ec6a2E";
+export const IMPLEMENTATION_DEPLOYER_ADDRESS = "0x9c867BF9F724F29E1B1bf66EB71A35493FC8FCE1";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
@@ -30,17 +30,17 @@ export const getVanityDeployer = async () => {
     // impersonate the vanity deployer
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
-      params: [VANITY_DEPLOYER_ADDRESS],
+      params: [IMPLEMENTATION_DEPLOYER_ADDRESS],
     });
 
-    return await hre.ethers.getSigner(VANITY_DEPLOYER_ADDRESS);
+    return await hre.ethers.getSigner(IMPLEMENTATION_DEPLOYER_ADDRESS);
   }
 
-  // load account from process.env.VANITY_PRIVATE_DEPLOYER
-  const vanityKey = process.env.VANITY_PRIVATE_DEPLOYER;
+  // load account from process.env.IMPLEMENTATION_PRIVATE_DEPLOYER
+  const vanityKey = process.env.IMPLEMENTATION_PRIVATE_DEPLOYER;
 
   if (!vanityKey) {
-    throw new Error("VANITY_PRIVATE_DEPLOYER is not set");
+    throw new Error("IMPLEMENTATION_PRIVATE_DEPLOYER is not set");
   }
 
   return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
@@ -75,26 +75,27 @@ export async function main() {
 
   const ERC721Community = await hre.ethers.getContractFactory("ERC721Community");
 
-  if (ERC721Community.bytecode.includes(VANITY_ADDRESS.toLowerCase().slice(2))) {
+  if (ERC721Community.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(2))) {
     
-    console.log("Bytecode includes vanity address", VANITY_ADDRESS);
+    console.log("Bytecode includes vanity address", IMPLEMENTATION_ADDRESS);
 
   } else {
-    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, VANITY_ADDRESS);
+    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, IMPLEMENTATION_ADDRESS);
 
-    throw new Error("ERC721Community bytecode does not include vanity address");
+    // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
+    // throw new Error("ERC721Community bytecode does not include vanity address");
   }
 
   const futureAddress = await computeVanityAddress();
   console.log("Future address:", futureAddress);
-  console.log("Vanity address:", VANITY_ADDRESS);
+  console.log("Vanity address:", IMPLEMENTATION_ADDRESS);
 
-  if (futureAddress === VANITY_ADDRESS) {
-    console.log("Address matches vanity address", futureAddress, VANITY_ADDRESS);
+  if (futureAddress === IMPLEMENTATION_ADDRESS) {
+    console.log("Address matches vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
   } else {
-    console.log("Address does not match vanity address", futureAddress, VANITY_ADDRESS);
+    console.log("Address does not match vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
 
-    throw new Error(`Address does not match vanity address: ${futureAddress} != ${VANITY_ADDRESS}`);
+    throw new Error(`Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`);
   }
 
   const vanity = await getVanityDeployer();
