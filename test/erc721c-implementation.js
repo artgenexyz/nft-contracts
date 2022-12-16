@@ -15,7 +15,7 @@ const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const ERC721Community = artifacts.require("ERC721Community");
 
-const { VANITY_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
+const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
@@ -25,14 +25,14 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
     const beneficiary = owner;
 
     before(async () => {
-        // check if there is contract code at VANITY_ADDRESS
-        const code = await web3.eth.getCode(VANITY_ADDRESS);
+        // check if there is contract code at IMPLEMENTATION_ADDRESS
+        const code = await web3.eth.getCode(IMPLEMENTATION_ADDRESS);
 
         if (code === "0x") {
             await getImplementation();
         }
 
-        assert.notEqual(await web3.eth.getCode(VANITY_ADDRESS), "0x", "No contract code at " + VANITY_ADDRESS);
+        assert.notEqual(await web3.eth.getCode(IMPLEMENTATION_ADDRESS), "0x", "No contract code at " + IMPLEMENTATION_ADDRESS);
     });
 
     beforeEach(async () => {
