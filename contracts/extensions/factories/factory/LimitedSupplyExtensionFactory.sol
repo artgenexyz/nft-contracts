@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "./LimitedSupplyExtension.sol";
+import "../LimitedSupplyExtension.sol";
 
 // contract by buildship.xyz
 

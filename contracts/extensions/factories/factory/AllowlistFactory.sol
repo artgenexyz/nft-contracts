@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "./Allowlist.sol";
+import "../Allowlist.sol";
 
 contract AllowlistFactory {
 
