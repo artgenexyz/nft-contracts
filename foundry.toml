@@ -5,6 +5,7 @@ libs = ['node_modules', 'lib']
 test = 'test/foundry'
 cache_path  = 'forge-cache'
 solc = "0.8.9" # to use a specific local solc install set the path as `solc = "<path to solc>/solc"`
+extra_output_files = ['metadata']
 # remappings = [
 #     '@chainlink/=node_modules/@chainlink/',
 #     '@divergencetech/=node_modules/@divergencetech/',

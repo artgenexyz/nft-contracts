@@ -159,10 +159,19 @@ const config: HardhatUserConfig = {
     },
 
     dodoc: {
+        runOnCompile: false,
+        outputDir: ".wiki/reference",
         exclude: [
-            "-std",
-            "-test",
-            "dry",
+            "forge",
+            "utils",
+            "foundry",
+            "ethier",
+            "openzeppelin",
+            "interfaces",
+            "mocks",
+            "chiru-labs",
+            "erc721a",
+            "hardhat"
         ],
     },
 

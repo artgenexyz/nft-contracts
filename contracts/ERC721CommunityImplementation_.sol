@@ -10,7 +10,6 @@ pragma solidity ^0.8.9;
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/MulticallUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
@@ -24,35 +23,10 @@ import "./interfaces/IERC721Community.sol";
 import "./utils/OpenseaProxy.sol";
 import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
-//      Want to launch your own collection?
-//        Check out https://buildship.xyz
-
-//                                    ,:loxO0KXXc
-//                               ,cdOKKKOxol:lKWl
-//                            ;oOXKko:,      ;KNc
-//                        'ox0X0d:           cNK,
-//                 ','  ;xXX0x:              dWk
-//            ,cdO0KKKKKXKo,                ,0Nl
-//         ;oOXKko:,;kWMNl                  dWO'
-//      ,o0XKd:'    oNMMK:                 cXX:
-//   'ckNNk:       ;KMN0c                 cXXl
-//  'OWMMWKOdl;'    cl;                  oXXc
-//   ;cclldxOKXKkl,                    ;kNO;
-//            ;cdk0kl'             ;clxXXo
-//                ':oxo'         c0WMMMMK;
-//                    :l:       lNMWXxOWWo
-//                      ';      :xdc' :XWd
-//             ,                      cXK;
-//           ':,                      xXl
-//           ;:      '               o0c
-//           ;c;,,,,'               lx;
-//            '''                  cc
-//                                ,'
-contract ERC721CommunityImplementation is
+contract ERC721CommunityImplementation_ is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    MulticallUpgradeable,
     DefaultOperatorFiltererUpgradeable,
     IERC721CommunityImplementation,
     IERC721Community // implements IERC2981
@@ -591,11 +565,11 @@ contract ERC721CommunityImplementation is
         token.safeTransfer(dev, balance - amount);
     }
 
-    function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.xyz";
+    function DEVELOPER() internal pure returns (string memory _url) {
+        _url = "";
     }
 
-    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
+    function DEVELOPER_ADDRESS() internal pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 

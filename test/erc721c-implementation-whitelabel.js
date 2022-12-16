@@ -8,7 +8,7 @@ const { parseEther } = require("ethers").utils;
 
 const { getGasCost, createNFTSale } = require("./utils");
 
-const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
+const ERC721CommunityImplementation_ = artifacts.require("ERC721CommunityImplementation_");
 const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
 const NFTExtension = artifacts.require("NFTExtension");
 const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
@@ -19,7 +19,7 @@ const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/
 
 const ether = new BigNumber(1e18);
 
-contract("ERC721CommunityImplementation – Implementation", accounts => {
+contract("ERC721CommunityImplementation_ – Implementation", accounts => {
     let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
@@ -62,7 +62,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
         // const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
 
-        nft = await ERC721CommunityImplementation.at(nft_.address);
+        nft = await ERC721CommunityImplementation_.at(nft_.address);
     });
 
     // it should deploy successfully
@@ -191,7 +191,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
             "Caller is not developer"
         );
 
-        const buildship = await nft.DEVELOPER_ADDRESS();
+        const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
 
         // send ether to buildship
         await web3.eth.sendTransaction({
@@ -417,7 +417,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
             }
         );
 
-        const nft = await ERC721CommunityImplementation.at(nft_.address);
+        const nft = await ERC721CommunityImplementation_.at(nft_.address);
 
         await nft.startSale();
 
