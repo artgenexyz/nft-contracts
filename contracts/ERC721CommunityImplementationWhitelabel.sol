@@ -12,7 +12,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -22,25 +21,26 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IERC721Community.sol";
 import "./utils/OpenseaProxy.sol";
+import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
 contract ERC721CommunityImplementation_ is
     ERC721AUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
+    DefaultOperatorFiltererUpgradeable,
     IERC721CommunityImplementation,
     IERC721Community // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIndexCounter; // token index counter
 
     uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
     uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
+
+    uint256 public constant VERSION = 2;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -105,10 +105,12 @@ contract ERC721CommunityImplementation_ is
         startTimestamp = SALE_STARTS_AT_INFINITY;
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
+        isOpenSeaTransferFilterEnabled = true;
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
+        __DefaultOperatorFilterer_init();
 
         _configure(
             _config.publicPrice,
@@ -214,6 +216,10 @@ contract ERC721CommunityImplementation_ is
     }
 
     // ----- Admin functions -----
+
+    function toggleOpenSeaTransferFilter() public onlyOwner {
+        isOpenSeaTransferFilterEnabled = !isOpenSeaTransferFilterEnabled;
+    }
 
     function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
@@ -568,6 +574,15 @@ contract ERC721CommunityImplementation_ is
     }
 
     // -------- ERC721 overrides --------
+
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startId,
+        uint256 quantity
+    ) internal override onlyAllowedOperator(from) {
+        super._beforeTokenTransfers(from, to, startId, quantity);
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
