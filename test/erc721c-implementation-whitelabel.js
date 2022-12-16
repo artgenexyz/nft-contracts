@@ -191,7 +191,7 @@ contract("ERC721CommunityImplementation_ – Implementation", accounts => {
             "Caller is not developer"
         );
 
-        const buildship = await nft.DEVELOPER_ADDRESS();
+        const buildship = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
 
         // send ether to buildship
         await web3.eth.sendTransaction({
