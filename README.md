@@ -44,6 +44,14 @@ contract MyPFPNFT is ERC721CommunityBase {
 }
 ```
 
+## ERC721CommunityImplementation_
+
+A copy of ERC721CommunityImplementation without any mention of Buildship. It's used as a base interface for Buildship Fuelpass subscribers (https://buildship.xyz/fuelpass).
+
+```bash
+colordiff contracts/ERC721CommunityImplementation_.sol contracts/ERC721CommunityImplementation.sol
+```
+
 ## NFTExtension
 - Can be added to main NFT using `addExtension`
 - Support changing mint and tokenURI functions
