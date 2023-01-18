@@ -51,11 +51,11 @@ jobs:
           # As of Jul 2021, the default branch of a GitHub wiki is `master`, not `main`
           ref: master
           path: .wiki
-  
-      - name: Generate the Wiki Page using dodoc
+
+      - name: Generate the Wiki Page using foundry
         run: |
           set -xe
-          npx hardhat dodoc
+          forge doc --build
 
       - name: Configure the GitHub wiki identity
         working-directory: .wiki
