@@ -44,16 +44,8 @@ jobs:
           set -xe
           forge doc --build --out wiki
 
-  upload-wiki:
-    needs: build
-
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    steps:
-
       - name: Configure the GitHub wiki identity
-        working-directory: .wiki
+        working-directory: wiki
         # "${GITHUB_ACTOR}@users.noreply.github.com" is associated to the actor without real emails
         run: |
           set -xe
