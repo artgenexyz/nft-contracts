@@ -58,7 +58,7 @@ jobs:
         # but maybe you want to do `if git commit ... ; then` if you don't want to record an empty commit
         run: |
           set -xe
-          git add .
+          git add -f .
           git commit --allow-empty -m "update the wiki page by bot (${GITHUB_WORKFLOW})"
           git push origin master
 
