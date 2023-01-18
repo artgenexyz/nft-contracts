@@ -63,7 +63,7 @@ jobs:
           git push origin master
 
       # build gh pages using https://github.com/marketplace/actions/upload-github-pages-artifact
-      - name: Deploy to GitHub Pages
+      - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v1.0.7
         with:
           path: wiki/book/
