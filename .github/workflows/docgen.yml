@@ -11,7 +11,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-gh-pages:
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    # from https://github.com/actions/deploy-pages
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
