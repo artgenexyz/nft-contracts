@@ -37,7 +37,7 @@ jobs:
           repository: "${{ github.repository }}.wiki.git"
           # As of Jul 2021, the default branch of a GitHub wiki is `master`, not `main`
           ref: master
-          path: wiki/src
+          path: wiki
 
       - name: Generate the Wiki Page using foundry
         run: |
@@ -45,7 +45,7 @@ jobs:
           forge doc --build --out wiki
 
       - name: Configure the GitHub wiki identity
-        working-directory: wiki/src
+        working-directory: wiki
         # "${GITHUB_ACTOR}@users.noreply.github.com" is associated to the actor without real emails
         run: |
           set -xe
@@ -53,7 +53,7 @@ jobs:
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
       - name: Update the wiki page
-        working-directory: wiki/src
+        working-directory: wiki
         # --allow-empty may be good enough for almost all the situations,
         # but maybe you want to do `if git commit ... ; then` if you don't want to record an empty commit
         run: |
