@@ -55,7 +55,7 @@ jobs:
       - name: Generate the Wiki Page using foundry
         run: |
           set -xe
-          forge doc --build
+          forge doc --build --out wiki
 
       - name: Configure the GitHub wiki identity
         working-directory: .wiki
