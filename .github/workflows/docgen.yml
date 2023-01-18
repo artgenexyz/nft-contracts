@@ -80,6 +80,19 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Generate the Wiki Page using foundry
+        run: |
+          set -xe
+          forge doc --build --out wiki
+
       # build gh pages using https://github.com/marketplace/actions/upload-github-pages-artifact
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v1.0.7
