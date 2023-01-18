@@ -64,7 +64,7 @@ jobs:
 
       # build gh pages using https://github.com/marketplace/actions/upload-github-pages-artifact
       - name: Deploy to GitHub Pages
-        uses: actions/upload-github-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v1.0.7
         with:
           path: wiki/book/
           name: wiki-book
