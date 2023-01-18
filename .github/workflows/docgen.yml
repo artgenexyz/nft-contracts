@@ -11,17 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docs:
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    # from https://github.com/actions/deploy-pages
-    permissions:
-      pages: write # to deploy to Pages
-      id-token: write # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -41,6 +31,14 @@ jobs:
       #     forge --version
       #     forge build --sizes
       #   id: build
+
+  wiki:
+    needs: build
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
 
       - name: Checkout the wiki repository
         uses: actions/checkout@v2
@@ -72,6 +70,40 @@ jobs:
           git add .
           git commit --allow-empty -m "update the wiki page by bot (${GITHUB_WORKFLOW})"
           git push origin master
+
+
+  deploy:
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    # from https://github.com/actions/deploy-pages
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      # - name: Run Forge build
+      #   run: |
+      #     forge --version
+      #     forge build --sizes
+      #   id: build
 
       # build gh pages using https://github.com/marketplace/actions/upload-github-pages-artifact
       - name: Upload to GitHub Pages
