@@ -98,7 +98,6 @@ jobs:
         uses: actions/upload-pages-artifact@v1.0.7
         with:
           path: wiki/book/
-          name: wiki-book
           retention-days: 1
 
       - name: Deploy to GitHub Pages
