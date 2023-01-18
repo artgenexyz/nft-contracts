@@ -37,7 +37,7 @@ jobs:
           repository: "${{ github.repository }}.wiki.git"
           # As of Jul 2021, the default branch of a GitHub wiki is `master`, not `main`
           ref: master
-          path: .wiki
+          path: wiki
 
       - name: Generate the Wiki Page using foundry
         run: |
@@ -58,7 +58,6 @@ jobs:
         # but maybe you want to do `if git commit ... ; then` if you don't want to record an empty commit
         run: |
           set -xe
-          git add -f .
           git commit --allow-empty -m "update the wiki page by bot (${GITHUB_WORKFLOW})"
           git push origin master
 
