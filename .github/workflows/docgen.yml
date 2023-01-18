@@ -25,11 +25,11 @@ jobs:
         with:
           version: nightly
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+      # - name: Run Forge build
+      #   run: |
+      #     forge --version
+      #     forge build --sizes
+      #   id: build
 
       - name: Checkout the wiki repository
         uses: actions/checkout@v2
@@ -61,3 +61,12 @@ jobs:
           git add .
           git commit --allow-empty -m "update the wiki page by bot (${GITHUB_WORKFLOW})"
           git push origin master
+
+      # build gh pages using https://github.com/marketplace/actions/upload-github-pages-artifact
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-github-pages-artifact@v1
+        with:
+          path: wiki/book/
+          name: wiki-book
+          retention-days: 1
+
