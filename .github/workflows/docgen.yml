@@ -53,7 +53,7 @@ jobs:
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
       - name: Update the wiki page
-        working-directory: .wiki
+        working-directory: wiki
         # --allow-empty may be good enough for almost all the situations,
         # but maybe you want to do `if git commit ... ; then` if you don't want to record an empty commit
         run: |
