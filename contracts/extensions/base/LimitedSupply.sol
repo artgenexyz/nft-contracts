@@ -8,7 +8,7 @@ import "../../interfaces/IERC721Community.sol";
 
 abstract contract LimitedSupply is INFTExtension {
 
-    uint256 private totalMinted;
+    uint256 public totalMinted;
     uint256 public immutable extensionSupply;
 
     constructor(uint256 _extensionSupply) {

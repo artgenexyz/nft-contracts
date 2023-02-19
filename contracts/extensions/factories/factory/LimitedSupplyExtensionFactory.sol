@@ -3,9 +3,11 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "./Allowlist.sol";
+import "../LimitedSupplyExtension.sol";
 
-contract AllowlistFactory {
+// contract by buildship.xyz
+
+contract LimitedSupplyExtensionFactory {
 
     event ContractDeployed(
         address indexed deployedAddress,
@@ -17,23 +19,24 @@ contract AllowlistFactory {
     address public immutable implementation;
 
     constructor() {
-        implementation = address(new Allowlist());
+        implementation = address(new LimitedSupplyExtension());
     }
 
-    function createAllowlist(
+    function createExtension(
         string memory title,
         address nft,
-        bytes32 root,
         uint256 price,
-        uint256 maxPerAddress,
+        uint256 maxPerMint,
+        uint256 maxPerWallet,
+        uint256 extensionSupply,
         bool startSale
     ) external returns (address) {
 
         address payable clone = payable(Clones.clone(implementation));
 
-        Allowlist list = Allowlist(clone);
+        LimitedSupplyExtension list = LimitedSupplyExtension(clone);
 
-        list.initialize(title, nft, root, price, maxPerAddress);
+        list.initialize(title, nft, price, maxPerMint, maxPerWallet, extensionSupply);
 
         if (startSale) {
             list.startSale();
