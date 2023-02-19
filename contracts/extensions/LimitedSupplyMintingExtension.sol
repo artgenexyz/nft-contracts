@@ -45,12 +45,12 @@ contract LimitedSupplyMintingExtension is
         whenLimitedSupplyNotReached(amount)
     {
         require(
-            IERC721(address(nft)).balanceOf(_msgSender()) + nTokens <=
+            IERC721(address(nft)).balanceOf(_msgSender()) + amount <=
                 maxPerWallet,
             "LimitedSupplyMintingExtension: max per wallet reached"
         );
 
-        require(nTokens <= maxPerMint, "Too many tokens to mint");
+        require(amount <= maxPerMint, "Too many tokens to mint");
         require(msg.value >= amount * price, "Not enough ETH to mint");
 
         nft.mintExternal{value: msg.value}(amount, _msgSender(), bytes32(0x0));
