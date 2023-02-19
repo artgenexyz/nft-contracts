@@ -3,17 +3,17 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../interfaces/IMetaverseNFT.sol";
+import "../interfaces/IERC721Community.sol";
 import "../interfaces/INFTExtension.sol";
 import "./base/NFTExtension.sol";
 
 contract JSONTokenURIExtension is NFTExtension, INFTURIExtension {
-    // IMetaverseNFT public immutable nft;
+    // IERC721Community public immutable nft;
 
     string public suffix;
 
     constructor(address _nft, string memory _suffix) NFTExtension(_nft) {
-        // nft = IMetaverseNFT(_nft);
+        // nft = IERC721Community(_nft);
         suffix = _suffix;
     }
 

@@ -12,7 +12,7 @@ USE AT YOUR OWN RISK. Most of the features are in production already, however th
 
 Features include:
 
-## MetaverseNFT.sol
+## ERC721CommunityImplementation.sol
 - Limited supply
 - Mint N tokens in one transaction
 - Generative art
@@ -22,14 +22,14 @@ Features include:
 - Deployed by Factory using Clones
 - Supports `NFTExtension` to upgrade mint and tokenURI functions
 
-## MetaverseBaseNFT.sol
-- Same features as MetaverseNFT
+## ERC721CommunityBase.sol
+- Same features as ERC721CommunityImplementation
 - Import and inherit in your own projects
 
 ```solidity
-contract MyPFPNFT is MetaverseBaseNFT {
+contract MyPFPNFT is ERC721CommunityBase {
 
-    constructor() MetaverseBaseNFT(
+    constructor() ERC721CommunityBase(
         0.1 ether, // public mint price, you can change later
         10000, // total supply
         100, // reserved
@@ -42,6 +42,14 @@ contract MyPFPNFT is MetaverseBaseNFT {
     ) {}
 
 }
+```
+
+## ERC721CommunityImplementation_
+
+A copy of ERC721CommunityImplementation without any mention of Buildship. It's used as a base interface for Buildship Fuelpass subscribers (https://buildship.xyz/fuelpass).
+
+```bash
+colordiff contracts/ERC721CommunityImplementation_.sol contracts/ERC721CommunityImplementation.sol
 ```
 
 ## NFTExtension
@@ -76,12 +84,11 @@ Then, to test your code:
 npx hardhat test
 ```
 
-### Checking different versions of MetaverseNFT:
+### Checking different versions of ERC721CommunityImplementation:
 
 ```bash
-colordiff contracts/MetaverseBaseNFT.sol contracts/MetaverseNFT.sol --context=1
-colordiff contracts/MetaverseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
-colordiff contracts/MetaverseBaseNFT_ERC721.sol contracts/MetaverseNFT.sol --context=1
+colordiff contracts/ERC721CommunityBase.sol contracts/ERC721CommunityImplementation.sol --context=1
+colordiff contracts/ERC721CommunityBase_ERC1155.sol contracts/ERC721CommunityBase.sol --context=1
 ```
 
 ### Deploy to production

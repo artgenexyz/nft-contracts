@@ -11,6 +11,7 @@ import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-solhint";
 
 import "@tenderly/hardhat-tenderly";
 
@@ -19,8 +20,13 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
+import "hardhat-nodemon";
+import "hardhat-preprocessor";
 
-import "./scripts/upload";
+import "hardhat-output-validator";
+
+import "@buildship/hardhat-ipfs-upload";
+import "@primitivefi/hardhat-dodoc";
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -43,7 +49,7 @@ stdout.isTTY && console.log('Using env variables', {
     ALCHEMY_RINKEBY_API: ALCHEMY_RINKEBY_API ? '✅' : '❌',
     ALCHEMY_API: ALCHEMY_API ? '✅' : '❌',
     FORK: FORK ? '✅' : '❌',
-    MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0,4) + '...' + MNEMONIC.slice(-4) : '❌',
+    MNEMONIC: MNEMONIC ? '✅' + MNEMONIC.slice(0, 4) + '...' + MNEMONIC.slice(-4) : '❌',
 });
 
 const mnemonic = (() => {
@@ -58,6 +64,14 @@ const mnemonic = (() => {
     }
 })();
 
+const getRemappings = () => {
+    return fs
+        .readFileSync("remappings.txt", "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => line.trim().split("="));
+};
+
 const config: HardhatUserConfig = {
     networks: {
         hardhat: {
@@ -66,6 +80,12 @@ const config: HardhatUserConfig = {
             } : (FORK && ALCHEMY_RINKEBY_API) ? {
                 url: ALCHEMY_RINKEBY_API,
             } : undefined,
+        },
+        goerli: {
+            url: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+            accounts: {
+                mnemonic,
+            },
         },
         rinkeby: {
             url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
@@ -112,12 +132,47 @@ const config: HardhatUserConfig = {
         apiKey: {
             mainnet: ETHERSCAN_API_KEY,
             rinkeby: ETHERSCAN_API_KEY,
+            goerli: ETHERSCAN_API_KEY,
             polygon: POLYGONSCAN_API_KEY,
             bsc: BSCSCAN_API_KEY,
             moonbeam: MOONBEAM_API_KEY,
             moonriver: MOONRIVER_API_KEY,
             moonbaseAlpha: MOONRIVER_API_KEY,
         },
+    },
+
+    // This fully resolves paths for imports in the ./lib directory for Hardhat
+    preprocess: {
+        eachLine: (hre) => ({
+            transform: (line: string) => {
+                if (line.match(/^\s*import /i)) {
+                    for (const [from, to] of getRemappings()) {
+                        if (line.includes(from)) {
+                            line = line.replace(from, to);
+                            break;
+                        }
+                    }
+                }
+                return line;
+            },
+        }),
+    },
+
+    dodoc: {
+        runOnCompile: false,
+        outputDir: ".wiki/reference",
+        exclude: [
+            "forge",
+            "utils",
+            "foundry",
+            "ethier",
+            "openzeppelin",
+            "interfaces",
+            "mocks",
+            "chiru-labs",
+            "erc721a",
+            "hardhat"
+        ],
     },
 
 };
