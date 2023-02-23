@@ -58,11 +58,11 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
 
     // it creates same tree independent on capital case or address order
     it("creates same tree independent on capital case or address order", async () => {
-        const { tree: tree1 } = getAirdropTree([ user1, user2 ])
-        const { tree: tree2 } = getAirdropTree([ user2, user1 ])
-        const { tree: tree3 } = getAirdropTree([ user1.toUpperCase(), user2.toUpperCase() ])
-        const { tree: tree4 } = getAirdropTree([ user2.toUpperCase(), user1.toUpperCase() ])
-        const { tree: tree5 } = getAirdropTree([ user1.toLowerCase(), user2.toLowerCase() ])
+        const { tree: tree1 } = getAirdropTree([user1, user2])
+        const { tree: tree2 } = getAirdropTree([user2, user1])
+        const { tree: tree3 } = getAirdropTree([user1.toUpperCase(), user2.toUpperCase()])
+        const { tree: tree4 } = getAirdropTree([user2.toUpperCase(), user1.toUpperCase()])
+        const { tree: tree5 } = getAirdropTree([user1.toLowerCase(), user2.toLowerCase()])
 
         // check tree roots are equal via tree.getHexRoot()
 
@@ -95,7 +95,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
 
     // it should be able to be whitelisted
     it("should be able to be whitelisted", async () => {
-        const addresses = [ user1, user2 ]
+        const addresses = [user1, user2]
 
         const { tree } = getAirdropTree(addresses)
 
@@ -127,7 +127,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
 
     // it should be able to mint via whitelist
     it("should be able to mint via whitelist", async () => {
-        const addresses = [ user1, user2 ]
+        const addresses = [user1, user2]
 
         const { tree } = getAirdropTree(addresses)
 
@@ -169,7 +169,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
     });
 
     // it should allow to mint from ERC20SaleExtension
-    it ("it should allow to mint from ERC20SaleExtension", async () => {
+    it("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
         const pass = await createNFTSale(ERC721CommunityBase);
         await pass.claim(2, owner);
@@ -226,7 +226,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
         expectEvent(
             await ERC20Extension.changeCurrency(currency2.address, "20"),
             "currencyChanged",
-            { newCurrency: currency2.address}
+            { newCurrency: currency2.address }
         );
 
         await expectRevert(
