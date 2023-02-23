@@ -351,7 +351,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
 
         await expectRevert(
             extension.mint(1, { from: user2, value: 1e16.toString() }),
-            "LimitedSupplyMintingExtension: max per wallet reached"
+            "MaxPerWallet: Too many tokens to mint"
         );
 
     });

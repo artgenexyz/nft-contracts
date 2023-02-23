@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./base/NFTExtension.sol";
 import "./base/SaleControl.sol";
 import "./base/LimitedSupply.sol";
+import "./base/MaxPerWallet.sol";
+import "./base/MaxPerMint.sol";
+import "./base/MintPrice.sol";
 
 interface NFT is IERC721Community {
     function maxSupply() external view returns (uint256);
@@ -17,42 +20,39 @@ contract LimitedSupplyMintingExtension is
     NFTExtension,
     Ownable,
     SaleControl,
-    LimitedSupply
+    LimitedSupply,
+    MaxPerWallet,
+    MaxPerMint,
+    MintPrice
 {
-    uint256 public price;
-    uint256 public maxPerMint;
-    uint256 public maxPerWallet;
-
     constructor(
         address _nft,
         uint256 _price,
         uint256 _maxPerMint,
         uint256 _maxPerWallet,
         uint256 _extensionSupply
-    ) NFTExtension(_nft) LimitedSupply(_extensionSupply) {
+    )
+        NFTExtension(_nft)
+        LimitedSupply(_extensionSupply)
+        MintPrice(_price)
+        MaxPerMint(_maxPerMint)
+        MaxPerWallet(_maxPerWallet)
+    {
         stopSale();
         // sale stopped by default
-
-        price = _price;
-        maxPerMint = _maxPerMint;
-        maxPerWallet = _maxPerWallet;
     }
 
-    function mint(uint256 amount)
+    function mint(
+        uint256 amount
+    )
         external
         payable
         whenSaleStarted
+        whenEnoughETH(amount)
+        whenNotMaxPerMint(amount)
+        whenWalletNotFull(amount)
         whenLimitedSupplyNotReached(amount)
     {
-        require(
-            IERC721(address(nft)).balanceOf(msg.sender) + amount <=
-                maxPerWallet,
-            "LimitedSupplyMintingExtension: max per wallet reached"
-        );
-
-        require(amount <= maxPerMint, "Too many tokens to mint");
-        require(msg.value >= amount * price, "Not enough ETH to mint");
-
         nft.mintExternal{value: msg.value}(amount, msg.sender, bytes32(0x0));
     }
 
