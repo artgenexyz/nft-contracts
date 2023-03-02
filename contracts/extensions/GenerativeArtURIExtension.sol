@@ -62,7 +62,7 @@ contract GenerativeArtURIExtension is NFTExtension, INFTURIExtension {
     function genom(uint256 id) public view returns (string memory) {
         bytes32 random = gene[id];
         // return hex string of gene
-        return toHexString(random);
+        return string(abi.encodePacked("0x", toHexString(random)));
     }
 
     // prettier-ignore
