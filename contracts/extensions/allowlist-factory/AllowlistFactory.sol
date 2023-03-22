@@ -25,7 +25,6 @@ contract AllowlistFactory {
         address nft,
         bytes32 root,
         uint256 price,
-        uint256 maxPerAddress,
         bool startSale
     ) external returns (address) {
 
@@ -33,7 +32,7 @@ contract AllowlistFactory {
 
         Allowlist list = Allowlist(clone);
 
-        list.initialize(title, nft, root, price, maxPerAddress);
+        list.initialize(title, nft, root, price);
 
         if (startSale) {
             list.startSale();
