@@ -81,33 +81,19 @@ contract GenerativeArtURIExtension is NFTExtension, INFTURIExtension {
 
         string memory animation_url_ = string(
             abi.encodePacked(
-                animation_url, "?seed=", _gene
+                animation_url, "?dna=", _gene
             )
         );
 
-        // abi.encodePacked(
-        //     "{",
-        //         '"name": "', name, '",',
-        //         '"image": "', image, '",',
-        //         '"animation_url": "', animation_url_, '",',
-        //         '"description": "', description, '",',
-        //         '"external_url": "', external_url, '"',
-        //     "}"
-        // )
-
-        string memory json = string(
-            abi.encodePacked(
-                "{",
-                    '"name": "', name, '",',
-
-                    '"image": "', image, '",',
-                    '"animation_url": "', animation_url_, '",',
-
-                    '"description": "', description, '",',
-                    '"external_url": "', external_url, '"',
-                "}"
-            )
-        );
+        string memory json = string(abi.encodePacked(
+            "{",
+                '"name": "', name, '",',
+                '"image": "', image, '",',
+                '"animation_url": "', animation_url_, '",',
+                '"description": "', description, '",',
+                '"external_url": "', external_url, '"',
+            "}"
+        ));
 
         uri = string(abi.encodePacked("data:application/json,", json));
     }
