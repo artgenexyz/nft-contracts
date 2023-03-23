@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./AllowlistSingle.sol";
 
-contract AllowlistFactory {
+contract AllowlistFactorySingle {
 
     event ContractDeployed(
         address indexed deployedAddress,
