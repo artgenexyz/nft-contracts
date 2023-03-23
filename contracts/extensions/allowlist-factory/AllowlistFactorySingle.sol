@@ -3,9 +3,9 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "./Allowlist.sol";
+import "./AllowlistSingle.sol";
 
-contract AllowlistFactory {
+contract AllowlistFactorySingle {
 
     event ContractDeployed(
         address indexed deployedAddress,
@@ -17,7 +17,7 @@ contract AllowlistFactory {
     address public immutable implementation;
 
     constructor() {
-        implementation = address(new Allowlist());
+        implementation = address(new AllowlistSingle());
     }
 
     function createAllowlist(
@@ -25,14 +25,15 @@ contract AllowlistFactory {
         address nft,
         bytes32 root,
         uint256 price,
+        uint256 maxPerAddress,
         bool startSale
     ) external returns (address) {
 
         address payable clone = payable(Clones.clone(implementation));
 
-        Allowlist list = Allowlist(clone);
+        AllowlistSingle list = AllowlistSingle(clone);
 
-        list.initialize(title, nft, root, price);
+        list.initialize(title, nft, root, price, maxPerAddress);
 
         if (startSale) {
             list.startSale();

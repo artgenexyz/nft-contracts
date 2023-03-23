@@ -36,9 +36,8 @@ import "./base/NFTExtensionUpgradeable.sol";
 
 contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
     uint256 public price;
-    uint256 public maxPerAddress;
 
-    bytes32 public whitelistRoot;
+    bytes32 public allowlistRoot;
 
     string public title;
 
@@ -50,59 +49,69 @@ contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
     function initialize(
         string memory _title,
         address _nft,
-        bytes32 _whitelistRoot,
-        uint256 _price,
-        uint256 _maxPerAddress
-    ) initializer public {
+        bytes32 _allowlistRoot,
+        uint256 _price
+    ) public initializer {
         NFTExtensionUpgradeable.initialize(_nft);
         SaleControlUpgradeable.initialize();
 
         title = _title;
         price = _price;
-        maxPerAddress = _maxPerAddress;
-        whitelistRoot = _whitelistRoot;
+        allowlistRoot = _allowlistRoot;
     }
 
     function updatePrice(uint256 _price) public onlyOwner {
         price = _price;
     }
 
-    function updateMaxPerAddress(uint256 _maxPerAddress) public onlyOwner {
-        maxPerAddress = _maxPerAddress;
+    function updateAllowlistRoot(bytes32 _allowlistRoot) public onlyOwner {
+        allowlistRoot = _allowlistRoot;
     }
 
-    function updateWhitelistRoot(bytes32 _whitelistRoot) public onlyOwner {
-        whitelistRoot = _whitelistRoot;
-    }
-
-    function mint(uint256 nTokens, bytes32[] memory proof)
-        external
-        payable
-        whenSaleStarted
-    {
+    function mint(
+        uint256 amount,
+        uint256 maxAllocatedAmount,
+        bytes32[] memory proof
+    ) external payable whenSaleStarted {
         require(
-            isWhitelisted(whitelistRoot, msg.sender, proof),
+            isAllowlisted(allowlistRoot, msg.sender, maxAllocatedAmount, proof),
             "Not whitelisted"
         );
 
         require(
-            claimedByAddress[msg.sender] + nTokens <= maxPerAddress,
+            claimedByAddress[msg.sender] + amount <= maxAllocatedAmount,
             "Cannot claim more per address"
         );
 
-        require(msg.value >= nTokens * price, "Not enough ETH to mint");
+        require(msg.value >= amount * price, "Not enough ETH to mint");
 
-        claimedByAddress[msg.sender] += nTokens;
+        claimedByAddress[msg.sender] += amount;
 
-        nft.mintExternal{value: msg.value}(nTokens, msg.sender, bytes32(0x0));
+        nft.mintExternal{value: msg.value}(amount, msg.sender, bytes32(0));
     }
 
-    function isWhitelisted(
+    function computeLeaf(
+        address receiver,
+        uint256 maxAmount
+    ) public pure returns (bytes32) {
+        // leaf is [keccak256(address), maxAmount]
+        // double hash to prevent length extension attack
+
+        bytes memory leafData = abi.encode(
+            keccak256(abi.encodePacked(receiver)),
+            maxAmount
+        );
+
+        return keccak256(bytes.concat(keccak256(leafData)));
+    }
+
+    function isAllowlisted(
         bytes32 root,
         address receiver,
+        uint256 maxAmount,
         bytes32[] memory proof
     ) public pure returns (bool) {
-        bytes32 leaf = keccak256(abi.encodePacked(receiver));
+        bytes32 leaf = computeLeaf(receiver, maxAmount);
 
         return MerkleProofUpgradeable.verify(proof, root, leaf);
     }
