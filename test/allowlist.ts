@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { AllowlistFactory } from "../typechain-types";
+import { AllowlistFactorySingle } from "../typechain-types";
 
 const { parseEther } = ethers.utils;
 
 describe("Allowlist Factory", () => {
-    let factory: AllowlistFactory;
+    let factory: AllowlistFactorySingle;
 
     beforeEach(async () => {
-        const f = await ethers.getContractFactory("AllowlistFactory")
+        const f = await ethers.getContractFactory("AllowlistFactorySingle")
 
         factory = await f.deploy();
     });
@@ -40,7 +40,7 @@ describe("Allowlist Factory", () => {
         expect(event?.args?.nft).to.equal(nftAddress);
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -83,7 +83,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -113,7 +113,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -173,7 +173,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const list = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
