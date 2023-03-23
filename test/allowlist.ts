@@ -40,7 +40,7 @@ describe("Allowlist Factory", () => {
         expect(event?.args?.nft).to.equal(nftAddress);
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -83,7 +83,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -113,7 +113,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const contract = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
@@ -173,7 +173,7 @@ describe("Allowlist Factory", () => {
         const event = res.events?.find(e => e.event === "ContractDeployed")
 
         const list = await ethers.getContractAt(
-            "Allowlist",
+            "AllowlistSingle",
             event?.args?.deployedAddress,
         );
 
