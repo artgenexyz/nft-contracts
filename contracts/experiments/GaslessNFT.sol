@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "../ERC721CommunityBase.sol";
+import "../standards/ERC721CommunityBase.sol";
 
 contract GaslessNFT is ERC721CommunityBase {
     uint256 constant GAS_TRANSFER = 21000;

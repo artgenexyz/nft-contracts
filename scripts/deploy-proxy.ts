@@ -73,17 +73,17 @@ export async function main() {
   // }
 
 
-  const ERC721Community = await hre.ethers.getContractFactory("ERC721Community");
+  const Artgene721 = await hre.ethers.getContractFactory("Artgene721");
 
-  if (ERC721Community.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(2))) {
+  if (Artgene721.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(2))) {
     
     console.log("Bytecode includes vanity address", IMPLEMENTATION_ADDRESS);
 
   } else {
-    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, IMPLEMENTATION_ADDRESS);
+    console.log("Bytecode does not include vanity address", Artgene721.bytecode, IMPLEMENTATION_ADDRESS);
 
     // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
-    // throw new Error("ERC721Community bytecode does not include vanity address");
+    // throw new Error("Artgene721 bytecode does not include vanity address");
   }
 
   const futureAddress = await computeVanityAddress();
@@ -132,10 +132,10 @@ export async function main() {
     }
   }
 
-  const ERC721CommunityImplementation = await hre.ethers.getContractFactory("ERC721CommunityImplementation");
+  const Artgene721Implementation = await hre.ethers.getContractFactory("Artgene721Implementation");
 
   // deploy with gas = 15 gwei
-  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy({
+  const implementation = await Artgene721Implementation.connect(vanity).deploy({
     gasPrice: ethers.utils.parseUnits("15", "gwei"),
     nonce: vanityNonce,
     ...(hre.network.name == "mainnet" && {
@@ -145,7 +145,7 @@ export async function main() {
 
   await implementation.deployed();
 
-  console.log("ERC721CommunityImplementation implementation deployed to:", implementation.address);
+  console.log("Artgene721Implementation implementation deployed to:", implementation.address);
 
   // write file to scripts/params.js
 
@@ -172,13 +172,13 @@ export async function main() {
 
   // verify contract
   await hre.run("verify", {
-    contract: "contracts/ERC721CommunityImplementation.sol:ERC721CommunityImplementation",
+    contract: "contracts/Artgene721Implementation.sol:Artgene721Implementation",
     address: implementation.address,
     constructorArgs: "./scripts/params.js",
     network: "rinkeby",
   });
 
-  const nft = ERC721CommunityImplementation.attach(implementation.address);
+  const nft = Artgene721Implementation.attach(implementation.address);
 
   // // Call the deployed contract.
   // const tx2 = await implementation.initialize(

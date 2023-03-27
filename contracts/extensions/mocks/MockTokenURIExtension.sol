@@ -4,13 +4,14 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../../interfaces/INFTExtension.sol";
-import "../../interfaces/IERC721Community.sol";
+import "../../interfaces/IRenderer.sol";
+import "../../interfaces/IArtgene721.sol";
 
-contract MockTokenURIExtension is INFTURIExtension, ERC165 {
-    IERC721Community public immutable nft;
+contract MockTokenURIExtension is IRenderer, ERC165 {
+    IArtgene721 public immutable nft;
 
     constructor(address _nft) {
-        nft = IERC721Community(_nft);
+        nft = IArtgene721(_nft);
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -22,10 +23,15 @@ contract MockTokenURIExtension is INFTURIExtension, ERC165 {
         return
             interfaceId == type(INFTURIExtension).interfaceId ||
             interfaceId == type(INFTExtension).interfaceId ||
+            interfaceId == type(IRenderer).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
     function tokenURI(uint256) public pure returns (string memory uri) {
         uri = "<svg></svg>";
+    }
+
+    function render(uint256) public pure returns (string memory) {
+        return "<svg></svg>";
     }
 }
