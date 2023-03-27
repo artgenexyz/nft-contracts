@@ -7,9 +7,9 @@ pragma solidity ^0.8.9;
  * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
  */
 
-import "erc721a/contracts/ERC721A.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
@@ -19,8 +19,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFTExtension.sol";
-import "./interfaces/IERC721Community.sol";
+import "./interfaces/IRenderer.sol";
+import "./interfaces/IArtgene721.sol";
 import "./utils/OpenseaProxy.sol";
+import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -46,11 +48,13 @@ import "./utils/OpenseaProxy.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract ERC721CommunityBase is
-    ERC721A,
-    ReentrancyGuard,
-    Ownable,
-    IERC721Community // implements IERC2981
+contract Artgene721Implementation is
+    ERC721AUpgradeable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable,
+    DefaultOperatorFiltererUpgradeable,
+    IArtgene721Implementation,
+    IArtgene721 // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -60,6 +64,8 @@ contract ERC721CommunityBase is
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
+
+    uint256 public constant VERSION = 3;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -73,7 +79,7 @@ contract ERC721CommunityBase is
 
     address public royaltyReceiver;
     address public payoutReceiver;
-    address public uriExtension;
+    address public renderer;
 
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive;
@@ -101,9 +107,9 @@ contract ERC721CommunityBase is
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
-    event ExtensionURIAdded(address indexed extensionAddress);
+    event RendererAdded(address indexed extensionAddress);
 
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
         uint256 _maxSupply,
@@ -111,15 +117,11 @@ contract ERC721CommunityBase is
         bool _startAtOne,
         string memory _uri,
         MintConfig memory _config
-    ) ERC721A(_name, _symbol) {
-
+    ) public initializerERC721A initializer {
         reserved = _nReserved;
         maxSupply = _maxSupply;
 
-        require(
-            _startAtOne == false,
-            "Doesn't support starting at one with ERC721A"
-        );
+        // should be set before calling ERC721A_init !
         startAtOne = _startAtOne;
 
         BASE_URI = _uri;
@@ -128,6 +130,12 @@ contract ERC721CommunityBase is
         startTimestamp = SALE_STARTS_AT_INFINITY;
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
+        isOpenSeaTransferFilterEnabled = true;
+
+        __ERC721A_init(_name, _symbol);
+        __ReentrancyGuard_init();
+        __Ownable_init();
+        __DefaultOperatorFilterer_init();
 
         _configure(
             _config.publicPrice,
@@ -184,14 +192,20 @@ contract ERC721CommunityBase is
         }
     }
 
+    // This constructor ensures that this contract can only be used as a master copy
+    // Marking constructor as initializer makes sure that real initializer cannot be called
+    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
+    // on the other hand, it's impossible to call this function in proxy,
+    // so the real initializer is the only initializer
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
 
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
-        // NB: It requires static value, override when inherit
-        return 0;
+        return startAtOne ? 1 : 0;
     }
 
     function contractURI() public view returns (string memory uri) {
@@ -204,8 +218,8 @@ contract ERC721CommunityBase is
         override
         returns (string memory)
     {
-        if (uriExtension != address(0)) {
-            string memory uri = INFTURIExtension(uriExtension).tokenURI(
+        if (renderer != address(0)) {
+            string memory uri = IRenderer(renderer).tokenURI(
                 tokenId
             );
 
@@ -227,6 +241,10 @@ contract ERC721CommunityBase is
     }
 
     // ----- Admin functions -----
+
+    function toggleOpenSeaTransferFilter() public onlyOwner {
+        isOpenSeaTransferFilterEnabled = !isOpenSeaTransferFilterEnabled;
+    }
 
     function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
@@ -308,21 +326,21 @@ contract ERC721CommunityBase is
         emit ExtensionRevoked(_extension);
     }
 
-    function setExtensionTokenURI(address extension) public onlyOwner {
-        require(extension != address(this), "Cannot add self as extension");
+    function setRenderer(address _renderer) public onlyOwner {
+        require(_renderer != address(this), "Cannot add self as renderer");
 
         require(
-            extension == address(0x0) ||
+            _renderer == address(0) ||
                 ERC165Checker.supportsInterface(
-                    extension,
-                    type(INFTURIExtension).interfaceId
+                    _renderer,
+                    type(IRenderer).interfaceId
                 ),
-            "Not conforms to extension"
+            "Not conforms to renderer interface"
         );
 
-        uriExtension = extension;
+        renderer = _renderer;
 
-        emit ExtensionURIAdded(extension);
+        emit RendererAdded(_renderer);
     }
 
     // function to disable gasless listings for security in case
@@ -573,14 +591,23 @@ contract ERC721CommunityBase is
     }
 
     function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.xyz";
+        _url = "https://artgene.xyz";
     }
 
-    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
+    function DEVELOPER_ADDRESS() internal pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
     // -------- ERC721 overrides --------
+
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startId,
+        uint256 quantity
+    ) internal override onlyAllowedOperator(from) {
+        super._beforeTokenTransfers(from, to, startId, quantity);
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
@@ -590,7 +617,7 @@ contract ERC721CommunityBase is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
-            interfaceId == type(IERC721Community).interfaceId ||
+            interfaceId == type(IArtgene721).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

@@ -6,7 +6,7 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "contracts/extensions/MintBatchExtension.sol";
-import "contracts/ERC721CommunityBase.sol";
+import "contracts/standards/ERC721CommunityBase.sol";
 
 // import Mock NFT contract
 
