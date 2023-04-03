@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 /**
  * @title LICENSE REQUIREMENT
  * @dev This contract is licensed under the MIT license.
- * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
+ * @dev You're not allowed to remove DEVELOPER() from contract
  */
 
 import "erc721a/contracts/ERC721A.sol";
