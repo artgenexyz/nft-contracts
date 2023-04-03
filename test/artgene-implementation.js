@@ -15,7 +15,7 @@ const MockRenderer = artifacts.require("MockRenderer");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const Artgene721 = artifacts.require("Artgene721");
 
-const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy-artgene.ts");
+const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
 
 const ether = new BigNumber(1e18);
 
