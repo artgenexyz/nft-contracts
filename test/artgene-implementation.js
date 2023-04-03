@@ -11,11 +11,11 @@ const { getGasCost, createNFTSale } = require("./utils");
 const Artgene721Implementation = artifacts.require("Artgene721Implementation");
 const Artgene721Base = artifacts.require("Artgene721Base");
 const NFTExtension = artifacts.require("NFTExtension");
-const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
+const MockRenderer = artifacts.require("MockRenderer");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const Artgene721 = artifacts.require("Artgene721");
 
-const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
+const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy-artgene.ts");
 
 const ether = new BigNumber(1e18);
 
@@ -264,7 +264,7 @@ contract("Artgene721Implementation – Implementation", accounts => {
 
     // it is possible to use extension to change tokenURI
     it("is possible to use extension to change tokenURI", async () => {
-        const extension = await MockTokenURIExtension.new(nft.address);
+        const extension = await MockRenderer.new(nft.address);
 
         await nft.setRenderer(extension.address, { from: owner });
 
