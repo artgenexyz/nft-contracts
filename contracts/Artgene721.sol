@@ -40,10 +40,12 @@ type StartFromTokenIdOne is bool;
 
 contract Artgene721 is Proxy {
     address internal constant proxyImplementation =
-        0xf3E07A5cBDFE6a257A7caa4Fcb3187A1C2Ec6a2E;
+        0x00000721187b81D0aDac9d1E4D7Fd623ac788559;
 
-    StartFromTokenIdOne internal constant START_FROM_ONE = StartFromTokenIdOne.wrap(true);
-    StartFromTokenIdOne internal constant START_FROM_ZERO = StartFromTokenIdOne.wrap(false);
+    StartFromTokenIdOne internal constant START_FROM_ONE =
+        StartFromTokenIdOne.wrap(true);
+    StartFromTokenIdOne internal constant START_FROM_ZERO =
+        StartFromTokenIdOne.wrap(false);
 
     constructor(
         string memory name,
