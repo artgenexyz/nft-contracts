@@ -25,7 +25,6 @@ import "./utils/OpenseaProxy.sol";
 
 /**
  * @title contract by artgene.xyz
- * @dev Artgene721 is extendable implementation of ERC721 based on ERC721A and Artgene721Implementation.
  */
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
