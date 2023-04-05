@@ -6,6 +6,8 @@ import { Signer } from "ethers";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+const GAS_PRICE_GWEI = "50";
+
 export const IMPLEMENTATION_ADDRESS = "0x00000721187b81D0aDac9d1E4D7Fd623ac788559";
 export const IMPLEMENTATION_DEPLOYER_ADDRESS =
   "0x768FcE871872DA304762f0A8274E2e8c2CA9458E";
@@ -13,7 +15,7 @@ export const IMPLEMENTATION_DEPLOYER_ADDRESS =
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
 
-  const gasPrice = hre.ethers.utils.parseUnits("10", "gwei");
+  const gasPrice = hre.ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei");
   const gasCost = gasPrice.mul(21000);
 
   return await account.sendTransaction({
@@ -97,7 +99,7 @@ export async function main() {
   } else {
     console.log("Address does not match vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
 
-    // throw new Error(`Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`);
+    throw new Error(`Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`);
   }
 
   const vanity = await getVanityDeployer();
@@ -138,16 +140,19 @@ export async function main() {
 
   // deploy with gas = 15 gwei
   const implementation = await Artgene721Implementation.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits("15", "gwei"),
+    gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
     nonce: vanityNonce,
-    ...(hre.network.name == "mainnet" && {
+    ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
       gasLimit: 6_000_000,
-    })
+    }),
   });
 
   await implementation.deployed();
 
   console.log("Artgene721Implementation implementation deployed to:", implementation.address);
+
+  // send all funds to admin
+  await sendAllFunds(vanity, admin.address);
 
   // write file to scripts/params.js
 
