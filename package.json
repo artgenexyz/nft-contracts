@@ -26,7 +26,7 @@
   "devDependencies": {
     "@foundry-rs/hardhat-forge": "^0.1.17",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
-    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@nomiclabs/hardhat-ganache": "^2.0.1",
     "@nomiclabs/hardhat-solhint": "^2.0.1",
     "@nomiclabs/hardhat-truffle5": "^2.0.5",
@@ -50,7 +50,6 @@
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.5",
     "ganache": "^7.0.1",
-    "hardhat": "^2.9.2",
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-deploy": "^0.11.2",
     "hardhat-gas-reporter": "^1.0.8",
