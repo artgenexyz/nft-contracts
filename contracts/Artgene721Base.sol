@@ -90,7 +90,7 @@ contract Artgene721Base is
     using SafeERC20 for IERC20;
 
     uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
+    uint256 internal constant PLATFORM_FEE = 500; // of 10,000 = 5%
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
@@ -569,7 +569,7 @@ contract Artgene721Base is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == DEVELOPER_ADDRESS(),
+            payable(msg.sender) == PLATFORM_ADDRESS(),
             "Caller is not developer"
         );
         _;
@@ -577,10 +577,10 @@ contract Artgene721Base is
 
     function _withdraw() private {
         uint256 balance = address(this).balance;
-        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+        uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = DEVELOPER_ADDRESS();
+        address payable dev = PLATFORM_ADDRESS();
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
@@ -597,10 +597,10 @@ contract Artgene721Base is
     function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
 
-        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+        uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = DEVELOPER_ADDRESS();
+        address payable dev = PLATFORM_ADDRESS();
 
         token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
@@ -610,7 +610,7 @@ contract Artgene721Base is
         _url = "https://artgene.xyz";
     }
 
-    function DEVELOPER_ADDRESS() internal pure returns (address payable _dev) {
+    function PLATFORM_ADDRESS() internal pure returns (address payable _dev) {
         _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
