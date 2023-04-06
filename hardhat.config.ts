@@ -144,6 +144,10 @@ const config: HardhatUserConfig = {
     // This fully resolves paths for imports in the ./lib directory for Hardhat
     preprocess: {
         eachLine: (hre) => ({
+            settings: {
+                // this is needed so that etherscan verification works
+                cache: false,
+            },
             transform: (line: string) => {
                 if (line.match(/^\s*import /i)) {
                     for (const [from, to] of getRemappings()) {
