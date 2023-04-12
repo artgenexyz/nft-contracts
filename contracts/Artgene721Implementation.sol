@@ -18,6 +18,8 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "./ArtgenePlatform.sol";
+
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
@@ -92,15 +94,17 @@ contract Artgene721Implementation is
     using Address for address;
     using SafeERC20 for IERC20;
 
-    uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 internal constant PLATFORM_FEE = 500; // of 10,000 = 5%
+    uint256 internal constant SALE_STARTS_AT_INFINITY = 2 ** 256 - 1;
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public constant VERSION = 3;
 
-    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
+    uint256 public startTimestamp;
+    uint256 public PLATFORM_FEE; // of 10,000
+    address payable PLATFORM_ADDRESS;
+
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -165,6 +169,7 @@ contract Artgene721Implementation is
         isOpenSeaProxyActive = true;
         isOpenSeaTransferFilterEnabled = true;
 
+        (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO(); // IArtgenePlatform(platformInfo).PLATFORM_INFO();
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();
@@ -231,7 +236,13 @@ contract Artgene721Implementation is
     // on the other hand, it's impossible to call this function in proxy,
     // so the real initializer is the only initializer
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    constructor() initializer {
+        // NB: this is run only once per implementation, other proxies will only read this value
+        // NB: this is NOT run when deploying Proxy
+
+        address _platform = _DEPLOY_ARTGENE_PLATFORM(address(this));
+
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return BASE_URI;
@@ -586,7 +597,7 @@ contract Artgene721Implementation is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == PLATFORM_ADDRESS(),
+            payable(msg.sender) == PLATFORM_ADDRESS,
             "Caller is not developer"
         );
         _;
@@ -597,10 +608,10 @@ contract Artgene721Implementation is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS();
+        address payable platform = PLATFORM_ADDRESS;
 
         Address.sendValue(receiver, amount);
-        Address.sendValue(dev, balance - amount);
+        Address.sendValue(platform, balance - amount);
     }
 
     function withdraw() public virtual onlyOwner {
@@ -617,18 +628,14 @@ contract Artgene721Implementation is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS();
+        address payable platform = PLATFORM_ADDRESS;
 
         token.safeTransfer(receiver, amount);
-        token.safeTransfer(dev, balance - amount);
+        token.safeTransfer(platform, balance - amount);
     }
 
-    function DEVELOPER() public pure returns (string memory _url) {
+    function PLATFORM() public pure returns (string memory _url) {
         _url = "https://artgene.xyz";
-    }
-
-    function PLATFORM_ADDRESS() internal pure returns (address payable _dev) {
-        _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
     // -------- ERC721 overrides --------
