@@ -51,7 +51,7 @@ function _ARTGENE_PLATFORM_GET_INFO() view returns (uint256, address payable) {
         revert("ArtgenePlatformConfig: platform is not deployed");
     }
 
-    return ArtgenePlatform(pl).PLATFORM_INFO();
+    return ArtgenePlatform(pl).getPlatformInfo();
 }
 
 // function _ARTGENE_PLATFORM_GET_ADDRESS_SLOT_VALUE() view returns (address) {

@@ -18,11 +18,10 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./ArtgenePlatformUtils.sol";
-
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
+import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
 import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
@@ -106,7 +105,6 @@ contract Artgene721Implementation is
     uint256 public PLATFORM_FEE; // of 10,000
     address payable PLATFORM_ADDRESS;
 
-
     uint256 public reserved;
     uint256 public maxSupply;
     uint256 public maxPerMint;
@@ -170,7 +168,7 @@ contract Artgene721Implementation is
         isOpenSeaProxyActive = true;
         isOpenSeaTransferFilterEnabled = true;
 
-        (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO();
+        (PLATFORM_FEE, PLATFORM_ADDRESS) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -239,10 +237,11 @@ contract Artgene721Implementation is
     // so the real initializer is the only initializer
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {
-        // NB: this is run only once per implementation, other proxies will only read this value
+        // NB: this is run only once per implementation, when it's deployed
         // NB: this is NOT run when deploying Proxy
+        require(address(this) == ARTGENE_PROXY_IMPLEMENTATION, "Only deployable to vanity address");
 
-        address _platform = _DEPLOY_ARTGENE_PLATFORM(address(this));
+        // address _platform = _DEPLOY_ARTGENE_PLATFORM(address(this));
 
     }
 

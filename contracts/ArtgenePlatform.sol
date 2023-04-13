@@ -31,11 +31,11 @@ contract ArtgenePlatform is Ownable, IArtgenePlatform {
         platformAddress = _platformAddress;
     }
 
-    function PLATFORM_FEE() external view override returns (uint256) {
+    function getPlatformFee() external view override returns (uint256) {
         return platformFee;
     }
 
-    function PLATFORM_ADDRESS()
+    function getPlatformAddress()
         external
         view
         override
@@ -44,7 +44,11 @@ contract ArtgenePlatform is Ownable, IArtgenePlatform {
         return platformAddress;
     }
 
-    function PLATFORM_INFO() external view returns (uint256, address payable) {
+    function getPlatformInfo()
+        external
+        view
+        returns (uint256, address payable)
+    {
         return (platformFee, platformAddress);
     }
 }

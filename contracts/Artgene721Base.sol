@@ -21,9 +21,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
+import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
 
-import "./ArtgenePlatformUtils.sol";
+// import "./ArtgenePlatformUtils.sol";
 
 /**
  * @title contract by artgene.xyz
@@ -167,11 +168,7 @@ contract Artgene721Base is
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
 
-        _ARTGENE_PLATFORM_SET_ADDRESS_SLOT_FOR(
-            ARTGENE_PROXY_IMPLEMENTATION
-        );
-
-        (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO();
+        (PLATFORM_FEE, PLATFORM_ADDRESS) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
