@@ -170,7 +170,7 @@ contract Artgene721Implementation is
         isOpenSeaProxyActive = true;
         isOpenSeaTransferFilterEnabled = true;
 
-        (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO(); // IArtgenePlatform(platformInfo).PLATFORM_INFO();
+        (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO();
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();

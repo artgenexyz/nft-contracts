@@ -96,8 +96,6 @@ contract Artgene721Base is
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
 
-    // bytes32 constant _ARTGENE_PLATFORM_SLOT = bytes32(uint256(keccak256("xyz.artgene.platform.info")) - 1);
-
     uint256 public PLATFORM_FEE; // of 10,000
     address payable PLATFORM_ADDRESS;
 
@@ -174,6 +172,7 @@ contract Artgene721Base is
         );
 
         (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO();
+
         _configure(
             _config.publicPrice,
             _config.maxTokensPerMint,

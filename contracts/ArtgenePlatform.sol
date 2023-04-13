@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/utils/StorageSlot.sol";
 import "./interfaces/IArtgenePlatform.sol";
 
 contract ArtgenePlatform is Ownable, IArtgenePlatform {
-    // bytes32 public constant _ARTGENE_PLATFORM_SLOT =
-    //     bytes32(uint256(keccak256("xyz.artgene.platform.info")) - 1);
 
     uint256 public platformFee; // in bps
     address payable public platformAddress;
@@ -49,13 +47,4 @@ contract ArtgenePlatform is Ownable, IArtgenePlatform {
     function PLATFORM_INFO() external view returns (uint256, address payable) {
         return (platformFee, platformAddress);
     }
-
-    // function _PLATFORM_SETUP()
-    //     external
-    //     view
-    //     returns (bytes32 slot, bytes32 padded)
-    // {
-    //     slot = _ARTGENE_PLATFORM_SLOT;
-    //     padded = bytes32(abi.encodePacked(platformAddress));
-    // }
 }

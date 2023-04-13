@@ -62,7 +62,6 @@ function _ARTGENE_PLATFORM_GET_INFO() view returns (uint256, address payable) {
 
 function _ARTGENE_PLATFORM_SET_ADDRESS_SLOT_FOR(address deployer) {
     StorageSlot.getAddressSlot(_ARTGENE_PLATFORM_SLOT).value = _ARTGENE_PLATFORM_ADDRESS(deployer);
-    // StorageSlot.getAddressSlot(_ARTGENE_PLATFORM_SLOT).value = value;
 }
 
 // address constant PLATFORM_ADDRESS =
@@ -102,7 +101,7 @@ function _ARTGENE_PLATFORM_ADDRESS(address deployer) view returns (address) {
 
     console.logBytes32(codeHash);
     require(
-        codeHash == bytes32(0x2590e13a267a92a746814f5d919777ac533fa929b06d19411e9b823aa75ffb80),
+        codeHash == bytes32(0x5d436ddf7f9828af99a6bea190b6665d5632fe6b57891d17be7eb86a7293a4a5),
         "ArtgenePlatformConfig: code hash mismatch"
     );
 
