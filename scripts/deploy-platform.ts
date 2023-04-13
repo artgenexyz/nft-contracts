@@ -150,8 +150,18 @@ export async function main() {
 
   console.log("ArtgenePlatform implementation deployed to:", implementation.address);
 
+  console.log("Transferring ownership to", process.env.TRANSFER_TO || admin.address);
+
+  await implementation.transferOwnership(process.env.TRANSFER_TO || admin.address);
+
+  console.log("Transferred successfully");
+
+  console.log("Sending all funds to", admin.address);
+
   // send all funds to admin
   await sendAllFunds(vanity, admin.address);
+
+  console.log("Sent successfully");
 
   // write file to scripts/params.js
 
