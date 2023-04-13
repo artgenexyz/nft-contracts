@@ -8,10 +8,15 @@ import "./interfaces/IArtgenePlatform.sol";
 
 contract ArtgenePlatform is Ownable, IArtgenePlatform {
 
-    uint256 public platformFee; // in bps
-    address payable public platformAddress;
+    uint256 platformFee; // in bps
+    address payable platformAddress;
 
     constructor() {
+        require(
+            ARTGENE_PLATFORM_ADDRESS == address(this),
+            "ArtgenePlatformConfig: platform address mismatch"
+        );
+
         platformFee = 500;
         platformAddress = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
