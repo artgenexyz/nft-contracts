@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./ArtgenePlatform.sol";
+import "./ArtgenePlatformUtils.sol";
 
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
@@ -102,6 +102,7 @@ contract Artgene721Implementation is
     uint256 public constant VERSION = 3;
 
     uint256 public startTimestamp;
+
     uint256 public PLATFORM_FEE; // of 10,000
     address payable PLATFORM_ADDRESS;
 
@@ -170,6 +171,7 @@ contract Artgene721Implementation is
         isOpenSeaTransferFilterEnabled = true;
 
         (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO(); // IArtgenePlatform(platformInfo).PLATFORM_INFO();
+
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
         __Ownable_init();

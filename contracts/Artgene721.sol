@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./interfaces/IArtgene721.sol";
 
-import "./ArtgenePlatform.sol";
+import "./ArtgenePlatformUtils.sol";
 /**
  * @title contract by artgene.xyz
  * @dev Artgene721 is extendable implementation of ERC721 based on ERC721A and Artgene721Implementation.
@@ -89,6 +89,11 @@ contract Artgene721 is Proxy {
         _ARTGENE_PLATFORM_SET_ADDRESS_SLOT_FOR(
             ARTGENE_PROXY_IMPLEMENTATION
         );
+
+        // StorageSlot
+        //     .getAddressSlot(_ARTGENE_PLATFORM_SLOT)
+        //     .value = _ARTGENE_PLATFORM_ADDRESS(proxyImplementation);
+
         Address.functionDelegateCall(
             ARTGENE_PROXY_IMPLEMENTATION,
             abi.encodeWithSelector(
