@@ -8,9 +8,9 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const GAS_PRICE_GWEI = "50";
 
-export const IMPLEMENTATION_ADDRESS = "0x00000721187b81D0aDac9d1E4D7Fd623ac788559";
+export const IMPLEMENTATION_ADDRESS = "0x000007214f56DaF21c803252cc610360C70C01D5";
 export const IMPLEMENTATION_DEPLOYER_ADDRESS =
-  "0x768FcE871872DA304762f0A8274E2e8c2CA9458E";
+  "0x1a597827e5d8818689200d521A28E477514db8B2";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();

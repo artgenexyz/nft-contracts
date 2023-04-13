@@ -21,7 +21,9 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
+import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
+
 
 /**
  * @title contract by artgene.xyz
@@ -90,10 +92,12 @@ contract Artgene721Base is
     using SafeERC20 for IERC20;
 
     uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 internal constant PLATFORM_FEE = 500; // of 10,000 = 5%
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
+
+    uint256 public PLATFORM_FEE; // of 10,000
+    address payable PLATFORM_ADDRESS;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -162,6 +166,8 @@ contract Artgene721Base is
         startTimestamp = SALE_STARTS_AT_INFINITY;
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
+
+        (PLATFORM_FEE, PLATFORM_ADDRESS) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
@@ -569,7 +575,7 @@ contract Artgene721Base is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == PLATFORM_ADDRESS(),
+            payable(msg.sender) == PLATFORM_ADDRESS,
             "Caller is not developer"
         );
         _;
@@ -580,7 +586,7 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS();
+        address payable dev = PLATFORM_ADDRESS;
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
@@ -600,18 +606,14 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS();
+        address payable dev = PLATFORM_ADDRESS;
 
         token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
     }
 
-    function DEVELOPER() public pure returns (string memory _url) {
+    function PLATFORM() public pure returns (string memory _url) {
         _url = "https://artgene.xyz";
-    }
-
-    function PLATFORM_ADDRESS() internal pure returns (address payable _dev) {
-        _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
     }
 
     // -------- ERC721 overrides --------

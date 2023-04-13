@@ -1,7 +1,7 @@
 import fs from "fs";
-import { stdout } from "process";
 import "dotenv/config";
-import { HardhatUserConfig } from "hardhat/config";
+import { stdout } from "process";
+import { HardhatUserConfig, task } from "hardhat/config";
 
 import { generateMnemonic } from "bip39";
 
@@ -71,6 +71,14 @@ const getRemappings = () => {
         .filter(Boolean)
         .map((line) => line.trim().split("="));
 };
+
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+    const accounts = await hre.ethers.getSigners();
+
+    for (const account of accounts) {
+        console.log(account.address);
+    }
+});
 
 const config: HardhatUserConfig = {
     networks: {
