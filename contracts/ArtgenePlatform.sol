@@ -10,7 +10,7 @@ bytes32 constant _ARTGENE_PLATFORM_SLOT = bytes32(
     uint256(keccak256("xyz.artgene.platform.info")) - 1
 );
 
-bytes32 constant _ARTGENE_PLATFORM_DEPLOY_SALT = bytes32(bytes3(0x000721));
+bytes32 constant _ARTGENE_PLATFORM_DEPLOY_SALT = bytes32(bytes4(0x00000721));
 
 function _DEPLOY_ARTGENE_PLATFORM(address fromDeployer) returns (address) {
 
