@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-address constant ARTGENE_PROXY_IMPLEMENTATION = 0x00000721187b81D0aDac9d1E4D7Fd623ac788559;
+address constant ARTGENE_PROXY_IMPLEMENTATION = 0x000007214f56DaF21c803252cc610360C70C01D5;
 
 struct MintConfig {
     uint256 publicPrice;
