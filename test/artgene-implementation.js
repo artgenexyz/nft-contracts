@@ -16,6 +16,7 @@ const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const Artgene721 = artifacts.require("Artgene721");
 
 const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
+const { main: getPlatform } = require("../scripts/deploy-platform.ts");
 
 const ether = new BigNumber(1e18);
 
@@ -29,6 +30,8 @@ contract("Artgene721Implementation – Implementation", accounts => {
         const code = await web3.eth.getCode(IMPLEMENTATION_ADDRESS);
 
         if (code === "0x") {
+            await getPlatform();
+
             await getImplementation();
         }
 
