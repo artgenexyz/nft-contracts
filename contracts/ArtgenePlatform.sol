@@ -45,6 +45,13 @@ function _ARTGENE_PLATFORM_GET_INFO() view returns (uint256, address payable) {
         revert("ArtgenePlatformConfig: platform not set");
     }
 
+    // if no code at this address, revert
+    uint256 size;
+    assembly { size := extcodesize(pl) }
+    if (size == 0) {
+        revert("ArtgenePlatformConfig: platform is not deployed");
+    }
+
     return ArtgenePlatform(pl).PLATFORM_INFO();
 }
 
