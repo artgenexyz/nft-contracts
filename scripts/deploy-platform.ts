@@ -6,7 +6,7 @@ import { Signer } from "ethers";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const GAS_PRICE_GWEI = "30";
+const GAS_PRICE_GWEI = "35";
 
 export const PLATFORM_ADDRESS = "0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9";
 export const PLATFORM_DEPLOYER_ADDRESS =
@@ -85,7 +85,10 @@ export async function main() {
       PLATFORM_ADDRESS.toLowerCase().slice(7)
     )
   ) {
-    console.log("\nBytecode includes platform vanity address", PLATFORM_ADDRESS);
+    console.log(
+      "\nBytecode includes platform vanity address",
+      PLATFORM_ADDRESS
+    );
   } else {
     console.log(
       "Bytecode does not include platform vanity address",
@@ -159,9 +162,11 @@ export async function main() {
     "ArtgenePlatform"
   );
 
-  // deploy with gas = 15 gwei
+  // const platform = await ArtgenePlatform.attach(PLATFORM_ADDRESS);
+
   const platform = await ArtgenePlatform.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+    maxFeePerGas: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+    maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
     nonce: vanityNonce,
     ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
       gasLimit: 1_000_000,
@@ -170,10 +175,7 @@ export async function main() {
 
   await platform.deployed();
 
-  console.log(
-    "ArtgenePlatform implementation deployed to:",
-    platform.address
-  );
+  console.log("ArtgenePlatform implementation deployed to:", platform.address);
 
   // output gas spent, gas price and gas limit
   const receipt = await platform.deployTransaction.wait();
@@ -193,7 +195,8 @@ export async function main() {
     // admin.address,
     process.env.TRANSFER_TO ?? admin.address,
     {
-      gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+      maxFeePerGas: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
       gasLimit: 1_000_000,
     }
   );
@@ -238,24 +241,6 @@ export async function main() {
     network: "mainnet",
   });
 
-  const nft = ArtgenePlatform.attach(platform.address);
-
-  // // Call the deployed contract.
-  // const tx2 = await implementation.initialize(
-  //   // "10000000000000000", // 0.01 ETH
-  //   // 20,
-  //   // 0, // royalty fee
-  //   admin,
-  //   0,
-  //   // "proxy-test-buy/",
-  //   false,
-  // );
-
-  // // Wait until the transaction is mined.
-  // console.log(`Waiting for transaction to be mined...`, tx2.hash, `/tx/${tx2.hash}`);
-  // const receipt2 = await tx2.wait();
-
-  // console.log('receipt', receipt2.transactionHash);
 }
 
 // call main only if executed directly
