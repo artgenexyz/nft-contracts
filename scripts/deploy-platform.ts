@@ -4,12 +4,13 @@ import { getContractAddress, parseEther } from "ethers/lib/utils";
 import { Address } from "hardhat-deploy/dist/types";
 import { Signer } from "ethers";
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const GAS_PRICE_GWEI = "50";
+const GAS_PRICE_GWEI = "30";
 
 export const PLATFORM_ADDRESS = "0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9";
-export const PLATFORM_DEPLOYER_ADDRESS = "0xE4A02093339a9a908cF9d897481813Ddb5494d44";
+export const PLATFORM_DEPLOYER_ADDRESS =
+  "0xE4A02093339a9a908cF9d897481813Ddb5494d44";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
@@ -17,16 +18,17 @@ export const sendAllFunds = async (account: Signer, to: Address) => {
   const gasPrice = hre.ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei");
   const gasCost = gasPrice.mul(21000);
 
+  console.log(" ==> balance ==>", balance.sub(gasCost).toString());
+
   return await account.sendTransaction({
     to: to,
     value: balance.sub(gasCost),
     gasLimit: 21_000,
     gasPrice: gasPrice,
   });
-}
+};
 
 export const getVanityDeployer = async () => {
-
   // if (hre.network.name === "hardhat") {
   //   // impersonate the vanity deployer
   //   await hre.network.provider.request({
@@ -45,8 +47,7 @@ export const getVanityDeployer = async () => {
   }
 
   return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
-
-}
+};
 
 export const computeVanityAddress = async () => {
   const vanityDeployer = await getVanityDeployer();
@@ -57,11 +58,11 @@ export const computeVanityAddress = async () => {
 
   const vanityAddress = getContractAddress({
     from: vanityDeployer.address,
-    nonce: transactionCount
+    nonce: transactionCount,
   });
 
   return vanityAddress;
-}
+};
 
 export async function main() {
   const [admin] = await hre.ethers.getSigners();
@@ -75,15 +76,22 @@ export async function main() {
 
   // }
 
+  const Artgene721Implementation = await hre.ethers.getContractFactory(
+    "Artgene721Implementation"
+  );
 
-  const Artgene721Implementation = await hre.ethers.getContractFactory("Artgene721Implementation");
-
-  if (Artgene721Implementation.bytecode.includes(PLATFORM_ADDRESS.toLowerCase().slice(7))) {
-    
-    console.log("Bytecode includes platform vanity address", PLATFORM_ADDRESS);
-
+  if (
+    Artgene721Implementation.bytecode.includes(
+      PLATFORM_ADDRESS.toLowerCase().slice(7)
+    )
+  ) {
+    console.log("\nBytecode includes platform vanity address", PLATFORM_ADDRESS);
   } else {
-    console.log("Bytecode does not include platform vanity address", Artgene721Implementation.bytecode, PLATFORM_ADDRESS);
+    console.log(
+      "Bytecode does not include platform vanity address",
+      Artgene721Implementation.bytecode,
+      PLATFORM_ADDRESS
+    );
 
     // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
     // throw new Error("Artgene721 bytecode does not include vanity address");
@@ -94,12 +102,24 @@ export async function main() {
   console.log("Vanity address:", PLATFORM_ADDRESS);
 
   if (futureAddress === PLATFORM_ADDRESS) {
-    console.log("Address matches vanity address", futureAddress, PLATFORM_ADDRESS);
+    console.log(
+      "Address matches vanity address",
+      futureAddress,
+      PLATFORM_ADDRESS
+    );
   } else {
-    console.log("Address does not match vanity address", futureAddress, PLATFORM_ADDRESS);
+    console.log(
+      "Address does not match vanity address",
+      futureAddress,
+      PLATFORM_ADDRESS
+    );
 
-    throw new Error(`Address does not match vanity address: ${futureAddress} != ${PLATFORM_ADDRESS}`);
+    throw new Error(
+      `Address does not match vanity address: ${futureAddress} != ${PLATFORM_ADDRESS}`
+    );
   }
+
+  console.log("\n\nDeploying ArtgenePlatform implementation...");
 
   const vanity = await getVanityDeployer();
 
@@ -113,8 +133,8 @@ export async function main() {
   // if balance of vanity account is 0, top it up
   const vanityBalance = await vanity.getBalance();
 
-  console.log('vanity deployer address is', vanity.address);
-  console.log('vanity deployer balance is', vanityBalance);
+  console.log("vanity deployer address is", vanity.address);
+  console.log("vanity deployer balance is", vanityBalance);
 
   if (vanityBalance.eq(0)) {
     console.log("Vanity account has balance 0");
@@ -130,29 +150,53 @@ export async function main() {
       // // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("0.4"),
+        value: hre.ethers.utils.parseEther("0.05"),
       });
     }
   }
 
-  const ArtgenePlatform = await hre.ethers.getContractFactory("ArtgenePlatform");
+  const ArtgenePlatform = await hre.ethers.getContractFactory(
+    "ArtgenePlatform"
+  );
 
   // deploy with gas = 15 gwei
-  const implementation = await ArtgenePlatform.connect(vanity).deploy({
+  const platform = await ArtgenePlatform.connect(vanity).deploy({
     gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
     nonce: vanityNonce,
     ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
-      gasLimit: 6_000_000,
+      gasLimit: 1_000_000,
     }),
   });
 
-  await implementation.deployed();
+  await platform.deployed();
 
-  console.log("ArtgenePlatform implementation deployed to:", implementation.address);
+  console.log(
+    "ArtgenePlatform implementation deployed to:",
+    platform.address
+  );
 
-  console.log("Transferring ownership to", process.env.TRANSFER_TO || admin.address);
+  // output gas spent, gas price and gas limit
+  const receipt = await platform.deployTransaction.wait();
+  console.log("Gas used:", receipt.gasUsed.toString());
+  console.log("Gas price:", GAS_PRICE_GWEI);
+  console.log(
+    "Gas cost (gwei)",
+    receipt.gasUsed.mul(ethers.BigNumber.from(GAS_PRICE_GWEI)).toString()
+  );
 
-  await implementation.transferOwnership(process.env.TRANSFER_TO || admin.address);
+  console.log(
+    "Transferring ownership to",
+    process.env.TRANSFER_TO ?? admin.address
+  );
+
+  await platform.connect(vanity).transferOwnership(
+    // admin.address,
+    process.env.TRANSFER_TO ?? admin.address,
+    {
+      gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+      gasLimit: 1_000_000,
+    }
+  );
 
   console.log("Transferred successfully");
 
@@ -189,12 +233,12 @@ export async function main() {
   // verify contract
   await hre.run("verify", {
     contract: "contracts/ArtgenePlatform.sol:ArtgenePlatform",
-    address: implementation.address,
+    address: platform.address,
     constructorArgs: "./scripts/params.js",
-    network: "rinkeby",
+    network: "mainnet",
   });
 
-  const nft = ArtgenePlatform.attach(implementation.address);
+  const nft = ArtgenePlatform.attach(platform.address);
 
   // // Call the deployed contract.
   // const tx2 = await implementation.initialize(
@@ -212,13 +256,10 @@ export async function main() {
   // const receipt2 = await tx2.wait();
 
   // console.log('receipt', receipt2.transactionHash);
-
-
 }
 
 // call main only if executed directly
 if (process.argv[1] === __filename) {
-
   // We recommend this pattern to be able to use async/await everywhere
   // and properly handle errors.
   main().catch((error) => {
@@ -226,4 +267,3 @@ if (process.argv[1] === __filename) {
     process.exitCode = 1;
   });
 }
-
