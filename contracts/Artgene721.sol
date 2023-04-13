@@ -68,8 +68,9 @@ import "./ArtgenePlatform.sol";
 type StartFromTokenIdOne is bool;
 
 contract Artgene721 is Proxy {
-    address internal constant proxyImplementation =
-        0x00000721187b81D0aDac9d1E4D7Fd623ac788559;
+
+
+
 
     StartFromTokenIdOne internal constant START_FROM_ONE =
         StartFromTokenIdOne.wrap(true);
@@ -86,10 +87,10 @@ contract Artgene721 is Proxy {
         MintConfig memory configValues
     ) {
         _ARTGENE_PLATFORM_SET_ADDRESS_SLOT_FOR(
-            proxyImplementation
+            ARTGENE_PROXY_IMPLEMENTATION
         );
         Address.functionDelegateCall(
-            proxyImplementation,
+            ARTGENE_PROXY_IMPLEMENTATION,
             abi.encodeWithSelector(
                 IArtgene721Implementation.initialize.selector,
                 name,
@@ -108,6 +109,6 @@ contract Artgene721 is Proxy {
     }
 
     function _implementation() internal pure override returns (address) {
-        return address(proxyImplementation);
+        return address(ARTGENE_PROXY_IMPLEMENTATION);
     }
 }

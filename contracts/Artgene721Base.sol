@@ -169,6 +169,10 @@ contract Artgene721Base is
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
 
+        _ARTGENE_PLATFORM_SET_ADDRESS_SLOT_FOR(
+            ARTGENE_PROXY_IMPLEMENTATION
+        );
+
         (PLATFORM_FEE, PLATFORM_ADDRESS) = _ARTGENE_PLATFORM_GET_INFO();
         _configure(
             _config.publicPrice,
