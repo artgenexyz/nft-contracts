@@ -241,8 +241,6 @@ contract Artgene721Implementation is
         // NB: this is NOT run when deploying Proxy
         require(address(this) == ARTGENE_PROXY_IMPLEMENTATION, "Only deployable to vanity address");
 
-        // address _platform = _DEPLOY_ARTGENE_PLATFORM(address(this));
-
     }
 
     function _baseURI() internal view override returns (string memory) {

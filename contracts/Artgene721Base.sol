@@ -24,7 +24,6 @@ import "./interfaces/IArtgene721.sol";
 import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
 
-// import "./ArtgenePlatformUtils.sol";
 
 /**
  * @title contract by artgene.xyz
