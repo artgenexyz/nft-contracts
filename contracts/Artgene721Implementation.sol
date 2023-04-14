@@ -103,7 +103,7 @@ contract Artgene721Implementation is
     uint256 public startTimestamp;
 
     uint256 public PLATFORM_FEE; // of 10,000
-    address payable PLATFORM_ADDRESS;
+    address payable PLATFORM_TREASURY;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -168,7 +168,7 @@ contract Artgene721Implementation is
         isOpenSeaProxyActive = true;
         isOpenSeaTransferFilterEnabled = true;
 
-        (PLATFORM_FEE, PLATFORM_ADDRESS) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
+        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         __ERC721A_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -596,7 +596,7 @@ contract Artgene721Implementation is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == PLATFORM_ADDRESS,
+            payable(msg.sender) == PLATFORM_TREASURY,
             "Caller is not developer"
         );
         _;
@@ -607,7 +607,7 @@ contract Artgene721Implementation is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable platform = PLATFORM_ADDRESS;
+        address payable platform = PLATFORM_TREASURY;
 
         Address.sendValue(receiver, amount);
         Address.sendValue(platform, balance - amount);
@@ -627,7 +627,7 @@ contract Artgene721Implementation is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable platform = PLATFORM_ADDRESS;
+        address payable platform = PLATFORM_TREASURY;
 
         token.safeTransfer(receiver, amount);
         token.safeTransfer(platform, balance - amount);

@@ -166,6 +166,7 @@ export async function main() {
 
   // skip waiting if running on hardhat network
   if (hre.network.name == "hardhat") {
+    console.log("Skipping verification on hardhat network");
     return;
   }
 

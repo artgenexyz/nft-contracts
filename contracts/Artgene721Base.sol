@@ -97,7 +97,7 @@ contract Artgene721Base is
         0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public PLATFORM_FEE; // of 10,000
-    address payable PLATFORM_ADDRESS;
+    address payable PLATFORM_TREASURY;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -167,7 +167,7 @@ contract Artgene721Base is
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
 
-        (PLATFORM_FEE, PLATFORM_ADDRESS) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
+        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
@@ -575,7 +575,7 @@ contract Artgene721Base is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == PLATFORM_ADDRESS,
+            payable(msg.sender) == PLATFORM_TREASURY,
             "Caller is not developer"
         );
         _;
@@ -586,7 +586,7 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS;
+        address payable dev = PLATFORM_TREASURY;
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
@@ -606,7 +606,7 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_ADDRESS;
+        address payable dev = PLATFORM_TREASURY;
 
         token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
