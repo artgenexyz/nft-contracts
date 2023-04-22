@@ -194,7 +194,7 @@ contract("Artgene721Implementation – Implementation", accounts => {
             "Caller is not developer"
         );
 
-        const artgene = "0x704C043CeB93bD6cBE570C6A2708c3E1C0310587";
+        const artgene = "0x3087c429ed4e7e5Cec78D006fCC772ceeaa67f00";
 
         // send ether to artgene
         await web3.eth.sendTransaction({

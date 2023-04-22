@@ -18,7 +18,7 @@ contract ArtgenePlatform is Ownable, IArtgenePlatform {
         );
 
         platformFee = 500;
-        platformAddress = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
+        platformAddress = payable(0x3087c429ed4e7e5Cec78D006fCC772ceeaa67f00);
     }
 
     function setPlatformFee(uint256 _platformFee) public onlyOwner {
