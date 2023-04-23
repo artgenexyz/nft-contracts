@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "./interfaces/IERC721Community.sol";
+import "../interfaces/IERC721Community.sol";
 
 /**
  * @title made by buildship.xyz

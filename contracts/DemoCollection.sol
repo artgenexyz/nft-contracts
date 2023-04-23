@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC721Community.sol";
+import "./Artgene721.sol";
 
 //      Want to launch your own collection?
 //        Check out https://buildship.xyz
@@ -27,11 +27,11 @@ import "./ERC721Community.sol";
 //           ;c;,,,,'               lx;
 //            '''                  cc
 //                                ,'
-contract DemoCollection is ERC721Community {
+contract DemoCollection is Artgene721 {
     constructor()
-        ERC721Community(
-            "DemoCollection",
-            "DC",
+        Artgene721(
+            "Generative Endless NFT",
+            "GEN",
             1337,
             1,
             START_FROM_ONE,

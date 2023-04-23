@@ -8,18 +8,19 @@ const { parseEther } = require("ethers").utils;
 
 const { getGasCost, createNFTSale } = require("./utils");
 
-const ERC721CommunityImplementation = artifacts.require("ERC721CommunityImplementation");
-const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
+const Artgene721Implementation = artifacts.require("Artgene721Implementation");
+const Artgene721Base = artifacts.require("Artgene721Base");
 const NFTExtension = artifacts.require("NFTExtension");
-const MockTokenURIExtension = artifacts.require("MockTokenURIExtension");
+const MockRenderer = artifacts.require("MockRenderer");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
-const ERC721Community = artifacts.require("ERC721Community");
+const Artgene721 = artifacts.require("Artgene721");
 
 const { IMPLEMENTATION_ADDRESS, main: getImplementation } = require("../scripts/deploy-proxy.ts");
+const { main: getPlatform } = require("../scripts/deploy-platform.ts");
 
 const ether = new BigNumber(1e18);
 
-contract("ERC721CommunityImplementation – Implementation", accounts => {
+contract("Artgene721Implementation – Implementation", accounts => {
     let factory, pass, nft;
     const [owner, user1, user2] = accounts;
     const beneficiary = owner;
@@ -29,6 +30,8 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
         const code = await web3.eth.getCode(IMPLEMENTATION_ADDRESS);
 
         if (code === "0x") {
+            await getPlatform();
+
             await getImplementation();
         }
 
@@ -37,11 +40,11 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
     beforeEach(async () => {
         if (!pass) {
-            pass = await createNFTSale(ERC721CommunityBase);
+            pass = await createNFTSale(Artgene721Base);
             await pass.claim(2, owner);
         }
 
-        nft_ = await ERC721Community.new(
+        nft_ = await Artgene721.new(
             "Test",
             "NFT",
             1000,
@@ -62,7 +65,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
         // const { deployedAddress } = tx.logs.find(l => l.event === "NFTCreated").args;
 
-        nft = await ERC721CommunityImplementation.at(nft_.address);
+        nft = await Artgene721Implementation.at(nft_.address);
     });
 
     // it should deploy successfully
@@ -175,7 +178,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
         )
     });
 
-    it("should allow buildship to force withdraw", async () => {
+    it("should allow artgene to force withdraw", async () => {
         await nft.startSale({ from: owner });
 
         await nft.mint(1, { from: user2, value: ether.times(0.03) });
@@ -191,18 +194,18 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
             "Caller is not developer"
         );
 
-        const buildship = await nft.DEVELOPER_ADDRESS();
+        const artgene = "0x3087c429ed4e7e5Cec78D006fCC772ceeaa67f00";
 
-        // send ether to buildship
+        // send ether to artgene
         await web3.eth.sendTransaction({
             from: owner,
-            to: buildship,
+            to: artgene,
             value: ether.times(0.1)
         });
 
-        await network.provider.request({ method: "hardhat_impersonateAccount", params: [buildship] })
+        await network.provider.request({ method: "hardhat_impersonateAccount", params: [artgene] })
 
-        await nft.forceWithdrawDeveloper({ from: buildship });
+        await nft.forceWithdrawDeveloper({ from: artgene });
 
         const nftBalanceAfter = await web3.eth.getBalance(nft.address);
         assert.equal(nftBalanceAfter, 0);
@@ -264,9 +267,9 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
     // it is possible to use extension to change tokenURI
     it("is possible to use extension to change tokenURI", async () => {
-        const extension = await MockTokenURIExtension.new(nft.address);
+        const extension = await MockRenderer.new(nft.address);
 
-        await nft.setExtensionTokenURI(extension.address, { from: owner });
+        await nft.setRenderer(extension.address, { from: owner });
 
         // mint token
         await nft.startSale();
@@ -389,7 +392,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
                 .minus(beneficiaryBalance)
                 .plus(gasCost).toString(),
 
-            // without buildship fee
+            // without artgene fee
             new BigNumber(saleBalance).times(95).div(100).toString(),
             "Owner should get money from sales, but only 95%"
         );
@@ -398,7 +401,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
 
 
     it("should not be able to mint more than 200 tokens, when 200 tokens are minted, it should fail", async () => {
-        const nft_ = await ERC721Community.new(
+        const nft_ = await Artgene721.new(
             "Test",
             "NFT",
             200,
@@ -417,7 +420,7 @@ contract("ERC721CommunityImplementation – Implementation", accounts => {
             }
         );
 
-        const nft = await ERC721CommunityImplementation.at(nft_.address);
+        const nft = await Artgene721Implementation.at(nft_.address);
 
         await nft.startSale();
 

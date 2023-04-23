@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 /**
  * @title LICENSE REQUIREMENT
  * @dev This contract is licensed under the MIT license.
- * @dev You're not allowed to remove DEVELOPER() and DEVELOPER_ADDRESS() from contract
+ * @dev You're not allowed to remove DEVELOPER() from contract
  */
 
 import "erc721a/contracts/ERC721A.sol";
@@ -19,47 +19,85 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFTExtension.sol";
-import "./interfaces/IERC721Community.sol";
+import "./interfaces/IRenderer.sol";
+import "./interfaces/IArtgene721.sol";
+import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
 
-//      Want to launch your own collection?
-//        Check out https://buildship.xyz
 
-//                                    ,:loxO0KXXc
-//                               ,cdOKKKOxol:lKWl
-//                            ;oOXKko:,      ;KNc
-//                        'ox0X0d:           cNK,
-//                 ','  ;xXX0x:              dWk
-//            ,cdO0KKKKKXKo,                ,0Nl
-//         ;oOXKko:,;kWMNl                  dWO'
-//      ,o0XKd:'    oNMMK:                 cXX:
-//   'ckNNk:       ;KMN0c                 cXXl
-//  'OWMMWKOdl;'    cl;                  oXXc
-//   ;cclldxOKXKkl,                    ;kNO;
-//            ;cdk0kl'             ;clxXXo
-//                ':oxo'         c0WMMMMK;
-//                    :l:       lNMWXxOWWo
-//                      ';      :xdc' :XWd
-//             ,                      cXK;
-//           ':,                      xXl
-//           ;:      '               o0c
-//           ;c;,,,,'               lx;
-//            '''                  cc
-//                                ,'
-contract ERC721CommunityBase is
+/**
+ * @title contract by artgene.xyz
+ */
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                  //
+//                                                                                                  //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#S%??%S#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%***++***S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@?+***%?**+*#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@S+*+*#@@?+*+?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*+++%@@@#*+++S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@S+++*#@@@@%+++*#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*+++%@@@@@#*+++%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@S+++*#@@@@@@%+++*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@?+++%@@@@@@@#++++S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@S++++#@@@@@@@@?+++*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@?+++?@@@@@@@@@S++++S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#++++S@@@@@@@@@@*+++*%???#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@S+++*#@@@@@#S%?*+++++++++S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@?+++?@@@@#?+++;+++++++%%S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#++++S@@@#*;+++?%S%++++@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%;+++@@@@#+++;%@@@#+++;S@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*;+;?@@@@@%;+;+#@@@*;+;?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#+;;;S@@@@@@?;;;+S@@%;;;+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%;;;+@@@@@@@@?;;;;?#%;;;+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*;;;?@@@@@@@@@%+;;;+;;;;?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#;;;;#@@@@@@@@@@#%*+;;;+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#?+*%@@@@@@@@@@@@@@#SS#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    //
+//                                                                                                  //
+//                                                                                                  //
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+contract Artgene721Base is
     ERC721A,
     ReentrancyGuard,
     Ownable,
-    IERC721Community // implements IERC2981
+    IArtgene721 // implements IERC2981
 {
     using Address for address;
     using SafeERC20 for IERC20;
 
     uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
-    uint256 internal constant DEVELOPER_FEE = 500; // of 10,000 = 5%
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
     address internal constant OPENSEA_CONDUIT =
         0x1E0049783F008A0085193E00003D00cd54003c71;
+
+    uint256 public PLATFORM_FEE; // of 10,000
+    address payable PLATFORM_TREASURY;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
 
@@ -73,7 +111,7 @@ contract ERC721CommunityBase is
 
     address public royaltyReceiver;
     address public payoutReceiver;
-    address public uriExtension;
+    address public renderer;
 
     bool public isPayoutChangeLocked;
     bool private isOpenSeaProxyActive;
@@ -101,7 +139,7 @@ contract ERC721CommunityBase is
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
-    event ExtensionURIAdded(address indexed extensionAddress);
+    event RendererAdded(address indexed extensionAddress);
 
     constructor(
         string memory _name,
@@ -128,6 +166,8 @@ contract ERC721CommunityBase is
         startTimestamp = SALE_STARTS_AT_INFINITY;
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
+
+        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
@@ -204,8 +244,8 @@ contract ERC721CommunityBase is
         override
         returns (string memory)
     {
-        if (uriExtension != address(0)) {
-            string memory uri = INFTURIExtension(uriExtension).tokenURI(
+        if (renderer != address(0)) {
+            string memory uri = IRenderer(renderer).tokenURI(
                 tokenId
             );
 
@@ -308,21 +348,21 @@ contract ERC721CommunityBase is
         emit ExtensionRevoked(_extension);
     }
 
-    function setExtensionTokenURI(address extension) public onlyOwner {
-        require(extension != address(this), "Cannot add self as extension");
+    function setRenderer(address _renderer) public onlyOwner {
+        require(_renderer != address(this), "Cannot add self as renderer");
 
         require(
-            extension == address(0x0) ||
+            _renderer == address(0) ||
                 ERC165Checker.supportsInterface(
-                    extension,
-                    type(INFTURIExtension).interfaceId
+                    _renderer,
+                    type(IRenderer).interfaceId
                 ),
-            "Not conforms to extension"
+            "Not conforms to renderer interface"
         );
 
-        uriExtension = extension;
+        renderer = _renderer;
 
-        emit ExtensionURIAdded(extension);
+        emit RendererAdded(_renderer);
     }
 
     // function to disable gasless listings for security in case
@@ -535,7 +575,7 @@ contract ERC721CommunityBase is
 
     modifier onlyDeveloper() {
         require(
-            payable(msg.sender) == DEVELOPER_ADDRESS(),
+            payable(msg.sender) == PLATFORM_TREASURY,
             "Caller is not developer"
         );
         _;
@@ -543,10 +583,10 @@ contract ERC721CommunityBase is
 
     function _withdraw() private {
         uint256 balance = address(this).balance;
-        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+        uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = DEVELOPER_ADDRESS();
+        address payable dev = PLATFORM_TREASURY;
 
         Address.sendValue(receiver, amount);
         Address.sendValue(dev, balance - amount);
@@ -563,21 +603,17 @@ contract ERC721CommunityBase is
     function withdrawToken(IERC20 token) public virtual onlyOwner {
         uint256 balance = token.balanceOf(address(this));
 
-        uint256 amount = (balance * (10000 - DEVELOPER_FEE)) / 10000;
+        uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = DEVELOPER_ADDRESS();
+        address payable dev = PLATFORM_TREASURY;
 
         token.safeTransfer(receiver, amount);
         token.safeTransfer(dev, balance - amount);
     }
 
-    function DEVELOPER() public pure returns (string memory _url) {
-        _url = "https://buildship.xyz";
-    }
-
-    function DEVELOPER_ADDRESS() public pure returns (address payable _dev) {
-        _dev = payable(0x704C043CeB93bD6cBE570C6A2708c3E1C0310587);
+    function PLATFORM() public pure returns (string memory _url) {
+        _url = "https://artgene.xyz";
     }
 
     // -------- ERC721 overrides --------
@@ -590,7 +626,7 @@ contract ERC721CommunityBase is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
-            interfaceId == type(IERC721Community).interfaceId ||
+            interfaceId == type(IArtgene721).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

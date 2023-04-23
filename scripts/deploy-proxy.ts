@@ -4,16 +4,18 @@ import { getContractAddress, parseEther } from "ethers/lib/utils";
 import { Address } from "hardhat-deploy/dist/types";
 import { Signer } from "ethers";
 
-
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const IMPLEMENTATION_ADDRESS = "0xf3E07A5cBDFE6a257A7caa4Fcb3187A1C2Ec6a2E";
-export const IMPLEMENTATION_DEPLOYER_ADDRESS = "0x9c867BF9F724F29E1B1bf66EB71A35493FC8FCE1";
+const GAS_PRICE_GWEI = "50";
+
+export const IMPLEMENTATION_ADDRESS = "0x000007214f56DaF21c803252cc610360C70C01D5";
+export const IMPLEMENTATION_DEPLOYER_ADDRESS =
+  "0x1a597827e5d8818689200d521A28E477514db8B2";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
 
-  const gasPrice = hre.ethers.utils.parseUnits("10", "gwei");
+  const gasPrice = hre.ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei");
   const gasCost = gasPrice.mul(21000);
 
   return await account.sendTransaction({
@@ -50,6 +52,8 @@ export const getVanityDeployer = async () => {
 export const computeVanityAddress = async () => {
   const vanityDeployer = await getVanityDeployer();
 
+  console.log("vanity deployer address is", vanityDeployer.address);
+
   const transactionCount = await vanityDeployer.getTransactionCount();
 
   const vanityAddress = getContractAddress({
@@ -73,17 +77,17 @@ export async function main() {
   // }
 
 
-  const ERC721Community = await hre.ethers.getContractFactory("ERC721Community");
+  const Artgene721 = await hre.ethers.getContractFactory("Artgene721");
 
-  if (ERC721Community.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(2))) {
+  if (Artgene721.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(7))) {
     
     console.log("Bytecode includes vanity address", IMPLEMENTATION_ADDRESS);
 
   } else {
-    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, IMPLEMENTATION_ADDRESS);
+    console.log("Bytecode does not include vanity address", Artgene721.bytecode, IMPLEMENTATION_ADDRESS);
 
     // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
-    // throw new Error("ERC721Community bytecode does not include vanity address");
+    // throw new Error("Artgene721 bytecode does not include vanity address");
   }
 
   const futureAddress = await computeVanityAddress();
@@ -132,20 +136,23 @@ export async function main() {
     }
   }
 
-  const ERC721CommunityImplementation = await hre.ethers.getContractFactory("ERC721CommunityImplementation");
+  const Artgene721Implementation = await hre.ethers.getContractFactory("Artgene721Implementation");
 
   // deploy with gas = 15 gwei
-  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits("15", "gwei"),
+  const implementation = await Artgene721Implementation.connect(vanity).deploy({
+    gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
     nonce: vanityNonce,
-    ...(hre.network.name == "mainnet" && {
+    ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
       gasLimit: 6_000_000,
-    })
+    }),
   });
 
   await implementation.deployed();
 
-  console.log("ERC721CommunityImplementation implementation deployed to:", implementation.address);
+  console.log("Artgene721Implementation implementation deployed to:", implementation.address);
+
+  // send all funds to admin
+  await sendAllFunds(vanity, admin.address);
 
   // write file to scripts/params.js
 
@@ -159,6 +166,7 @@ export async function main() {
 
   // skip waiting if running on hardhat network
   if (hre.network.name == "hardhat") {
+    console.log("Skipping verification on hardhat network");
     return;
   }
 
@@ -172,13 +180,13 @@ export async function main() {
 
   // verify contract
   await hre.run("verify", {
-    contract: "contracts/ERC721CommunityImplementation.sol:ERC721CommunityImplementation",
+    contract: "contracts/Artgene721Implementation.sol:Artgene721Implementation",
     address: implementation.address,
     constructorArgs: "./scripts/params.js",
     network: "rinkeby",
   });
 
-  const nft = ERC721CommunityImplementation.attach(implementation.address);
+  const nft = Artgene721Implementation.attach(implementation.address);
 
   // // Call the deployed contract.
   // const tx2 = await implementation.initialize(
