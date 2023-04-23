@@ -9,6 +9,10 @@ import "./base/SaleControlUpgradeable.sol";
 
 import "./base/NFTExtensionUpgradeable.sol";
 
+/**
+ * @title contract by artgene.xyz
+ */
+
 contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
     uint256 public price;
 
