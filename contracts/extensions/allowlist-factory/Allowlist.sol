@@ -30,9 +30,9 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 
-import "./base/SaleControlUpgradeable.sol";
+import "../base-upgradeable/SaleControlUpgradeable.sol";
 
-import "./base/NFTExtensionUpgradeable.sol";
+import "../base-upgradeable/NFTExtensionUpgradeable.sol";
 
 contract Allowlist is NFTExtensionUpgradeable, SaleControlUpgradeable {
     uint256 public price;

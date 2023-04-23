@@ -3,8 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 
-import "../../../interfaces/INFTExtension.sol";
-import "../../../interfaces/IERC721Community.sol";
+import "../../interfaces/INFTExtension.sol";
+import "../../interfaces/IERC721Community.sol";
 
 contract NFTExtensionUpgradeable is INFTExtension, ERC165Upgradeable {
     IERC721Community public nft;
