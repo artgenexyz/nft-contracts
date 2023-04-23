@@ -1,31 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-//      Want to launch your own collection?
-//        Check out https://buildship.xyz
-//
-//                                    ,:loxO0KXXc
-//                               ,cdOKKKOxol:lKWl
-//                            ;oOXKko:,      ;KNc
-//                        'ox0X0d:           cNK,
-//                 ','  ;xXX0x:              dWk
-//            ,cdO0KKKKKXKo,                ,0Nl
-//         ;oOXKko:,;kWMNl                  dWO'
-//      ,o0XKd:'    oNMMK:                 cXX:
-//   'ckNNk:       ;KMN0c                 cXXl
-//  'OWMMWKOdl;'    cl;                  oXXc
-//   ;cclldxOKXKkl,                    ;kNO;
-//            ;cdk0kl'             ;clxXXo
-//                ':oxo'         c0WMMMMK;
-//                    :l:       lNMWXxOWWo
-//                      ';      :xdc' :XWd
-//             ,                      cXK;
-//           ':,                      xXl
-//           ;:      '               o0c
-//           ;c;,,,,'               lx;
-//            '''                  cc
-//                                ,'
-
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
