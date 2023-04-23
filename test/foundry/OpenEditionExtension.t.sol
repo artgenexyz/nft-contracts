@@ -61,11 +61,40 @@ contract OpenEditionExtensionTest is Test {
 
         nft.addExtension(address(extension));
 
-        extension.startSale();
+        vm.prank(alice);
+        vm.deal(alice, 2 * price * mintAmount);
+
+        extension.mint{value: price * mintAmount}(mintAmount);
+    }
+
+    // function test mint fails after time limit
+    function testCannotMintAfterEnd(
+        uint256 price,
+        uint8 mintAmount) public {
+
+        mintAmount = uint8(bound(mintAmount, 1, 5));
+
+        price = bound(price, 1, 1e9 * 1e18);
+
+        address alice = makeAddr("Alice");
+
+        extension = new OpenEditionExtension(
+            address(nft),
+            price,
+            5, // max per mint
+            5, // max per wallet
+            block.timestamp, // minting starts
+            block.timestamp + 60000 // minting ends
+        );
+
+        nft.addExtension(address(extension));
+
+        vm.warp(70_000);
 
         vm.prank(alice);
         vm.deal(alice, 2 * price * mintAmount);
 
+        vm.expectRevert("Mint already ended");
         extension.mint{value: price * mintAmount}(mintAmount);
     }
 }
