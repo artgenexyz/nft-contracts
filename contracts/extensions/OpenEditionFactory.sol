@@ -27,7 +27,7 @@ contract OpenEditionFactory {
         uint256 _maxPerWallet,
         uint256 _mintStart,
         uint256 _mintEnd
-    ) external returns (address) {
+    ) external returns (OpenEditionExtensionUpgradeable) {
         address payable clone = payable(Clones.clone(implementation));
 
         OpenEditionExtensionUpgradeable ext = OpenEditionExtensionUpgradeable(
@@ -40,6 +40,6 @@ contract OpenEditionFactory {
 
         emit ContractDeployed(clone, nft, msg.sender, title);
 
-        return clone;
+        return OpenEditionExtensionUpgradeable(clone);
     }
 }
