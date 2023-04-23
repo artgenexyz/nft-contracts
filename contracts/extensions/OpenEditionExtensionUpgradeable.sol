@@ -10,6 +10,14 @@ contract OpenEditionExtensionUpgradeable is
     NFTExtensionUpgradeable,
     OwnableUpgradeable
 {
+    error MintExceedsMaxPerWallet();
+    error MintNotStarted();
+    error MintHasEnded();
+
+    error NotEnoughETH();
+    error NotEnoughTokens();
+    error MintExceedsMaxPerMint();
+
     uint startTimestamp;
     uint endTimestamp;
 
@@ -40,27 +48,40 @@ contract OpenEditionExtensionUpgradeable is
     }
 
     modifier whenMintActive() {
-        require(block.timestamp >= startTimestamp, "Mint has not started yet");
-        require(block.timestamp <= endTimestamp, "Mint has ended");
+        if (block.timestamp < startTimestamp) {
+            revert MintNotStarted();
+        }
+
+        if (block.timestamp > endTimestamp) {
+            revert MintHasEnded();
+        }
+
         _;
     }
 
     modifier whenEnoughETH(uint256 amount) {
-        require(msg.value >= amount * mintPrice, "Not enough ETH");
+        if (msg.value < amount * mintPrice) {
+            revert NotEnoughETH();
+        }
+
         _;
     }
 
     modifier whenNotMaxPerMint(uint256 amount) {
-        require(amount <= maxPerMint, "Too many tokens to mint");
+        if (amount > maxPerMint) {
+            revert MintExceedsMaxPerMint();
+        }
+
         _;
     }
 
     modifier whenWalletNotFull(uint256 amount) {
-        require(
-            IERC721(address(nft)).balanceOf(msg.sender) + amount <=
-                maxPerWallet,
-            "MaxPerWallet: Too many tokens to mint"
-        );
+        if (
+            IERC721(address(nft)).balanceOf(msg.sender) + amount > maxPerWallet
+        ) {
+            revert MintExceedsMaxPerWallet();
+        }
+
         _;
     }
 

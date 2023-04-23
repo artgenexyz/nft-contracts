@@ -94,7 +94,46 @@ contract OpenEditionFactoryTest is Test {
         vm.prank(alice);
         vm.deal(alice, 2 * price * mintAmount);
 
-        vm.expectRevert("Mint has ended");
+        vm.expectRevert(OpenEditionExtensionUpgradeable.MintHasEnded.selector);
         extension.mint{value: price * mintAmount}(mintAmount);
+    }
+
+    // test cannot mint if alice tries to mint more than max per wallet
+
+    function testCannotMintMoreThanMaxPerWallet(uint256 price) public {
+        price = bound(price, 1, 1e9 * 1e18);
+
+        address alice = makeAddr("Alice");
+
+        extension = factory.createOpenEdition(
+            "Test",
+            address(nft),
+            price,
+            5, // max per mint
+            5, // max per wallet
+            block.timestamp, // minting starts
+            block.timestamp + 60000 // minting ends
+        );
+
+        nft.addExtension(address(extension));
+
+        vm.deal(alice, price * 15);
+        vm.startPrank(alice);
+
+        vm.expectRevert(OpenEditionExtensionUpgradeable.MintExceedsMaxPerMint.selector);
+        extension.mint{value: price * 6}(6);
+        assertEq(nft.balanceOf(alice), 0);
+
+        extension.mint{value: price * 3}(3);
+        extension.mint{value: price * 2}(2);
+
+        assertEq(nft.balanceOf(alice), 5);
+
+        vm.expectRevert(OpenEditionExtensionUpgradeable.MintExceedsMaxPerWallet.selector);
+        extension.mint{value: price * 1}(1);
+
+        assertEq(nft.balanceOf(alice), 5);
+
+        vm.stopPrank();
     }
 }
