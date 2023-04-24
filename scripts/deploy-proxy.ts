@@ -131,7 +131,7 @@ export async function main() {
       // // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("0.4"),
+        value: hre.ethers.utils.parseEther("1.4"),
       });
     }
   }
@@ -143,7 +143,7 @@ export async function main() {
     gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
     nonce: vanityNonce,
     ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
-      gasLimit: 6_000_000,
+      gasLimit: 8_000_000,
     }),
   });
 

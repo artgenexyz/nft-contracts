@@ -17,7 +17,7 @@ function deployNFTSale() returns (Artgene721Base) {
         1,
         false, // start from one or zero
         "ipfs://QmABAABBABA",
-        MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, false, true)
+        MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, 0, 0)
     );
 
     return nft;
