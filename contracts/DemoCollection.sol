@@ -41,11 +41,13 @@ contract DemoCollection is Artgene721 {
                 0.1 ether, // public price
                 5, // maxTokensPerMint,
                 5, // maxTokensPerWallet,
+
                 500, // basis points royalty fee
                 msg.sender, // payout receiver
                 false, // should lock payout receiver
-                false, // should start sale
-                true // should use json extension
+
+                0, // startTimestamp
+                0 // endTimestamp
             )
         )
     {}

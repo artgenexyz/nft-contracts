@@ -92,16 +92,15 @@ contract Artgene721Base is
     using Address for address;
     using SafeERC20 for IERC20;
 
-    uint256 internal constant SALE_STARTS_AT_INFINITY = 2**256 - 1;
+    uint32 internal constant TIMESTAMP_INFINITY = type(uint32).max; // 4 294 967 295 is 136 years, which is year 2106
+
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
-    address internal constant OPENSEA_CONDUIT =
-        0x1E0049783F008A0085193E00003D00cd54003c71;
 
     uint256 public PLATFORM_FEE; // of 10,000
     address payable PLATFORM_TREASURY;
 
-    uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
-    uint256 public endTimestamp = SALE_STARTS_AT_INFINITY;
+    uint32 public startTimestamp;
+    uint32 public endTimestamp;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -134,10 +133,7 @@ contract Artgene721Base is
      */
     INFTExtension[] public extensions;
 
-    string public PROVENANCE_HASH = "";
-    string private CONTRACT_URI = "";
-    string private BASE_URI;
-    string private URI_POSTFIX = "";
+    string private baseURI;
 
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
@@ -153,6 +149,18 @@ contract Artgene721Base is
         MintConfig memory _config
     ) ERC721A(_name, _symbol) {
 
+        // CHECK INPUTS
+        // either open edition or limited edition
+        if (_maxSupply == ARTGENE_MAX_SUPPLY_OPEN_EDITION) {
+            require(_config.startTimestamp != 0 && _config.endTimestamp != 0, "OpenEdition requires start and end timestamp");
+            require(_config.startTimestamp < _config.endTimestamp, "OpenEdition requires startTimestamp < endTimestamp");
+
+            require(_config.maxTokensPerWallet != 0, "OpenEdition requires maxPerWallet != 0");
+        } else {
+            // limited edition doesn't require start and end timestamp
+            // you can provide them optionally
+        }
+
         reserved = _nReserved;
         maxSupply = _maxSupply;
 
@@ -162,11 +170,7 @@ contract Artgene721Base is
         );
         startAtOne = _startAtOne;
 
-        BASE_URI = _uri;
-
-        // defaults
-        startTimestamp = SALE_STARTS_AT_INFINITY;
-        endTimestamp = SALE_STARTS_AT_INFINITY;
+        baseURI = _uri;
 
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
@@ -180,11 +184,13 @@ contract Artgene721Base is
             _config.publicPrice,
             _config.maxTokensPerMint,
             _config.maxTokensPerWallet,
+
             _config.royaltyFee,
             _config.payoutReceiver,
             _config.shouldLockPayoutReceiver,
-            _config.shouldStartSale,
-            _config.shouldUseJsonExtension
+
+            _config.startTimestamp,
+            _config.endTimestamp
         );
     }
 
@@ -192,12 +198,23 @@ contract Artgene721Base is
         uint256 publicPrice,
         uint256 maxTokensPerMint,
         uint256 maxTokensPerWallet,
+
         uint256 _royaltyFee,
         address _payoutReceiver,
         bool shouldLockPayoutReceiver,
-        bool shouldStartSale,
-        bool shouldUseJsonExtension
+
+        uint32 _startTimestamp,
+        uint32 _endTimestamp
     ) internal {
+
+        if (_startTimestamp != 0) {
+            startTimestamp = _startTimestamp;
+        }
+
+        if (_endTimestamp != 0) {
+            endTimestamp = _endTimestamp;
+        }
+
         if (publicPrice != 0) {
             price = publicPrice;
         }
@@ -220,20 +237,11 @@ contract Artgene721Base is
         if (shouldLockPayoutReceiver) {
             isPayoutChangeLocked = true;
         }
-
-        if (shouldStartSale) {
-            // start sale right now
-            startTimestamp = block.timestamp;
-        }
-
-        if (shouldUseJsonExtension) {
-            URI_POSTFIX = ".json";
-        }
     }
 
 
     function _baseURI() internal view override returns (string memory) {
-        return BASE_URI;
+        return baseURI;
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {
@@ -241,8 +249,13 @@ contract Artgene721Base is
         return 0;
     }
 
-    function contractURI() public view returns (string memory uri) {
-        uri = bytes(CONTRACT_URI).length > 0 ? CONTRACT_URI : _baseURI();
+    function isOpenEdition() internal view returns (bool) {
+        return maxSupply == ARTGENE_MAX_SUPPLY_OPEN_EDITION;
+    }
+
+    // @dev used on Opensea to show collection-level metadata
+    function contractURI() external view returns (string memory uri) {
+        uri = _baseURI();
     }
 
     function tokenURI(uint256 tokenId)
@@ -261,12 +274,7 @@ contract Artgene721Base is
             }
         }
 
-        if (bytes(URI_POSTFIX).length > 0) {
-            return
-                string(abi.encodePacked(super.tokenURI(tokenId), URI_POSTFIX));
-        } else {
-            return super.tokenURI(tokenId);
-        }
+        return super.tokenURI(tokenId);
     }
 
     function startTokenId() public view returns (uint256) {
@@ -276,27 +284,18 @@ contract Artgene721Base is
     // ----- Admin functions -----
 
     function setBaseURI(string calldata uri) public onlyOwner {
-        BASE_URI = uri;
+        baseURI = uri;
 
         // update metadata for all tokens
         if (_totalMinted() == 0) return;
 
-        uint256 fromTokenId = startTokenId();
-        uint256 toTokenId = startTokenId() + _totalMinted() - 1;
+        uint256 fromTokenId = _startTokenId();
+        uint256 toTokenId = _startTokenId() + _totalMinted() - 1;
 
         emit BatchMetadataUpdate(
             fromTokenId,
             toTokenId
         );
-    }
-
-    // Contract-level metadata for Opensea
-    function setContractURI(string calldata uri) public onlyOwner {
-        CONTRACT_URI = uri;
-    }
-
-    function setPostfixURI(string memory postfix) public onlyOwner {
-        URI_POSTFIX = postfix;
     }
 
     function setPrice(uint256 _price) public onlyOwner {
@@ -336,8 +335,13 @@ contract Artgene721Base is
         return false;
     }
 
-    function extensionsLength() public view returns (uint256) {
+    function extensionsLength() external view returns (uint256) {
         return extensions.length;
+    }
+
+    function extensionList() external view returns (INFTExtension[] memory) {
+        // @dev this is O(N), don't use this on-chain
+        return extensions;
     }
 
     // Extensions are allowed to mint
@@ -400,10 +404,14 @@ contract Artgene721Base is
         address to,
         bytes32 extraData
     ) internal {
-        require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
-            "Not enough Tokens left."
-        );
+        if (isOpenEdition()) {
+            // unlimited minting
+        } else {
+            require(
+                _totalMinted() + nTokens + reserved <= maxSupply,
+                "Not enough Tokens left."
+            );
+        }
 
         uint256 nextTokenId = _nextTokenId();
 
@@ -517,15 +525,11 @@ contract Artgene721Base is
 
     // ---- Sale control ----
 
-    function updateStartTimestamp(uint256 _startTimestamp) public onlyOwner {
+    function updateStartTimestamp(uint32 _startTimestamp) public onlyOwner {
         startTimestamp = _startTimestamp;
     }
 
-    function updateEndTimestamp(uint256 _endTimestamp) public onlyOwner {
-        endTimestamp = _endTimestamp;
-    }
-
-    function updateTimestamp(uint256 _startTimestamp, uint256 _endTimestamp)
+    function updateMintStartEnd(uint32 _startTimestamp, uint32 _endTimestamp)
         public
         onlyOwner
     {
@@ -534,19 +538,31 @@ contract Artgene721Base is
     }
 
     function startSale() public onlyOwner {
-        startTimestamp = block.timestamp;
+        startTimestamp = uint32(block.timestamp);
 
         if (endTimestamp < startTimestamp) {
             // if endTimestamp is not set, reset it to infinity
-            endTimestamp = SALE_STARTS_AT_INFINITY;
+            endTimestamp = TIMESTAMP_INFINITY;
         }
     }
 
     function stopSale() public onlyOwner {
-        startTimestamp = SALE_STARTS_AT_INFINITY;
+        startTimestamp = 0;
     }
 
     function saleStarted() public view returns (bool) {
+        if (startTimestamp == 0) {
+            // this is default value, means sale wasn't initilized
+            // set startTimestamp to now to start sale
+            return false;
+        }
+
+        if (endTimestamp == 0) {
+            // if endTimestamp is not set, sale starts as usual
+            return block.timestamp >= startTimestamp;
+        }
+
+        // otherwise check if sale is active
         return
             block.timestamp >= startTimestamp &&
             block.timestamp <= endTimestamp;
@@ -554,10 +570,6 @@ contract Artgene721Base is
 
     // ---- Offchain Info ----
 
-    // This should be set before sales open.
-    function setProvenanceHash(string memory provenanceHash) public onlyOwner {
-        PROVENANCE_HASH = provenanceHash;
-    }
 
     function setRoyaltyFee(uint256 _royaltyFee) public onlyOwner {
         royaltyFee = _royaltyFee;

@@ -45,18 +45,20 @@ const getAirdropTree = (addresses) => {
 //     uint256 royaltyFee;
 //     address payoutReceiver;
 //     bool shouldLockPayoutReceiver;
-//     bool shouldStartSale;
-//     bool shouldUseJsonExtension;
+//     uint256 startTimestamp;
+//     uint256 endTimestamp;
 // }
 const getMintConfig = () => ({
     publicPrice: new BigNumber(1e18).times(0.1).toString(),
     maxTokensPerMint: 10,
     maxTokensPerWallet: 0,
+
     royaltyFee: 500,
     payoutReceiver: "0x0000000000000000000000000000000000000000",
     shouldLockPayoutReceiver: false,
-    shouldStartSale: false,
-    shouldUseJsonExtension: false,
+
+    startTimestamp: 0,
+    endTimestamp: 0,
 })
 
 const createNFTSale = (ERC721CommunityBase) => {

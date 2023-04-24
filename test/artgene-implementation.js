@@ -3,7 +3,7 @@ const { network } = require("hardhat");
 const BigNumber = require("bignumber.js");
 const delay = require("delay");
 const { assert } = require("chai");
-const { expectRevert } = require("@openzeppelin/test-helpers");
+const { time, expectRevert } = require("@openzeppelin/test-helpers");
 const { parseEther } = require("ethers").utils;
 
 const { getGasCost, createNFTSale } = require("./utils");
@@ -58,8 +58,8 @@ contract("Artgene721Implementation – Implementation", accounts => {
                 royaltyFee: 500,
                 payoutReceiver: owner,
                 shouldLockPayoutReceiver: false,
-                shouldStartSale: false,
-                shouldUseJsonExtension: false
+                startTimestamp: 0,
+                endTimestamp: 0,
             }
         );
 
@@ -415,8 +415,10 @@ contract("Artgene721Implementation – Implementation", accounts => {
                 royaltyFee: 500,
                 payoutReceiver: owner,
                 shouldLockPayoutReceiver: false,
-                shouldStartSale: false,
-                shouldUseJsonExtension: false
+                // shouldStartSale: false,
+                shouldUseJsonExtension: false,
+                startTimestamp: 0,
+                endTimestamp: 0,
             }
         );
 
@@ -577,4 +579,38 @@ contract("Artgene721Implementation – Implementation", accounts => {
         assert.equal(await nft.isApprovedForAll(owner, conduit), true);
     });
 
-})
+    // it should be able to set endTimestamp, and you cant mint before startTimestamp, you can not mint after, but you can mint between
+
+    it("should be able to set endTimestamp, and you cant mint before startTimestamp, you can not mint after, but you can mint between", async () => {
+        const now = Math.floor(Date.now() / 1000);
+
+        const hour = 3600;
+
+        // await nft.updateStartTimestamp(now + 2 * hour);
+        // await nft.updateEndTimestamp(now + 5 * hour);
+
+        await nft.updateMintStartEnd(now + 2 * hour, now + 5 * hour);
+
+        await time.increase(hour);
+
+        // check that you can not mint before startTimestamp
+        await expectRevert(
+            nft.mint(1, { from: user1, value: ether }),
+            "Sale not active"
+        );
+
+        await time.increase(hour);
+
+        // check that you can mint between start and end
+        await nft.mint(1, { from: user1, value: ether });
+
+        // skip forward 10000 seconds
+        await time.increase(5 * hour);
+
+        // check that you can not mint after endTimestamp
+        await expectRevert(
+            nft.mint(1, { from: user1, value: ether }),
+            "Sale not active"
+        );
+    });
+});

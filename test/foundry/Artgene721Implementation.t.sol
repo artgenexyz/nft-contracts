@@ -37,7 +37,7 @@ contract ArgeneTest is Test {
             1,
             StartFromTokenIdOne.wrap(true), // start from one or zero
             "ipfs://QmABAABBABA",
-            MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, false, true)
+            MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, 0, 0)
         );
 
         nft = Artgene721Implementation(payable(proxy));
@@ -51,7 +51,7 @@ contract ArgeneTest is Test {
             1,
             StartFromTokenIdOne.wrap(true), // start from one or zero
             "ipfs://QmABAABBABA",
-            MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, false, true)
+            MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, 0, 0)
         );
 
         assert(address(proxy).code.length != 0);
@@ -73,6 +73,19 @@ contract ArgeneTest is Test {
         assertEq(nft.getPayoutReceiver(), msg.sender);
         assertEq(nft.isPayoutChangeLocked(), false);
         assertEq(nft.saleStarted(), false);
+    }
+
+    event BatchMetadataUpdate(uint256 fromTokenId, uint256 toTokenId);
+
+    function testUpdateBaseURIEmits() public {
+        nft.claim(1, user1);
+
+        vm.expectEmit(true, true, false, true);
+
+        // The event we expect: update token 1 metadata
+        emit BatchMetadataUpdate(1, 1);
+
+        nft.setBaseURI("ipfs://QmABAABBABA");
     }
 
     // test minting when sale is not started
@@ -115,4 +128,124 @@ contract ArgeneTest is Test {
     }
 
     // test minting when sale is ended
+    // it should be able to set endTimestamp
+    // and you cant mint before startTimestamp, you can not mint after
+    // but you can mint between
+    function testMintWithTimestamps() public {
+
+        uint32 _now = uint32(block.timestamp);
+
+        nft.updateMintStartEnd(_now + 2 hours, _now + 5 hours);
+
+        // setup
+
+        vm.deal(user1, 1 ether);
+        vm.startPrank(user1);
+
+        // time travel
+        skip(1 hours);
+
+        assertEq(nft.saleStarted(), false);
+
+        vm.expectRevert("Sale not active");
+        nft.mint{value: 0.1 ether}(1);
+
+        // skip
+        skip(1 hours);
+
+        assertEq(nft.saleStarted(), true);
+
+        nft.mint{value: 0.1 ether}(1);
+        assertEq(nft.totalSupply(), 1);
+
+        // time travel
+        skip(5 hours);
+
+        assertEq(nft.saleStarted(), false);
+
+        vm.expectRevert("Sale not active");
+        nft.mint{value: 0.1 ether}(1);
+
+        assertEq(nft.totalSupply(), 1);
+    }
+
+    function testOpenEditionCannotDeploy() public {
+
+        vm.expectRevert("OpenEdition requires start and end timestamp");
+        Artgene721 proxy = new Artgene721(
+            "Abstract Art NFT",
+            "ART",
+            ARTGENE_MAX_SUPPLY_OPEN_EDITION, // max supply is ZERO, this is open edition
+            1,
+            StartFromTokenIdOne.wrap(true), // start from one or zero
+            "ipfs://QmABAABBABA",
+            MintConfig(0.1 ether, 5, 5, 500, msg.sender, false, 0, 0)
+        );
+
+        assert(address(proxy).code.length == 0);
+
+    }
+
+    // test creating open edition
+    // (max supply = 0, start timestamp = now + 1 days, end timestamp = now + 2 days)
+    function testOpenEdition() public {
+        uint32 _now = uint32(block.timestamp);
+
+        Artgene721 proxy = new Artgene721(
+            "Abstract Art NFT",
+            "ART",
+            ARTGENE_MAX_SUPPLY_OPEN_EDITION, // max supply is ZERO, this is open edition
+            1,
+            StartFromTokenIdOne.wrap(true), // start from one or zero
+            "ipfs://QmABAABBABA",
+            // hack: set maxPerMint to 999_999
+            MintConfig(0.0001 ether, 999_999, 999_999, 500, msg.sender, false, _now + 1 days, _now + 2 days)
+        );
+
+        nft = Artgene721Implementation(payable(proxy));
+        // nft.updateMaxPerWallet(0); // no limit
+        // nft.updateMaxPerMint(50); // no limit
+
+        assertEq(nft.name(), "Abstract Art NFT");
+        assertEq(nft.symbol(), "ART");
+
+        assertEq(nft.totalSupply(), 0);
+
+        vm.startPrank(user1);
+        vm.deal(user1, 1 ether);
+
+        // test mint
+
+        assertEq(nft.saleStarted(), false);
+
+        vm.expectRevert("Sale not active");
+        nft.mint{value: 0.0001 ether}(1);
+
+        // skip
+
+        skip(1 days);
+
+        assertEq(nft.saleStarted(), true);
+
+        nft.mint{value: 0.0001 ether}(1);
+
+        assertEq(nft.totalSupply(), 1);
+
+        // it allows to mint unlimited amount of tokens
+
+        nft.mint{value: 0.1 ether}(1000);
+        assertEq(nft.totalSupply(), 1001);
+
+        nft.mint{value: 0.1 ether}(1000);
+        assertEq(nft.totalSupply(), 2001);
+
+        vm.deal(user1, 10 ether);
+
+        nft.mint{value: 1 ether}(10_000);
+
+        assertEq(nft.totalSupply(), 12_001);
+
+    }
+
+
 }
