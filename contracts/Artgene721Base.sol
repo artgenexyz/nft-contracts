@@ -276,10 +276,10 @@ contract Artgene721Base is
         BASE_URI = uri;
 
         // update metadata for all tokens
-        if (totalSupply() == 0) return;
+        if (_totalMinted() == 0) return;
 
         uint256 fromTokenId = startTokenId();
-        uint256 toTokenId = startTokenId() + totalSupply() - 1;
+        uint256 toTokenId = startTokenId() + _totalMinted() - 1;
 
         emit BatchMetadataUpdate(
             fromTokenId,
@@ -641,9 +641,7 @@ contract Artgene721Base is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
-            interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
-            interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IArtgene721).interfaceId ||
             super.supportsInterface(interfaceId);
     }
