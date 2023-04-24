@@ -18,6 +18,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "./interfaces/IERC4906.sol";
 import "./interfaces/INFTExtension.sol";
 import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
@@ -86,7 +87,7 @@ contract Artgene721Base is
     ERC721A,
     ReentrancyGuard,
     Ownable,
-    IArtgene721 // implements IERC2981
+    IArtgene721 // implements IERC2981, IERC4906
 {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -273,6 +274,17 @@ contract Artgene721Base is
 
     function setBaseURI(string calldata uri) public onlyOwner {
         BASE_URI = uri;
+
+        // update metadata for all tokens
+        if (totalSupply() == 0) return;
+
+        uint256 fromTokenId = startTokenId();
+        uint256 toTokenId = startTokenId() + totalSupply() - 1;
+
+        emit BatchMetadataUpdate(
+            fromTokenId,
+            toTokenId
+        );
     }
 
     // Contract-level metadata for Opensea
@@ -589,10 +601,10 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_TREASURY;
+        address payable platform = PLATFORM_TREASURY;
 
         Address.sendValue(receiver, amount);
-        Address.sendValue(dev, balance - amount);
+        Address.sendValue(platform, balance - amount);
     }
 
     function withdraw() public virtual onlyOwner {
@@ -609,10 +621,10 @@ contract Artgene721Base is
         uint256 amount = (balance * (10000 - PLATFORM_FEE)) / 10000;
 
         address payable receiver = getPayoutReceiver();
-        address payable dev = PLATFORM_TREASURY;
+        address payable platform = PLATFORM_TREASURY;
 
         token.safeTransfer(receiver, amount);
-        token.safeTransfer(dev, balance - amount);
+        token.safeTransfer(platform, balance - amount);
     }
 
     function PLATFORM() public pure returns (string memory _url) {
@@ -629,6 +641,9 @@ contract Artgene721Base is
     {
         return
             interfaceId == type(IERC2981).interfaceId ||
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC4906).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IArtgene721).interfaceId ||
             super.supportsInterface(interfaceId);
     }
@@ -649,4 +664,15 @@ contract Artgene721Base is
 
         return super.isApprovedForAll(owner, operator);
     }
+
+    // @dev from openzeppelin-contracts/contracts/interfaces/IERC4906.sol
+    function forceMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId) public onlyOwner {
+        require(_fromTokenId <= _toTokenId, "Invalid range");
+
+        /// @dev This event emits when the metadata of a range of tokens is changed.
+        /// So that the third-party platforms such as NFT market could
+        /// timely update the images and related attributes of the NFTs.
+        emit BatchMetadataUpdate(_fromTokenId, _toTokenId);
+    }
+
 }
