@@ -91,7 +91,7 @@ contract("Artgene721Implementation – Implementation", accounts => {
 
         await expectRevert(
             nft.mint(1, { from: accounts[1], value: ether.times(0.03) }),
-            "Sale not started",
+            "Sale not active",
         );
     });
 
@@ -500,7 +500,7 @@ contract("Artgene721Implementation – Implementation", accounts => {
         await nft.startSale();
         await nft.mint(10, { from: user2, value: ether });
 
-        await expectRevert(nft.reduceMaxSupply(300), "Sale should not be started");
+        await expectRevert(nft.reduceMaxSupply(300), "Sale should not be active");
 
         await nft.stopSale();
 

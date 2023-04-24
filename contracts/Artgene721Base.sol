@@ -101,6 +101,7 @@ contract Artgene721Base is
     address payable PLATFORM_TREASURY;
 
     uint256 public startTimestamp = SALE_STARTS_AT_INFINITY;
+    uint256 public endTimestamp = SALE_STARTS_AT_INFINITY;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -165,6 +166,8 @@ contract Artgene721Base is
 
         // defaults
         startTimestamp = SALE_STARTS_AT_INFINITY;
+        endTimestamp = SALE_STARTS_AT_INFINITY;
+
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
 
@@ -416,13 +419,13 @@ contract Artgene721Base is
 
     // ---- Mint control ----
 
-    modifier whenSaleStarted() {
-        require(saleStarted(), "Sale not started");
+    modifier whenSaleActive() {
+        require(saleStarted(), "Sale not active");
         _;
     }
 
     modifier whenSaleNotStarted() {
-        require(!saleStarted(), "Sale should not be started");
+        require(!saleStarted(), "Sale should not be active");
         _;
     }
 
@@ -446,7 +449,7 @@ contract Artgene721Base is
         external
         payable
         nonReentrant
-        whenSaleStarted
+        whenSaleActive
     {
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
@@ -518,8 +521,25 @@ contract Artgene721Base is
         startTimestamp = _startTimestamp;
     }
 
+    function updateEndTimestamp(uint256 _endTimestamp) public onlyOwner {
+        endTimestamp = _endTimestamp;
+    }
+
+    function updateTimestamp(uint256 _startTimestamp, uint256 _endTimestamp)
+        public
+        onlyOwner
+    {
+        startTimestamp = _startTimestamp;
+        endTimestamp = _endTimestamp;
+    }
+
     function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
+
+        if (endTimestamp < startTimestamp) {
+            // if endTimestamp is not set, reset it to infinity
+            endTimestamp = SALE_STARTS_AT_INFINITY;
+        }
     }
 
     function stopSale() public onlyOwner {
@@ -527,7 +547,9 @@ contract Artgene721Base is
     }
 
     function saleStarted() public view returns (bool) {
-        return block.timestamp >= startTimestamp;
+        return
+            block.timestamp >= startTimestamp &&
+            block.timestamp <= endTimestamp;
     }
 
     // ---- Offchain Info ----

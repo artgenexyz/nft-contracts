@@ -105,6 +105,7 @@ contract Artgene721Implementation is
     address payable PLATFORM_TREASURY;
 
     uint256 public startTimestamp;
+    uint256 public endTimestamp;
 
     uint256 public reserved;
     uint256 public maxSupply;
@@ -165,6 +166,8 @@ contract Artgene721Implementation is
 
         // defaults
         startTimestamp = SALE_STARTS_AT_INFINITY;
+        endTimestamp = SALE_STARTS_AT_INFINITY;
+
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
         isOpenSeaTransferFilterEnabled = true;
@@ -418,10 +421,14 @@ contract Artgene721Implementation is
         address to,
         bytes32 extraData
     ) internal {
-        require(
-            _totalMinted() + nTokens + reserved <= maxSupply,
-            "Not enough Tokens left."
-        );
+        if (maxSupply == 0) {
+            // maxSupply == 0 means no limit
+        } else {
+            require(
+                _totalMinted() + nTokens + reserved <= maxSupply,
+                "Not enough Tokens left."
+            );
+        }
 
         uint256 nextTokenId = _nextTokenId();
 
@@ -437,13 +444,13 @@ contract Artgene721Implementation is
 
     // ---- Mint control ----
 
-    modifier whenSaleStarted() {
-        require(saleStarted(), "Sale not started");
+    modifier whenSaleActive() {
+        require(saleStarted(), "Sale not active");
         _;
     }
 
     modifier whenSaleNotStarted() {
-        require(!saleStarted(), "Sale should not be started");
+        require(!saleStarted(), "Sale should not be active");
         _;
     }
 
@@ -467,7 +474,7 @@ contract Artgene721Implementation is
         external
         payable
         nonReentrant
-        whenSaleStarted
+        whenSaleActive
     {
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
@@ -539,8 +546,25 @@ contract Artgene721Implementation is
         startTimestamp = _startTimestamp;
     }
 
+    function updateEndTimestamp(uint256 _endTimestamp) public onlyOwner {
+        endTimestamp = _endTimestamp;
+    }
+
+    function updateTimestamp(uint256 _startTimestamp, uint256 _endTimestamp)
+        public
+        onlyOwner
+    {
+        startTimestamp = _startTimestamp;
+        endTimestamp = _endTimestamp;
+    }
+
     function startSale() public onlyOwner {
         startTimestamp = block.timestamp;
+
+        if (endTimestamp < startTimestamp) {
+            // if endTimestamp is not set, reset it to infinity
+            endTimestamp = SALE_STARTS_AT_INFINITY;
+        }
     }
 
     function stopSale() public onlyOwner {
@@ -548,7 +572,9 @@ contract Artgene721Implementation is
     }
 
     function saleStarted() public view returns (bool) {
-        return block.timestamp >= startTimestamp;
+        return
+            block.timestamp >= startTimestamp &&
+            block.timestamp <= endTimestamp;
     }
 
     // ---- Offchain Info ----
