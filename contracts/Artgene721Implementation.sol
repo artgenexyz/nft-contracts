@@ -98,7 +98,7 @@ contract Artgene721Implementation is
 
     uint256 internal constant MAX_PER_MINT_LIMIT = 50; // based on ERC721A limitations
 
-    uint256 public constant VERSION = 3;
+    uint256 public constant VERSION = 5;
 
     uint256 public PLATFORM_FEE; // of 10,000
     address payable PLATFORM_TREASURY;
