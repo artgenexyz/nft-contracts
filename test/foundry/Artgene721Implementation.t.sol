@@ -3,9 +3,13 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import "../../contracts/Artgene721.sol";
 import "../../contracts/Artgene721Implementation.sol";
 import "../../contracts/ArtgenePlatform.sol";
+
+import "../../contracts/extensions/mocks/MockRenderer.sol";
 
 import "../../scripts/foundry/DeployArtgenePlatform.s.sol";
 import "../../scripts/foundry/DeployArtgeneImplementation.s.sol";
@@ -125,6 +129,59 @@ contract ArgeneTest is Test {
         nft.mint{value: 0.2 ether}(2);
 
         assertEq(nft.totalSupply(), 3);
+    }
+
+    function testMintMeasureGas() public {
+        nft.startSale();
+
+        vm.deal(user1, 1 ether);
+        vm.prank(user1);
+
+        uint256 gas = gasleft();
+
+        nft.mint{value: 0.1 ether}(1);
+
+        gas = gas - gasleft();
+
+        console.log("[mint] gas used: ", gas);
+    }
+
+
+    event Evolution(uint256 indexed, bytes32);
+    function testMintEmitsEvent() public {
+        nft.startSale();
+
+        vm.deal(user1, 1 ether);
+        vm.prank(user1);
+
+        bytes32 predictedDNA = keccak256(abi.encodePacked(
+            bytes32(block.prevrandao),
+            blockhash(block.number - 1),
+            bytes32(uint256(1))
+        ));
+
+        // console.log("Predicted DNA: ", Strings.toHexString(uint256(predictedDNA)));
+
+        vm.expectEmit(true, true, false, true);
+        emit Evolution(1, predictedDNA);
+
+        // The event we expect: minted token 1
+
+        nft.mint{value: 0.1 ether}(1);
+    }
+
+    function testTokenHTMLReturnsString() public {
+        nft.startSale();
+        vm.deal(user1, 1 ether);
+        vm.prank(user1);
+        nft.mint{value: 0.1 ether}(1);
+
+        MockRenderer renderer = new MockRenderer(address(nft));
+        nft.setRenderer(address(renderer));
+
+        string memory html = nft.tokenHTML(1, "0x123123", new bytes(0));
+
+        assertGe(bytes(html).length, 100, "HTML too small");
     }
 
     // test minting when sale is ended
