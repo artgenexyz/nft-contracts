@@ -8,6 +8,7 @@ pragma solidity ^0.8.9;
  */
 
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "erc721a-upgradeable/contracts/extensions/ERC721ABurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
@@ -85,6 +86,7 @@ import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.
 
 contract Artgene721Implementation is
     ERC721AUpgradeable,
+    ERC721ABurnableUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     DefaultOperatorFiltererUpgradeable,
@@ -183,6 +185,7 @@ contract Artgene721Implementation is
         (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
 
         __ERC721A_init(_name, _symbol);
+        __ERC721ABurnable_init();
         __ReentrancyGuard_init();
         __Ownable_init();
         __DefaultOperatorFilterer_init();
@@ -279,7 +282,7 @@ contract Artgene721Implementation is
     function tokenURI(uint256 tokenId)
         public
         view
-        override
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
         returns (string memory)
     {
         if (renderer != address(0)) {
@@ -701,7 +704,7 @@ contract Artgene721Implementation is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
         returns (bool)
     {
         return
@@ -718,7 +721,7 @@ contract Artgene721Implementation is
     function isApprovedForAll(address owner, address operator)
         public
         view
-        override
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
         returns (bool)
     {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {

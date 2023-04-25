@@ -8,6 +8,7 @@ pragma solidity ^0.8.9;
  */
 
 import "erc721a/contracts/ERC721A.sol";
+import "erc721a/contracts/extensions/ERC721ABurnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -85,6 +86,7 @@ import "./utils/OpenseaProxy.sol";
 
 contract Artgene721Base is
     ERC721A,
+    ERC721ABurnable,
     ReentrancyGuard,
     Ownable,
     IArtgene721 // implements IERC2981, IERC4906
@@ -261,7 +263,7 @@ contract Artgene721Base is
     function tokenURI(uint256 tokenId)
         public
         view
-        override
+        override(ERC721A, IERC721A)
         returns (string memory)
     {
         if (renderer != address(0)) {
@@ -670,7 +672,7 @@ contract Artgene721Base is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override
+        override(ERC721A, IERC721A)
         returns (bool)
     {
         return
@@ -687,7 +689,7 @@ contract Artgene721Base is
     function isApprovedForAll(address owner, address operator)
         public
         view
-        override
+        override(ERC721A, IERC721A)
         returns (bool)
     {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
