@@ -222,7 +222,7 @@ export async function main() {
 
   // skip waiting if running on hardhat network
   if (hre.network.name == "hardhat") {
-    return;
+    return platform.address;
   }
 
   // print that we are waiting
@@ -241,6 +241,7 @@ export async function main() {
     network: "mainnet",
   });
 
+  return platform.address;
 }
 
 // call main only if executed directly
