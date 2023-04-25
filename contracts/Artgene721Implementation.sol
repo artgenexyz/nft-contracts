@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 /**
  * @title LICENSE REQUIREMENT
  * @dev This contract is licensed under the MIT license.
- * @dev You're not allowed to remove DEVELOPER() from contract
+ * @dev You're not allowed to remove Platform() from contract
  */
 
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
@@ -644,10 +644,10 @@ contract Artgene721Implementation is
 
     // ---- Withdraw -----
 
-    modifier onlyDeveloper() {
+    modifier onlyPlatform() {
         require(
             payable(msg.sender) == PLATFORM_TREASURY,
-            "Caller is not developer"
+            "Caller is not Platform"
         );
         _;
     }
@@ -667,7 +667,7 @@ contract Artgene721Implementation is
         _withdraw();
     }
 
-    function forceWithdrawDeveloper() public virtual onlyDeveloper {
+    function forceWithdrawPlatform() public virtual onlyPlatform {
         _withdraw();
     }
 

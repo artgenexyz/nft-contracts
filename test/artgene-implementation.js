@@ -188,10 +188,10 @@ contract("Artgene721Implementation – Implementation", accounts => {
         const nftBalance = await web3.eth.getBalance(nft.address);
         assert.notEqual(nftBalance, 0);
 
-        // it should not allow owner to call forceWithdrawDeveloper
+        // it should not allow owner to call forceWithdrawPlatform
         await expectRevert(
-            nft.forceWithdrawDeveloper({ from: owner }),
-            "Caller is not developer"
+            nft.forceWithdrawPlatform({ from: owner }),
+            "Caller is not Platform"
         );
 
         const artgene = "0x3087c429ed4e7e5Cec78D006fCC772ceeaa67f00";
@@ -205,7 +205,7 @@ contract("Artgene721Implementation – Implementation", accounts => {
 
         await network.provider.request({ method: "hardhat_impersonateAccount", params: [artgene] })
 
-        await nft.forceWithdrawDeveloper({ from: artgene });
+        await nft.forceWithdrawPlatform({ from: artgene });
 
         const nftBalanceAfter = await web3.eth.getBalance(nft.address);
         assert.equal(nftBalanceAfter, 0);
