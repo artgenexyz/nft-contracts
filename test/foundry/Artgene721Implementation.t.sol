@@ -132,7 +132,6 @@ contract ArgeneTest is Test {
     // and you cant mint before startTimestamp, you can not mint after
     // but you can mint between
     function testMintWithTimestamps() public {
-
         uint32 _now = uint32(block.timestamp);
 
         nft.updateMintStartEnd(_now + 2 hours, _now + 5 hours);
@@ -170,7 +169,6 @@ contract ArgeneTest is Test {
     }
 
     function testOpenEditionCannotDeploy() public {
-
         vm.expectRevert("OpenEdition requires start and end timestamp");
         Artgene721 proxy = new Artgene721(
             "Abstract Art NFT",
@@ -183,7 +181,6 @@ contract ArgeneTest is Test {
         );
 
         assert(address(proxy).code.length == 0);
-
     }
 
     // test creating open edition
@@ -199,7 +196,16 @@ contract ArgeneTest is Test {
             StartFromTokenIdOne.wrap(true), // start from one or zero
             "ipfs://QmABAABBABA",
             // hack: set maxPerMint to 999_999
-            MintConfig(0.0001 ether, 999_999, 999_999, 500, msg.sender, false, _now + 1 days, _now + 2 days)
+            MintConfig(
+                0.0001 ether,
+                999_999,
+                999_999,
+                500,
+                msg.sender,
+                false,
+                _now + 1 days,
+                _now + 2 days
+            )
         );
 
         nft = Artgene721Implementation(payable(proxy));
@@ -244,8 +250,33 @@ contract ArgeneTest is Test {
         nft.mint{value: 1 ether}(10_000);
 
         assertEq(nft.totalSupply(), 12_001);
-
     }
 
+    function testBurnPossible() public {
+        nft.startSale();
 
+        vm.deal(user1, 1 ether);
+
+        vm.startPrank(user1);
+        nft.mint{value: 0.5 ether}(5);
+
+        assertEq(nft.totalSupply(), 5, "total supply should be 5");
+
+        uint burnTokenId = 3;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 4, "total supply should be 4");
+
+        burnTokenId = 1;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 3, "total supply should be 3");
+
+        assertEq(nft.balanceOf(user1), 3, "balance of user1 should be 3");
+
+        burnTokenId = 2;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 2, "total supply should be 2");
+    }
 }
