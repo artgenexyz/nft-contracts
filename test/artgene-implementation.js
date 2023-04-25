@@ -280,6 +280,12 @@ contract("Artgene721Implementation – Implementation", accounts => {
 
         assert.equal(tokenURI, "<svg></svg>");
 
+        // uint256, bytes32, bytes
+        const tokenHTML = await nft.tokenHTML(0, "0x123123", "0xababa");
+
+        assert.equal(tokenHTML.slice(0,6), "<html>");
+
+        assert(tokenHTML.includes("0x123123"), "MockRenderer tokenHTML should include dna");
     });
 
     // it should be able to mint via LimitSaleExtension
@@ -612,5 +618,76 @@ contract("Artgene721Implementation – Implementation", accounts => {
             nft.mint(1, { from: user1, value: ether }),
             "Sale not active"
         );
+    });
+
+    // it should emit "Evolution(tokenId, dna)" event and two tokens should have different values
+    it("should emit Evolution(tokenId, dna) event and two tokens should have different values", async () => {
+        await nft.startSale();
+
+        const tx = await nft.mint(2, {
+            from: user1,
+            value: ether.times(0.03).times(2),
+        });
+
+        const events = tx.logs.filter((log) => log.event === "Evolution");
+
+        assert.equal(events.length, 2);
+
+        const tokenId1 = events[0].args.tokenId;
+        const tokenId2 = events[1].args.tokenId;
+
+        const dna1 = events[0].args.dna;
+        const dna2 = events[1].args.dna;
+
+        assert.notEqual(dna1, dna2, "dna NOT should be the same");
+
+        assert.equal(tokenId1, 0);
+        assert.equal(tokenId2, 1);
+
+        // bytes32 dna = keccak256(abi.encodePacked(
+        //     bytes32(block.prevrandao),
+        //     blockhash(block.number - 1),
+        //     bytes32(tokenId)
+        // ));
+
+        const latest = await ethers.provider.getBlock("latest");
+
+        const lastBlock = await ethers.provider.send("eth_getBlockByNumber", [
+            ethers.utils.hexValue(latest.number),
+            false,
+        ]);
+        const prevBlock = await ethers.provider.send("eth_getBlockByNumber", [
+            ethers.utils.hexValue(latest.number - 1),
+            false,
+        ]);
+
+        const prevrandao = lastBlock.mixHash;
+        const blockHash = prevBlock.hash;
+
+        console.log("prevrandao", prevrandao);
+        console.log("blockHash", blockHash);
+
+        const paddedTokenId1 = `0x${tokenId1.toString().padStart(64, "0")}`;
+        const paddedTokenId2 = `0x${tokenId2.toString().padStart(64, "0")}`;
+
+        const predictedDna1 = ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(
+            ["bytes32", "bytes32", "bytes32"],
+            [prevrandao, blockHash, paddedTokenId1]
+            )
+        );
+
+        console.log("predictedDna1", predictedDna1);
+
+        const predictedDna2 = ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(
+            ["bytes32", "bytes32", "bytes32"],
+            [prevrandao, blockHash, paddedTokenId2]
+            )
+        );
+
+        assert.equal(dna1, predictedDna1, "dna1 should equal predicted");
+        assert.equal(dna2, predictedDna2, "dna2 should equal predicted");
+
     });
 });

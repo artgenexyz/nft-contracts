@@ -139,6 +139,8 @@ contract Artgene721Base is
     event ExtensionRevoked(address indexed extensionAddress);
     event RendererAdded(address indexed extensionAddress);
 
+    event Evolution(uint256 indexed tokenId, bytes32 dna);
+
     constructor(
         string memory _name,
         string memory _symbol,
@@ -256,6 +258,14 @@ contract Artgene721Base is
     // @dev used on Opensea to show collection-level metadata
     function contractURI() external view returns (string memory uri) {
         uri = _baseURI();
+    }
+
+    function tokenHTML(uint256 tokenId, bytes32 dna, bytes calldata _data) external view returns (string memory) {
+        if (renderer != address(0)) {
+            return IRenderer(renderer).tokenHTML(tokenId, dna, _data);
+        }
+
+        return "";
     }
 
     function tokenURI(uint256 tokenId)
@@ -401,8 +411,7 @@ contract Artgene721Base is
 
     function _mintConsecutive(
         uint256 nTokens,
-        address to,
-        bytes32 extraData
+        address to
     ) internal {
         if (isOpenEdition()) {
             // unlimited minting
@@ -417,12 +426,22 @@ contract Artgene721Base is
 
         _safeMint(to, nTokens, "");
 
-        if (extraData.length > 0) {
-            for (uint256 i; i < nTokens; i++) {
-                uint256 tokenId = nextTokenId + i;
-                data[tokenId] = extraData;
-            }
+        for (uint256 i; i < nTokens; i++) {
+            uint256 tokenId = nextTokenId + i;
+
+            bytes32 dna = _createDNA(tokenId);
+
+            emit Evolution(tokenId, dna);
         }
+    }
+
+    // @dev depends on the current block, so it's not possible to know the DNA in advance
+    function _createDNA(uint256 tokenId) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(
+            bytes32(block.prevrandao),
+            blockhash(block.number - 1),
+            bytes32(tokenId)
+        ));
     }
 
     // ---- Mint control ----
@@ -477,7 +496,7 @@ contract Artgene721Base is
 
         require(nTokens * price <= msg.value, "Inconsistent amount sent!");
 
-        _mintConsecutive(nTokens, msg.sender, 0x0);
+        _mintConsecutive(nTokens, msg.sender);
     }
 
     // Owner can claim free tokens
@@ -490,7 +509,7 @@ contract Artgene721Base is
 
         reserved = reserved - nTokens;
 
-        _mintConsecutive(nTokens, to, 0x0);
+        _mintConsecutive(nTokens, to);
     }
 
     // ---- Mint via extension
@@ -498,9 +517,9 @@ contract Artgene721Base is
     function mintExternal(
         uint256 nTokens,
         address to,
-        bytes32 extraData
+        bytes32
     ) external payable onlyExtension nonReentrant {
-        _mintConsecutive(nTokens, to, extraData);
+        _mintConsecutive(nTokens, to);
     }
 
     // ---- Mint configuration
