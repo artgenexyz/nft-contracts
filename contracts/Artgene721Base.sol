@@ -25,7 +25,6 @@ import "./interfaces/IArtgene721.sol";
 import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
 
-
 /**
  * @title contract by artgene.xyz
  */
@@ -81,7 +80,6 @@ import "./utils/OpenseaProxy.sol";
 //                                                                                                  //
 //                                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 contract Artgene721Base is
     ERC721A,
@@ -150,14 +148,22 @@ contract Artgene721Base is
         string memory _uri,
         MintConfig memory _config
     ) ERC721A(_name, _symbol) {
-
         // CHECK INPUTS
         // either open edition or limited edition
         if (_maxSupply == ARTGENE_MAX_SUPPLY_OPEN_EDITION) {
-            require(_config.startTimestamp != 0 && _config.endTimestamp != 0, "OpenEdition requires start and end timestamp");
-            require(_config.startTimestamp < _config.endTimestamp, "OpenEdition requires startTimestamp < endTimestamp");
+            require(
+                _config.startTimestamp != 0 && _config.endTimestamp != 0,
+                "OpenEdition requires start and end timestamp"
+            );
+            require(
+                _config.startTimestamp < _config.endTimestamp,
+                "OpenEdition requires startTimestamp < endTimestamp"
+            );
 
-            require(_config.maxTokensPerWallet != 0, "OpenEdition requires maxPerWallet != 0");
+            require(
+                _config.maxTokensPerWallet != 0,
+                "OpenEdition requires maxPerWallet != 0"
+            );
         } else {
             // limited edition doesn't require start and end timestamp
             // you can provide them optionally
@@ -178,19 +184,22 @@ contract Artgene721Base is
         isOpenSeaProxyActive = true;
 
         // test if platform is deployed
-        require(ARTGENE_PLATFORM_ADDRESS.code.length != 0, "Platform not deployed");
+        require(
+            ARTGENE_PLATFORM_ADDRESS.code.length != 0,
+            "Platform not deployed"
+        );
 
-        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(ARTGENE_PLATFORM_ADDRESS).getPlatformInfo();
+        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(
+            ARTGENE_PLATFORM_ADDRESS
+        ).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
             _config.maxTokensPerMint,
             _config.maxTokensPerWallet,
-
             _config.royaltyFee,
             _config.payoutReceiver,
             _config.shouldLockPayoutReceiver,
-
             _config.startTimestamp,
             _config.endTimestamp
         );
@@ -200,15 +209,12 @@ contract Artgene721Base is
         uint256 publicPrice,
         uint256 maxTokensPerMint,
         uint256 maxTokensPerWallet,
-
         uint256 _royaltyFee,
         address _payoutReceiver,
         bool shouldLockPayoutReceiver,
-
         uint32 _startTimestamp,
         uint32 _endTimestamp
     ) internal {
-
         if (_startTimestamp != 0) {
             startTimestamp = _startTimestamp;
         }
@@ -241,7 +247,6 @@ contract Artgene721Base is
         }
     }
 
-
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
@@ -260,7 +265,11 @@ contract Artgene721Base is
         uri = _baseURI();
     }
 
-    function tokenHTML(uint256 tokenId, bytes32 dna, bytes calldata _data) external view returns (string memory) {
+    function tokenHTML(
+        uint256 tokenId,
+        bytes32 dna,
+        bytes calldata _data
+    ) external view returns (string memory) {
         if (renderer != address(0)) {
             return IRenderer(renderer).tokenHTML(tokenId, dna, _data);
         }
@@ -268,16 +277,11 @@ contract Artgene721Base is
         return "";
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         if (renderer != address(0)) {
-            string memory uri = IRenderer(renderer).tokenURI(
-                tokenId
-            );
+            string memory uri = IRenderer(renderer).tokenURI(tokenId);
 
             if (bytes(uri).length > 0) {
                 return uri;
@@ -302,21 +306,16 @@ contract Artgene721Base is
         uint256 fromTokenId = _startTokenId();
         uint256 toTokenId = _startTokenId() + _totalMinted() - 1;
 
-        emit BatchMetadataUpdate(
-            fromTokenId,
-            toTokenId
-        );
+        emit BatchMetadataUpdate(fromTokenId, toTokenId);
     }
 
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
     }
 
-    function reduceMaxSupply(uint256 _maxSupply)
-        public
-        whenSaleNotStarted
-        onlyOwner
-    {
+    function reduceMaxSupply(
+        uint256 _maxSupply
+    ) public whenSaleNotStarted onlyOwner {
         require(
             _totalMinted() + reserved <= _maxSupply,
             "Max supply is too low, already minted more (+ reserved)"
@@ -400,19 +399,15 @@ contract Artgene721Base is
     // function to disable gasless listings for security in case
     // opensea ever shuts down or is compromised
     // from CryptoCoven https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
-    function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive)
-        public
-        onlyOwner
-    {
+    function setIsOpenSeaProxyActive(
+        bool _isOpenSeaProxyActive
+    ) public onlyOwner {
         isOpenSeaProxyActive = _isOpenSeaProxyActive;
     }
 
     // ---- Minting ----
 
-    function _mintConsecutive(
-        uint256 nTokens,
-        address to
-    ) internal {
+    function _mintConsecutive(uint256 nTokens, address to) internal {
         if (isOpenEdition()) {
             // unlimited minting
         } else {
@@ -437,11 +432,14 @@ contract Artgene721Base is
 
     // @dev depends on the current block, so it's not possible to know the DNA in advance
     function _createDNA(uint256 tokenId) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(
-            bytes32(block.prevrandao),
-            blockhash(block.number - 1),
-            bytes32(tokenId)
-        ));
+        return
+            keccak256(
+                abi.encodePacked(
+                    bytes32(block.prevrandao),
+                    blockhash(block.number - 1),
+                    bytes32(tokenId)
+                )
+            );
     }
 
     // ---- Mint control ----
@@ -472,12 +470,9 @@ contract Artgene721Base is
     // ---- Mint public ----
 
     // Contract can sell tokens
-    function mint(uint256 nTokens)
-        external
-        payable
-        nonReentrant
-        whenSaleActive
-    {
+    function mint(
+        uint256 nTokens
+    ) external payable nonReentrant whenSaleActive {
         // setting it to 0 means no limit
         if (maxPerWallet > 0) {
             require(
@@ -500,11 +495,10 @@ contract Artgene721Base is
     }
 
     // Owner can claim free tokens
-    function claim(uint256 nTokens, address to)
-        external
-        nonReentrant
-        onlyOwner
-    {
+    function claim(
+        uint256 nTokens,
+        address to
+    ) external nonReentrant onlyOwner {
         require(nTokens <= reserved, "That would exceed the max reserved.");
 
         reserved = reserved - nTokens;
@@ -524,21 +518,17 @@ contract Artgene721Base is
 
     // ---- Mint configuration
 
-    function updateMaxPerMint(uint256 _maxPerMint)
-        public
-        onlyOwner
-        nonReentrant
-    {
+    function updateMaxPerMint(
+        uint256 _maxPerMint
+    ) public onlyOwner nonReentrant {
         require(_maxPerMint <= MAX_PER_MINT_LIMIT, "Too many tokens per mint");
         maxPerMint = _maxPerMint;
     }
 
     // set to 0 to save gas, mintedBy is not used
-    function updateMaxPerWallet(uint256 _maxPerWallet)
-        public
-        onlyOwner
-        nonReentrant
-    {
+    function updateMaxPerWallet(
+        uint256 _maxPerWallet
+    ) public onlyOwner nonReentrant {
         maxPerWallet = _maxPerWallet;
     }
 
@@ -548,10 +538,10 @@ contract Artgene721Base is
         startTimestamp = _startTimestamp;
     }
 
-    function updateMintStartEnd(uint32 _startTimestamp, uint32 _endTimestamp)
-        public
-        onlyOwner
-    {
+    function updateMintStartEnd(
+        uint32 _startTimestamp,
+        uint32 _endTimestamp
+    ) public onlyOwner {
         startTimestamp = _startTimestamp;
         endTimestamp = _endTimestamp;
     }
@@ -589,7 +579,6 @@ contract Artgene721Base is
 
     // ---- Offchain Info ----
 
-
     function setRoyaltyFee(uint256 _royaltyFee) public onlyOwner {
         royaltyFee = _royaltyFee;
     }
@@ -598,19 +587,16 @@ contract Artgene721Base is
         royaltyReceiver = _receiver;
     }
 
-    function setPayoutReceiver(address _receiver)
-        public
-        onlyOwner
-        whenNotPayoutChangeLocked
-    {
+    function setPayoutReceiver(
+        address _receiver
+    ) public onlyOwner whenNotPayoutChangeLocked {
         payoutReceiver = payable(_receiver);
     }
 
-    function royaltyInfo(uint256, uint256 salePrice)
-        external
-        view
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(
+        uint256,
+        uint256 salePrice
+    ) external view returns (address receiver, uint256 royaltyAmount) {
         receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
     }
@@ -686,12 +672,9 @@ contract Artgene721Base is
 
     // -------- ERC721 overrides --------
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override returns (bool) {
         return
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
@@ -703,12 +686,10 @@ contract Artgene721Base is
      * @dev Override isApprovedForAll to allowlist user's OpenSea proxy accounts to enable gas-less listings.
      * Taken from CryptoCoven: https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
      */
-    function isApprovedForAll(address owner, address operator)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view override returns (bool) {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
@@ -717,7 +698,10 @@ contract Artgene721Base is
     }
 
     // @dev from openzeppelin-contracts/contracts/interfaces/IERC4906.sol
-    function forceMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId) public onlyOwner {
+    function forceMetadataUpdate(
+        uint256 _fromTokenId,
+        uint256 _toTokenId
+    ) public onlyOwner {
         require(_fromTokenId <= _toTokenId, "Invalid range");
 
         /// @dev This event emits when the metadata of a range of tokens is changed.
@@ -725,5 +709,4 @@ contract Artgene721Base is
         /// timely update the images and related attributes of the NFTs.
         emit BatchMetadataUpdate(_fromTokenId, _toTokenId);
     }
-
 }

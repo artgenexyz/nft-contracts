@@ -63,11 +63,9 @@ import "./interfaces/IArtgene721.sol";
 //                                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 type StartFromTokenIdOne is bool;
 
 contract Artgene721 is Proxy {
-
     StartFromTokenIdOne internal constant START_FROM_ONE =
         StartFromTokenIdOne.wrap(true);
     StartFromTokenIdOne internal constant START_FROM_ZERO =
