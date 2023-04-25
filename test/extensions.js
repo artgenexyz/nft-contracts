@@ -9,17 +9,36 @@ const { getGasCost, getAirdropTree, createNFTSale, processAddress } = require(".
 const PresaleListExtension = artifacts.require("PresaleListExtension");
 const LimitAmountSaleExtension = artifacts.require("LimitAmountSaleExtension");
 const LimitedSupplyMintingExtension = artifacts.require("LimitedSupplyMintingExtension");
-const ERC721CommunityBase = artifacts.require("ERC721CommunityBase");
+const Artgene721Base = artifacts.require("Artgene721Base");
+const ArtgenePlatform = artifacts.require("ArtgenePlatform");
 
 const MockERC20CurrencyToken = artifacts.require("MockERC20CurrencyToken");
 const ERC20SaleExtension = artifacts.require("ERC20SaleExtension");
 
+const { main: getPlatform, PLATFORM_ADDRESS: VANITY_PLATFORM_CONFIG_ADDRESS } = require("../scripts/deploy-platform");
+
 contract("ERC721CommunityBase – Extensions", (accounts) => {
     let nft;
+    let platform;
     const [owner, user1, user2] = accounts;
 
+    before(async () => {
+        let deployedAddress;
+
+        // check if there is contract code at IMPLEMENTATION_ADDRESS
+        const code = await web3.eth.getCode(VANITY_PLATFORM_CONFIG_ADDRESS);
+
+        if (code === "0x") {
+            deployedAddress = await getPlatform();
+        } else {
+            deployedAddress = VANITY_PLATFORM_CONFIG_ADDRESS;
+        }
+
+        platform = await ArtgenePlatform.at(deployedAddress);
+    });
+
     beforeEach(async () => {
-        nft = await createNFTSale(ERC721CommunityBase);
+        nft = await createNFTSale(Artgene721Base);
     });
 
     // it should deploy successfully
@@ -161,17 +180,17 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
     });
 
     // it should not allow to mint from original contract, reverts "Sale not started"
-    it("should not allow to mint from original contract, reverts 'Sale not started'", async () => {
+    it("should not allow to mint from original contract, reverts 'Sale not active'", async () => {
         await expectRevert(
             nft.mint(1, { from: user1 }),
-            "Sale not started"
+            "Sale not active"
         );
     });
 
     // it should allow to mint from ERC20SaleExtension
     it("it should allow to mint from ERC20SaleExtension", async () => {
         const currency = await MockERC20CurrencyToken.new();
-        const pass = await createNFTSale(ERC721CommunityBase);
+        const pass = await createNFTSale(Artgene721Base);
         await pass.claim(2, owner);
 
         const metaverseNFT = nft;
@@ -194,7 +213,7 @@ contract("ERC721CommunityBase – Extensions", (accounts) => {
 
         await ERC20Extension.mint(20, { from: user1 })
 
-        const devAddress = await metaverseNFT.DEVELOPER_ADDRESS();
+        const devAddress = await platform.getPlatformAddress();
 
         assert.equal(
             await currency.balanceOf(metaverseNFT.address),
