@@ -13,6 +13,7 @@ coverage.json
 
 # forge coverage
 lcov.info
+forge-coverage
 
 
 cache
