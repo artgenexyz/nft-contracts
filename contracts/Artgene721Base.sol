@@ -676,7 +676,7 @@ contract Artgene721Base is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override returns (bool) {
+    ) public view override(ERC721A, IERC721A) returns (bool) {
         return
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
@@ -691,7 +691,7 @@ contract Artgene721Base is
     function isApprovedForAll(
         address owner,
         address operator
-    ) public view override returns (bool) {
+    ) public view override(ERC721A, IERC721A) returns (bool) {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }

@@ -717,7 +717,12 @@ contract Artgene721Implementation is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override returns (bool) {
+    )
+        public
+        view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (bool)
+    {
         return
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
@@ -732,7 +737,12 @@ contract Artgene721Implementation is
     function isApprovedForAll(
         address owner,
         address operator
-    ) public view override returns (bool) {
+    )
+        public
+        view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (bool)
+    {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
