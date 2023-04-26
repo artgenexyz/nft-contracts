@@ -146,6 +146,9 @@ contract Artgene721Implementation is
     event RendererAdded(address indexed extensionAddress);
 
     event BurningAllowedUpdated(bool isBurningAllowed);
+    event PayoutChangeLocked(address payoutReceiver);
+    event OpenSeaProxyActiveUpdated(bool isOpenSeaProxyActive);
+    event Withdraw(address indexed to, uint256 amount);
 
     event Evolution(uint256 indexed tokenId, bytes32 dna);
 
@@ -375,6 +378,8 @@ contract Artgene721Implementation is
     // Lock changing withdraw address
     function lockPayoutReceiver() public onlyOwner {
         isPayoutChangeLocked = true;
+
+        emit PayoutChangeLocked(getPayoutReceiver());
     }
 
     function isExtensionAdded(address _extension) public view returns (bool) {
@@ -446,6 +451,8 @@ contract Artgene721Implementation is
         bool _isOpenSeaProxyActive
     ) public onlyOwner {
         isOpenSeaProxyActive = _isOpenSeaProxyActive;
+
+        emit OpenSeaProxyActiveUpdated(_isOpenSeaProxyActive);
     }
 
     // ---- Minting ----
@@ -701,6 +708,8 @@ contract Artgene721Implementation is
 
         Address.sendValue(receiver, amount);
         Address.sendValue(platform, balance - amount);
+
+        emit Withdraw(receiver, amount);
     }
 
     function withdraw() public virtual onlyOwner {
