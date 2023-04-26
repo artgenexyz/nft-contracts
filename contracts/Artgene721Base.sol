@@ -115,6 +115,7 @@ contract Artgene721Base is
     address public renderer;
 
     bool public isPayoutChangeLocked;
+    bool public isBurningAllowed;
     bool private isOpenSeaProxyActive;
     bool private startAtOne;
 
@@ -138,6 +139,8 @@ contract Artgene721Base is
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event RendererAdded(address indexed extensionAddress);
+
+    event BurningAllowedUpdated(bool isBurningAllowed);
 
     event Evolution(uint256 indexed tokenId, bytes32 dna);
 
@@ -315,6 +318,12 @@ contract Artgene721Base is
         price = _price;
     }
 
+    function allowBurning(bool _isAllowed) public whenSaleNotStarted onlyOwner {
+        isBurningAllowed = _isAllowed;
+
+        emit BurningAllowedUpdated(_isAllowed);
+    }
+
     function reduceMaxSupply(
         uint256 _maxSupply
     ) public whenSaleNotStarted onlyOwner {
@@ -461,6 +470,11 @@ contract Artgene721Base is
         _;
     }
 
+    modifier whenBurnAllowed() {
+        require(isBurningAllowed, "Burning is not allowed");
+        _;
+    }
+
     modifier onlyExtension() {
         require(
             isExtensionAdded(msg.sender),
@@ -516,6 +530,15 @@ contract Artgene721Base is
         bytes32
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to);
+    }
+
+    // ---- Burn
+
+    function burn(
+        uint256 tokenId
+    ) public override whenBurnAllowed nonReentrant {
+        // The caller must own `tokenId` or be an approved operator.
+        _burn(tokenId, true);
     }
 
     // ---- Mint configuration
