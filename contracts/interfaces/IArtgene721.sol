@@ -12,13 +12,11 @@ struct MintConfig {
     uint256 royaltyFee;
     address payoutReceiver;
     bool shouldLockPayoutReceiver;
-
     uint32 startTimestamp;
     uint32 endTimestamp;
 }
 
 interface IArtgene721 {
-
     // ------ View functions ------
     function saleStarted() external view returns (bool);
 
@@ -52,10 +50,10 @@ interface IArtgene721 {
     /**
         Recommended royalty for tokenId sale.
      */
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
-        external
-        view
-        returns (address receiver, uint256 royaltyAmount);
+    function royaltyInfo(
+        uint256 tokenId,
+        uint256 salePrice
+    ) external view returns (address receiver, uint256 royaltyAmount);
 
     // ------ Admin functions ------
     function setRoyaltyReceiver(address receiver) external;
@@ -73,7 +71,6 @@ interface IArtgene721 {
     /// So that the third-party platforms such as NFT market could
     /// timely update the images and related attributes of the NFTs.
     event BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId);
-
 }
 
 interface IArtgene721Implementation {

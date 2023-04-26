@@ -24,7 +24,6 @@ function deployNFTSale() returns (Artgene721Base) {
 }
 
 contract ArgeneTest is Test {
-
     Artgene721Base nft;
 
     address owner;
@@ -105,5 +104,4 @@ contract ArgeneTest is Test {
     }
 
     // test minting when sale is ended
-
 }
