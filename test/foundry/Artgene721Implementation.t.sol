@@ -310,4 +310,73 @@ contract ArgeneTest is Test {
 
         assertEq(nft.totalSupply(), 12_001);
     }
+
+    function testCannotBurnByDefault() public {
+        nft.startSale();
+
+        vm.deal(user1, 1 ether);
+
+        vm.startPrank(user1);
+        nft.mint{value: 0.5 ether}(5);
+
+        // token id = 3
+        vm.expectRevert("Burning is not allowed");
+        nft.burn(3);
+
+        assertEq(nft.totalSupply(), 5, "total supply should be 5");
+        vm.stopPrank();
+
+        nft.stopSale();
+
+        vm.prank(user1);
+        vm.expectRevert("Burning is not allowed");
+        nft.burn(3);
+
+        nft.allowBurning(true);
+
+        vm.prank(user1);
+        nft.burn(3);
+
+        assertEq(nft.totalSupply(), 4, "total supply should be 4");
+
+        nft.allowBurning(false);
+
+        vm.prank(user1);
+        vm.expectRevert("Burning is not allowed");
+        nft.burn(4);
+    }
+
+    function testBurnPossible() public {
+        nft.startSale();
+
+        vm.deal(user1, 1 ether);
+
+        vm.prank(user1);
+        nft.mint{value: 0.5 ether}(5);
+
+        // turn on burn
+        nft.stopSale();
+        nft.allowBurning(true);
+
+        assertEq(nft.totalSupply(), 5, "total supply should be 5");
+
+        vm.startPrank(user1);
+
+        uint burnTokenId = 3;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 4, "total supply should be 4");
+
+        burnTokenId = 1;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 3, "total supply should be 3");
+
+        assertEq(nft.balanceOf(user1), 3, "balance of user1 should be 3");
+
+        burnTokenId = 2;
+        nft.burn(burnTokenId);
+
+        assertEq(nft.totalSupply(), 2, "total supply should be 2");
+    }
 }

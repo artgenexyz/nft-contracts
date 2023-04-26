@@ -8,6 +8,7 @@ pragma solidity ^0.8.9;
  */
 
 import "erc721a/contracts/ERC721A.sol";
+import "erc721a/contracts/extensions/ERC721ABurnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -83,6 +84,7 @@ import "./utils/OpenseaProxy.sol";
 
 contract Artgene721Base is
     ERC721A,
+    ERC721ABurnable,
     ReentrancyGuard,
     Ownable,
     IArtgene721 // implements IERC2981, IERC4906
@@ -113,6 +115,7 @@ contract Artgene721Base is
     address public renderer;
 
     bool public isPayoutChangeLocked;
+    bool public isBurningAllowed;
     bool private isOpenSeaProxyActive;
     bool private startAtOne;
 
@@ -136,6 +139,8 @@ contract Artgene721Base is
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event RendererAdded(address indexed extensionAddress);
+
+    event BurningAllowedUpdated(bool isBurningAllowed);
 
     event Evolution(uint256 indexed tokenId, bytes32 dna);
 
@@ -279,7 +284,7 @@ contract Artgene721Base is
 
     function tokenURI(
         uint256 tokenId
-    ) public view override returns (string memory) {
+    ) public view override(ERC721A, IERC721A) returns (string memory) {
         if (renderer != address(0)) {
             string memory uri = IRenderer(renderer).tokenURI(tokenId);
 
@@ -311,6 +316,12 @@ contract Artgene721Base is
 
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
+    }
+
+    function allowBurning(bool _isAllowed) public whenSaleNotStarted onlyOwner {
+        isBurningAllowed = _isAllowed;
+
+        emit BurningAllowedUpdated(_isAllowed);
     }
 
     function reduceMaxSupply(
@@ -459,6 +470,11 @@ contract Artgene721Base is
         _;
     }
 
+    modifier whenBurnAllowed() {
+        require(isBurningAllowed, "Burning is not allowed");
+        _;
+    }
+
     modifier onlyExtension() {
         require(
             isExtensionAdded(msg.sender),
@@ -514,6 +530,15 @@ contract Artgene721Base is
         bytes32
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to);
+    }
+
+    // ---- Burn
+
+    function burn(
+        uint256 tokenId
+    ) public override whenBurnAllowed nonReentrant {
+        // The caller must own `tokenId` or be an approved operator.
+        _burn(tokenId, true);
     }
 
     // ---- Mint configuration
@@ -674,7 +699,7 @@ contract Artgene721Base is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override returns (bool) {
+    ) public view override(ERC721A, IERC721A) returns (bool) {
         return
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
@@ -689,7 +714,7 @@ contract Artgene721Base is
     function isApprovedForAll(
         address owner,
         address operator
-    ) public view override returns (bool) {
+    ) public view override(ERC721A, IERC721A) returns (bool) {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
