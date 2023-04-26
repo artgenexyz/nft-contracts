@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/utils/StorageSlot.sol";
 import "./interfaces/IArtgenePlatform.sol";
 
 contract ArtgenePlatform is Ownable, IArtgenePlatform {
-
     uint256 platformFee; // in bps
     address payable platformAddress;
 
