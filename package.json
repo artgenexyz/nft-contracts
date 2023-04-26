@@ -5,6 +5,7 @@
   "scripts": {
     "hardhat-test": "hardhat test",
     "hardhat-coverage": "hardhat coverage",
+    "forge-coverage": "forge coverage --report lcov && lcov-viewer lcov -o ./forge-coverage ./lcov.info",
     "hardhat-upload": "hardhat upload",
     "compile": "hardhat compile",
     "typechain": "hardhat typechain",
