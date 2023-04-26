@@ -10,4 +10,8 @@ extra_output_files = ['metadata']
 optimizer = true
 optimizer_runs = 10000
 
+[rpc_endpoints]
+mainnet = "${ALCHEMY_API}"
+goerli = "${ALCHEMY_GOERLI_API}"
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
