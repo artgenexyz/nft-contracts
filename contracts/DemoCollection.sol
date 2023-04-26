@@ -32,7 +32,7 @@ contract DemoCollection is Artgene721 {
         Artgene721(
             "Generative Endless NFT",
             "GEN",
-            1337,
+            ARTGENE_MAX_SUPPLY_OPEN_EDITION,
             1,
             START_FROM_ONE,
             "ipfs://QmABABABABABABABABABABABABABA/",
@@ -41,11 +41,9 @@ contract DemoCollection is Artgene721 {
                 0.1 ether, // public price
                 5, // maxTokensPerMint,
                 5, // maxTokensPerWallet,
-
                 500, // basis points royalty fee
                 msg.sender, // payout receiver
                 false, // should lock payout receiver
-
                 0, // startTimestamp
                 0 // endTimestamp
             )
