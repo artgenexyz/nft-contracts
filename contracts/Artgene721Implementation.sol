@@ -8,6 +8,7 @@ pragma solidity ^0.8.9;
  */
 
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "erc721a-upgradeable/contracts/extensions/ERC721ABurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
@@ -84,6 +85,7 @@ import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.
 
 contract Artgene721Implementation is
     ERC721AUpgradeable,
+    ERC721ABurnableUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
     DefaultOperatorFiltererUpgradeable,
@@ -118,6 +120,7 @@ contract Artgene721Implementation is
     address public renderer;
 
     bool public isPayoutChangeLocked;
+    bool public isBurningAllowed;
     bool private isOpenSeaProxyActive;
     bool private startAtOne;
 
@@ -141,6 +144,8 @@ contract Artgene721Implementation is
     event ExtensionAdded(address indexed extensionAddress);
     event ExtensionRevoked(address indexed extensionAddress);
     event RendererAdded(address indexed extensionAddress);
+
+    event BurningAllowedUpdated(bool isBurningAllowed);
 
     event Evolution(uint256 indexed tokenId, bytes32 dna);
 
@@ -197,6 +202,7 @@ contract Artgene721Implementation is
         ).getPlatformInfo();
 
         __ERC721A_init(_name, _symbol);
+        __ERC721ABurnable_init();
         __ReentrancyGuard_init();
         __Ownable_init();
         __DefaultOperatorFilterer_init();
@@ -301,7 +307,12 @@ contract Artgene721Implementation is
 
     function tokenURI(
         uint256 tokenId
-    ) public view override returns (string memory) {
+    )
+        public
+        view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (string memory)
+    {
         if (renderer != address(0)) {
             string memory uri = IRenderer(renderer).tokenURI(tokenId);
 
@@ -337,6 +348,12 @@ contract Artgene721Implementation is
 
     function setPrice(uint256 _price) public onlyOwner {
         price = _price;
+    }
+
+    function allowBurning(bool _isAllowed) public whenSaleNotStarted onlyOwner {
+        isBurningAllowed = _isAllowed;
+
+        emit BurningAllowedUpdated(_isAllowed);
     }
 
     function reduceMaxSupply(
@@ -485,6 +502,11 @@ contract Artgene721Implementation is
         _;
     }
 
+    modifier whenBurnAllowed() {
+        require(isBurningAllowed, "Burning is not allowed");
+        _;
+    }
+
     modifier onlyExtension() {
         require(
             isExtensionAdded(msg.sender),
@@ -540,6 +562,15 @@ contract Artgene721Implementation is
         bytes32
     ) external payable onlyExtension nonReentrant {
         _mintConsecutive(nTokens, to);
+    }
+
+    // ---- Burn
+
+    function burn(
+        uint256 tokenId
+    ) public override whenBurnAllowed nonReentrant {
+        // The caller must own `tokenId` or be an approved operator.
+        _burn(tokenId, true);
     }
 
     // ---- Mint configuration
@@ -709,7 +740,12 @@ contract Artgene721Implementation is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override returns (bool) {
+    )
+        public
+        view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (bool)
+    {
         return
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC4906).interfaceId ||
@@ -724,7 +760,12 @@ contract Artgene721Implementation is
     function isApprovedForAll(
         address owner,
         address operator
-    ) public view override returns (bool) {
+    )
+        public
+        view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (bool)
+    {
         if (isOpenSeaProxyActive && operator == OPENSEA_CONDUIT) {
             return true;
         }
