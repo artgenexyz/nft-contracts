@@ -6,7 +6,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const GAS_PRICE_GWEI = "25";
+export const GAS_PRICE_GWEI = "35";
 
 export const IMPLEMENTATION_ADDRESS =
   "0x00000721bEb748401E0390Bb1c635131cDe1Fae8";
@@ -121,11 +121,12 @@ export async function main() {
 
   // deploy with gas = 15 gwei
   const implementation = await Artgene721Implementation.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+    maxFeePerGas: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+    maxPriorityFeePerGas: ethers.utils.parseUnits("1", "gwei"),
     nonce: vanityNonce,
-    ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
-      gasLimit: 8_000_000,
-    }),
+    // ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
+    //   gasLimit: 8_000_000,
+    // }),
   });
 
   const tx = await implementation.deployed();
