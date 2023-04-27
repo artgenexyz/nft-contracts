@@ -31,6 +31,11 @@ contract DeployArtgenePlatformScript is Script {
         // TODO: learn how to login to vanity address properly using private key from .env
         vm.prank(PLATFORM_DEPLOYER_ADDRESS);
 
+        // if transaction count of vanity address is not 0, then it's already deployed, skip
+        if (vm.getNonce(PLATFORM_DEPLOYER_ADDRESS) != 0) {
+            return;
+        }
+
         // deploy platform to vanity address
         setupPlatform();
 

@@ -37,11 +37,8 @@ contract ArgeneTest is Test {
         user2 = makeAddr("Bob");
         beneficiary = owner;
 
-        // DeployArtgenePlatform deployer = new DeployArtgenePlatform();
-        // deployer.run();
-
-        loginVanity(vm);
-        setupPlatform();
+        DeployArtgenePlatformScript deployer = new DeployArtgenePlatformScript();
+        deployer.run();
 
         nft = deployNFTSale();
     }
