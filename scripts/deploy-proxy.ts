@@ -1,55 +1,20 @@
 import hre, { ethers } from "hardhat";
 import fs from "fs";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
-import { Address } from "hardhat-deploy/dist/types";
-import { Signer } from "ethers";
+import { getVanityDeployer, sendAllFunds } from "./helpers";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const GAS_PRICE_GWEI = "25";
+export const GAS_PRICE_GWEI = "25";
 
 export const IMPLEMENTATION_ADDRESS =
   "0x00000721bEb748401E0390Bb1c635131cDe1Fae8";
 export const IMPLEMENTATION_DEPLOYER_ADDRESS =
   "0x156deFdb1c699B48506FfBC97d37612189de788D";
 
-export const sendAllFunds = async (account: Signer, to: Address) => {
-  const balance = await account.getBalance();
-
-  const gasPrice = hre.ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei");
-  const gasCost = gasPrice.mul(21000);
-
-  return await account.sendTransaction({
-    to: to,
-    value: balance.sub(gasCost),
-    gasLimit: 21_000,
-    gasPrice: gasPrice,
-  });
-};
-
-export const getVanityDeployer = async () => {
-  // if (hre.network.name === "hardhat") {
-  //   // impersonate the vanity deployer
-  //   await hre.network.provider.request({
-  //     method: "hardhat_impersonateAccount",
-  //     params: [IMPLEMENTATION_DEPLOYER_ADDRESS],
-  //   });
-
-  //   return await hre.ethers.getSigner(IMPLEMENTATION_DEPLOYER_ADDRESS);
-  // }
-
-  // load account from process.env.IMPLEMENTATION_PRIVATE_DEPLOYER
-  const vanityKey = process.env.IMPLEMENTATION_PRIVATE_DEPLOYER;
-
-  if (!vanityKey) {
-    throw new Error("IMPLEMENTATION_PRIVATE_DEPLOYER is not set");
-  }
-
-  return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
-};
-
-export const computeVanityAddress = async () => {
-  const vanityDeployer = await getVanityDeployer();
+export const computeVanityAddress = async (hre: HardhatRuntimeEnvironment) => {
+  const vanityDeployer = await getVanityDeployer(hre);
 
   console.log("vanity deployer address is", vanityDeployer.address);
 
@@ -94,7 +59,7 @@ export async function main() {
     // throw new Error("Artgene721 bytecode does not include vanity address");
   }
 
-  const futureAddress = await computeVanityAddress();
+  const futureAddress = await computeVanityAddress(hre);
   console.log("Future address:", futureAddress);
   console.log("Vanity address:", IMPLEMENTATION_ADDRESS);
 
@@ -116,7 +81,7 @@ export async function main() {
     );
   }
 
-  const vanity = await getVanityDeployer();
+  const vanity = await getVanityDeployer(hre);
 
   // check nonce of vanity account and if > 0, exit
   const vanityNonce = await vanity.getTransactionCount();
@@ -145,7 +110,7 @@ export async function main() {
       // // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("1.4"),
+        value: hre.ethers.utils.parseEther("0.5"),
       });
     }
   }
@@ -175,8 +140,9 @@ export async function main() {
     implementation.address
   );
 
+  // DO THIS MANUALLY INSTEAD
   // send all funds to admin
-  await sendAllFunds(vanity, admin.address);
+  // await sendAllFunds(hre, vanity, admin.address);
 
   // write file to scripts/params.js
 

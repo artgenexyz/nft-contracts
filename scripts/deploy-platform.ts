@@ -1,8 +1,6 @@
-import hre, { ethers } from "hardhat";
 import fs from "fs";
+import hre, { ethers } from "hardhat";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
-import { Address } from "hardhat-deploy/dist/types";
-import { Signer } from "ethers";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -11,22 +9,6 @@ const GAS_PRICE_GWEI = "35";
 export const PLATFORM_ADDRESS = "0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9";
 export const PLATFORM_DEPLOYER_ADDRESS =
   "0xE4A02093339a9a908cF9d897481813Ddb5494d44";
-
-export const sendAllFunds = async (account: Signer, to: Address) => {
-  const balance = await account.getBalance();
-
-  const gasPrice = hre.ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei");
-  const gasCost = gasPrice.mul(21000);
-
-  console.log(" ==> balance ==>", balance.sub(gasCost).toString());
-
-  return await account.sendTransaction({
-    to: to,
-    value: balance.sub(gasCost),
-    gasLimit: 21_000,
-    gasPrice: gasPrice,
-  });
-};
 
 export const getVanityDeployer = async () => {
   // if (hre.network.name === "hardhat") {
@@ -205,8 +187,9 @@ export async function main() {
 
   console.log("Sending all funds to", admin.address);
 
+  // DO THIS MANUALLY:
   // send all funds to admin
-  await sendAllFunds(vanity, admin.address);
+  // await sendAllFunds(vanity, admin.address);
 
   console.log("Sent successfully");
 

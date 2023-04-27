@@ -28,6 +28,8 @@ import "hardhat-output-validator";
 import "@buildship/hardhat-ipfs-upload";
 import "@primitivefi/hardhat-dodoc";
 
+import { sendAllFunds, getVanityDeployer } from "./scripts/helpers";
+
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
@@ -82,6 +84,20 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     console.log(account.address);
   }
 });
+
+task(
+  "send-all-funds",
+  "Sends all funds to an address",
+  async (taskArgs, hre) => {
+    const accounts = await hre.ethers.getSigners();
+
+    const vanity = await getVanityDeployer(hre);
+
+    await sendAllFunds(hre, vanity, accounts[0].address);
+
+    console.log("Done sending all funds");
+  }
+);
 
 const config: HardhatUserConfig = {
   networks: {
