@@ -102,7 +102,7 @@ contract Artgene721Implementation is
     uint256 public constant VERSION = 5;
 
     uint256 public PLATFORM_FEE; // of 10,000
-    address payable PLATFORM_TREASURY;
+    address payable private PLATFORM_TREASURY;
 
     uint32 public startTimestamp;
     uint32 public endTimestamp;
