@@ -4,11 +4,12 @@ import { getContractAddress, parseEther } from "ethers/lib/utils";
 import { Address } from "hardhat-deploy/dist/types";
 import { Signer } from "ethers";
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const GAS_PRICE_GWEI = "50";
 
-export const IMPLEMENTATION_ADDRESS = "0x000007214f56DaF21c803252cc610360C70C01D5";
+export const IMPLEMENTATION_ADDRESS =
+  "0x000007214f56DaF21c803252cc610360C70C01D5";
 export const IMPLEMENTATION_DEPLOYER_ADDRESS =
   "0x1a597827e5d8818689200d521A28E477514db8B2";
 
@@ -24,10 +25,9 @@ export const sendAllFunds = async (account: Signer, to: Address) => {
     gasLimit: 21_000,
     gasPrice: gasPrice,
   });
-}
+};
 
 export const getVanityDeployer = async () => {
-
   if (hre.network.name === "hardhat") {
     // impersonate the vanity deployer
     await hre.network.provider.request({
@@ -46,8 +46,7 @@ export const getVanityDeployer = async () => {
   }
 
   return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
-
-}
+};
 
 export const computeVanityAddress = async () => {
   const vanityDeployer = await getVanityDeployer();
@@ -56,13 +55,15 @@ export const computeVanityAddress = async () => {
 
   const transactionCount = await vanityDeployer.getTransactionCount();
 
+  console.log("transaction count is", transactionCount);
+
   const vanityAddress = getContractAddress({
     from: vanityDeployer.address,
-    nonce: transactionCount
+    nonce: transactionCount,
   });
 
   return vanityAddress;
-}
+};
 
 export async function main() {
   const [admin] = await hre.ethers.getSigners();
@@ -76,15 +77,18 @@ export async function main() {
 
   // }
 
-
   const Artgene721 = await hre.ethers.getContractFactory("Artgene721");
 
-  if (Artgene721.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(7))) {
-    
+  if (
+    Artgene721.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(7))
+  ) {
     console.log("Bytecode includes vanity address", IMPLEMENTATION_ADDRESS);
-
   } else {
-    console.log("Bytecode does not include vanity address", Artgene721.bytecode, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Bytecode does not include vanity address",
+      Artgene721.bytecode,
+      IMPLEMENTATION_ADDRESS
+    );
 
     // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
     // throw new Error("Artgene721 bytecode does not include vanity address");
@@ -95,11 +99,21 @@ export async function main() {
   console.log("Vanity address:", IMPLEMENTATION_ADDRESS);
 
   if (futureAddress === IMPLEMENTATION_ADDRESS) {
-    console.log("Address matches vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Address matches vanity address",
+      futureAddress,
+      IMPLEMENTATION_ADDRESS
+    );
   } else {
-    console.log("Address does not match vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Address does not match vanity address",
+      futureAddress,
+      IMPLEMENTATION_ADDRESS
+    );
 
-    throw new Error(`Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`);
+    throw new Error(
+      `Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`
+    );
   }
 
   const vanity = await getVanityDeployer();
@@ -114,8 +128,8 @@ export async function main() {
   // if balance of vanity account is 0, top it up
   const vanityBalance = await vanity.getBalance();
 
-  console.log('vanity deployer address is', vanity.address);
-  console.log('vanity deployer balance is', vanityBalance);
+  console.log("vanity deployer address is", vanity.address);
+  console.log("vanity deployer balance is", vanityBalance);
 
   if (vanityBalance.eq(0)) {
     console.log("Vanity account has balance 0");
@@ -136,7 +150,9 @@ export async function main() {
     }
   }
 
-  const Artgene721Implementation = await hre.ethers.getContractFactory("Artgene721Implementation");
+  const Artgene721Implementation = await hre.ethers.getContractFactory(
+    "Artgene721Implementation"
+  );
 
   // deploy with gas = 15 gwei
   const implementation = await Artgene721Implementation.connect(vanity).deploy({
@@ -149,7 +165,10 @@ export async function main() {
 
   await implementation.deployed();
 
-  console.log("Artgene721Implementation implementation deployed to:", implementation.address);
+  console.log(
+    "Artgene721Implementation implementation deployed to:",
+    implementation.address
+  );
 
   // send all funds to admin
   await sendAllFunds(vanity, admin.address);
@@ -204,13 +223,10 @@ export async function main() {
   // const receipt2 = await tx2.wait();
 
   // console.log('receipt', receipt2.transactionHash);
-
-
 }
 
 // call main only if executed directly
 if (process.argv[1] === __filename) {
-
   // We recommend this pattern to be able to use async/await everywhere
   // and properly handle errors.
   main().catch((error) => {
@@ -218,4 +234,3 @@ if (process.argv[1] === __filename) {
     process.exitCode = 1;
   });
 }
-
