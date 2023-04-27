@@ -8,13 +8,9 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "contracts/extensions/MintBatchExtension.sol";
 import "contracts/standards/ERC721CommunityBase.sol";
 
-// import Mock NFT contract
+// import "contracts/Artgene721Implementation.sol";
 
 contract MintBatchExtensionTest is Test {
-    // Utils internal utils;
-
-    // address payable[] internal users;
-
     address owner;
     address alice;
     address bob;
@@ -113,9 +109,7 @@ contract MintBatchExtensionTest is Test {
         assertEq(nft.balanceOf(recipients[4]), 1);
     }
 
-
     function testCannotMintExtensionNotAdded() public {
-
         address[] memory recipients = new address[](3);
         recipients[0] = makeAddr("Alice");
         recipients[1] = makeAddr("Bob");
@@ -130,11 +124,9 @@ contract MintBatchExtensionTest is Test {
         assertEq(nft.balanceOf(recipients[0]), 0);
         assertEq(nft.balanceOf(recipients[1]), 0);
         assertEq(nft.balanceOf(recipients[2]), 0);
-
     }
 
     function testCannotMintNonOwner() public {
-
         address[] memory recipients = new address[](3);
         recipients[0] = makeAddr("Alice");
         recipients[1] = makeAddr("Bob");
@@ -151,7 +143,6 @@ contract MintBatchExtensionTest is Test {
         assertEq(nft.balanceOf(recipients[0]), 0);
         assertEq(nft.balanceOf(recipients[1]), 0);
         assertEq(nft.balanceOf(recipients[2]), 0);
-
     }
 
     function testMultisendBatch() public {
@@ -225,5 +216,101 @@ contract MintBatchExtensionTest is Test {
         assertEq(nft.balanceOf(makeAddr("Charlie")), 2); // Charlie has 2
         assertEq(nft.balanceOf(makeAddr("Dave")), 3); // Dave has 3
         assertEq(nft.balanceOf(makeAddr("Eve")), 2); // Eve has 2
+    }
+
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
+
+    function testMultiMintManyFork() public {
+        ERC721CommunityBase piris = ERC721CommunityBase(
+            payable(0x04AEDebB9b3F88c7e2bA28Dd7ef82eb868E91D6d)
+        );
+        MintBatchExtension deployedExtension = MintBatchExtension(
+            0x06Cb98a36D3564b1CCb542b2F47e233Af63FFEBC
+        );
+
+        // check that we're running on a fork, if no, skip this test
+        if (address(piris).code.length == 0) {
+            vm.createSelectFork("mainnet");
+        }
+
+        if (address(piris).code.length == 0) {
+            revert("PiRIS contract not found on this chain");
+        }
+
+        if (address(deployedExtension).code.length == 0) {
+            revert("MintBatchExtension contract not found on this chain");
+        }
+
+        vm.stopPrank();
+
+        address james = 0x4C5489fA2ccE6687f2390854f65FA88Aa338d133;
+        vm.startPrank(james);
+
+        // slice recipients from airdrop list
+
+        // 0x26b3f5214fe3faef6811204ecda0c72854790e0e,9
+        // 0x08a31368cc747621252abb9029440c1af6237fc7,1
+        // 0xe37f987967cfb7c0f7c2a45624a92d34ece681a8,9
+        // 0x0a602e90a9a8edf67274f06569af640873e8e7d5,3
+        // 0xad3c9aefb16ce19e0c31b505d7b76e5b8e7eb9d6,2
+        // 0x95b128b19d961a1f85ff128d69fa77bec69901c2,3
+        // 0x69459ba40bb3b8cff9b0a1daa54ba5571c4dcef1,2
+
+        address[] memory recipients = new address[](7);
+
+        recipients[0] = 0x26B3f5214fe3faeF6811204EcdA0c72854790e0E;
+        recipients[1] = 0x08a31368cC747621252ABB9029440C1Af6237Fc7;
+        recipients[2] = 0xe37f987967cFb7C0F7c2a45624a92D34Ece681A8;
+        recipients[3] = 0x0a602E90A9a8EDf67274F06569af640873e8e7d5;
+        recipients[4] = 0xaD3C9aefB16cE19e0c31b505D7B76E5b8E7Eb9d6;
+        recipients[5] = 0x95B128b19d961A1F85fF128D69Fa77BeC69901c2;
+        recipients[6] = 0x69459BA40bB3B8cFf9b0a1daa54ba5571c4dCeF1;
+
+        uint256[] memory amounts = new uint256[](7);
+
+        amounts[0] = 9;
+        amounts[1] = 1;
+        amounts[2] = 9;
+        amounts[3] = 3;
+        amounts[4] = 2;
+        amounts[5] = 3;
+        amounts[6] = 2;
+
+        // mintBatchExtension.mintAndSendMany(nft, recipients, amounts);
+
+        uint256[] memory oldBalances = new uint256[](7);
+
+        oldBalances[0] = piris.balanceOf(recipients[0]);
+        oldBalances[1] = piris.balanceOf(recipients[1]);
+        oldBalances[2] = piris.balanceOf(recipients[2]);
+        oldBalances[3] = piris.balanceOf(recipients[3]);
+        oldBalances[4] = piris.balanceOf(recipients[4]);
+        oldBalances[5] = piris.balanceOf(recipients[5]);
+        oldBalances[6] = piris.balanceOf(recipients[6]);
+
+        piris.addExtension(address(deployedExtension));
+
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(
+            address(0),
+            recipients[0],
+            piris.totalSupply() + piris.startTokenId() // next token id
+        );
+
+        deployedExtension.mintAndSendBatch(piris, recipients, amounts);
+
+        assertEq(piris.balanceOf(recipients[0]) - oldBalances[0], 9);
+        assertEq(piris.balanceOf(recipients[1]) - oldBalances[1], 1);
+        assertEq(piris.balanceOf(recipients[2]) - oldBalances[2], 9);
+        assertEq(piris.balanceOf(recipients[3]) - oldBalances[3], 3);
+        assertEq(piris.balanceOf(recipients[4]) - oldBalances[4], 2);
+        assertEq(piris.balanceOf(recipients[5]) - oldBalances[5], 3);
+        assertEq(piris.balanceOf(recipients[6]) - oldBalances[6], 2);
+
+        vm.stopPrank();
     }
 }
