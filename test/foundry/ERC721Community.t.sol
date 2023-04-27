@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "forge-std/Test.sol";
-import "contracts/ERC721CommunityBase.sol";
+import "contracts/standards/ERC721CommunityBase.sol";
 
 contract CounterTest is Test {
     ERC721CommunityBase public nft;

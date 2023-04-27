@@ -1,64 +1,34 @@
 import hre, { ethers } from "hardhat";
 import fs from "fs";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
-import { Address } from "hardhat-deploy/dist/types";
-import { Signer } from "ethers";
+import { getVanityDeployer, sendAllFunds } from "./helpers";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const GAS_PRICE_GWEI = "35";
 
-export const IMPLEMENTATION_ADDRESS = "0xf3E07A5cBDFE6a257A7caa4Fcb3187A1C2Ec6a2E";
-export const IMPLEMENTATION_DEPLOYER_ADDRESS = "0x9c867BF9F724F29E1B1bf66EB71A35493FC8FCE1";
+export const IMPLEMENTATION_ADDRESS =
+  "0x00000721bEb748401E0390Bb1c635131cDe1Fae8";
+export const IMPLEMENTATION_DEPLOYER_ADDRESS =
+  "0x156deFdb1c699B48506FfBC97d37612189de788D";
 
-export const sendAllFunds = async (account: Signer, to: Address) => {
-  const balance = await account.getBalance();
+export const computeVanityAddress = async (hre: HardhatRuntimeEnvironment) => {
+  const vanityDeployer = await getVanityDeployer(hre);
 
-  const gasPrice = hre.ethers.utils.parseUnits("10", "gwei");
-  const gasCost = gasPrice.mul(21000);
-
-  return await account.sendTransaction({
-    to: to,
-    value: balance.sub(gasCost),
-    gasLimit: 21_000,
-    gasPrice: gasPrice,
-  });
-}
-
-export const getVanityDeployer = async () => {
-
-  if (hre.network.name === "hardhat") {
-    // impersonate the vanity deployer
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [IMPLEMENTATION_DEPLOYER_ADDRESS],
-    });
-
-    return await hre.ethers.getSigner(IMPLEMENTATION_DEPLOYER_ADDRESS);
-  }
-
-  // load account from process.env.IMPLEMENTATION_PRIVATE_DEPLOYER
-  const vanityKey = process.env.IMPLEMENTATION_PRIVATE_DEPLOYER;
-
-  if (!vanityKey) {
-    throw new Error("IMPLEMENTATION_PRIVATE_DEPLOYER is not set");
-  }
-
-  return new hre.ethers.Wallet(vanityKey, hre.ethers.provider);
-
-}
-
-export const computeVanityAddress = async () => {
-  const vanityDeployer = await getVanityDeployer();
+  console.log("vanity deployer address is", vanityDeployer.address);
 
   const transactionCount = await vanityDeployer.getTransactionCount();
 
+  console.log("transaction count is", transactionCount);
+
   const vanityAddress = getContractAddress({
     from: vanityDeployer.address,
-    nonce: transactionCount
+    nonce: transactionCount,
   });
 
   return vanityAddress;
-}
+};
 
 export async function main() {
   const [admin] = await hre.ethers.getSigners();
@@ -72,33 +42,46 @@ export async function main() {
 
   // }
 
+  const Artgene721 = await hre.ethers.getContractFactory("Artgene721");
 
-  const ERC721Community = await hre.ethers.getContractFactory("ERC721Community");
-
-  if (ERC721Community.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(2))) {
-    
+  if (
+    Artgene721.bytecode.includes(IMPLEMENTATION_ADDRESS.toLowerCase().slice(7))
+  ) {
     console.log("Bytecode includes vanity address", IMPLEMENTATION_ADDRESS);
-
   } else {
-    console.log("Bytecode does not include vanity address", ERC721Community.bytecode, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Bytecode does not include vanity address",
+      Artgene721.bytecode,
+      IMPLEMENTATION_ADDRESS
+    );
 
     // IGNORE THIS ERROR BECAUSE NOT USING VANITY ANYMORE
-    // throw new Error("ERC721Community bytecode does not include vanity address");
+    // throw new Error("Artgene721 bytecode does not include vanity address");
   }
 
-  const futureAddress = await computeVanityAddress();
+  const futureAddress = await computeVanityAddress(hre);
   console.log("Future address:", futureAddress);
   console.log("Vanity address:", IMPLEMENTATION_ADDRESS);
 
   if (futureAddress === IMPLEMENTATION_ADDRESS) {
-    console.log("Address matches vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Address matches vanity address",
+      futureAddress,
+      IMPLEMENTATION_ADDRESS
+    );
   } else {
-    console.log("Address does not match vanity address", futureAddress, IMPLEMENTATION_ADDRESS);
+    console.log(
+      "Address does not match vanity address",
+      futureAddress,
+      IMPLEMENTATION_ADDRESS
+    );
 
-    throw new Error(`Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`);
+    throw new Error(
+      `Address does not match vanity address: ${futureAddress} != ${IMPLEMENTATION_ADDRESS}`
+    );
   }
 
-  const vanity = await getVanityDeployer();
+  const vanity = await getVanityDeployer(hre);
 
   // check nonce of vanity account and if > 0, exit
   const vanityNonce = await vanity.getTransactionCount();
@@ -110,8 +93,8 @@ export async function main() {
   // if balance of vanity account is 0, top it up
   const vanityBalance = await vanity.getBalance();
 
-  console.log('vanity deployer address is', vanity.address);
-  console.log('vanity deployer balance is', vanityBalance);
+  console.log("vanity deployer address is", vanity.address);
+  console.log("vanity deployer balance is", vanityBalance);
 
   if (vanityBalance.eq(0)) {
     console.log("Vanity account has balance 0");
@@ -127,25 +110,40 @@ export async function main() {
       // // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("0.4"),
+        value: hre.ethers.utils.parseEther("0.5"),
       });
     }
   }
 
-  const ERC721CommunityImplementation = await hre.ethers.getContractFactory("ERC721CommunityImplementation");
+  const Artgene721Implementation = await hre.ethers.getContractFactory(
+    "Artgene721Implementation"
+  );
 
   // deploy with gas = 15 gwei
-  const implementation = await ERC721CommunityImplementation.connect(vanity).deploy({
-    gasPrice: ethers.utils.parseUnits("15", "gwei"),
+  const implementation = await Artgene721Implementation.connect(vanity).deploy({
+    maxFeePerGas: ethers.utils.parseUnits(GAS_PRICE_GWEI, "gwei"),
+    maxPriorityFeePerGas: ethers.utils.parseUnits("1", "gwei"),
     nonce: vanityNonce,
-    ...(hre.network.name == "mainnet" && {
-      gasLimit: 6_000_000,
-    })
+    // ...((hre.network.name == "mainnet" || hre.network.name == "goerli") && {
+    //   gasLimit: 8_000_000,
+    // }),
   });
 
-  await implementation.deployed();
+  const tx = await implementation.deployed();
 
-  console.log("ERC721CommunityImplementation implementation deployed to:", implementation.address);
+  // print gas used
+
+  const receipt = await tx.deployTransaction.wait();
+  console.log("Gas used:", receipt.gasUsed.toString());
+
+  console.log(
+    "Artgene721Implementation implementation deployed to:",
+    implementation.address
+  );
+
+  // DO THIS MANUALLY INSTEAD
+  // send all funds to admin
+  // await sendAllFunds(hre, vanity, admin.address);
 
   // write file to scripts/params.js
 
@@ -159,6 +157,7 @@ export async function main() {
 
   // skip waiting if running on hardhat network
   if (hre.network.name == "hardhat") {
+    console.log("Skipping verification on hardhat network");
     return;
   }
 
@@ -172,13 +171,13 @@ export async function main() {
 
   // verify contract
   await hre.run("verify", {
-    contract: "contracts/ERC721CommunityImplementation.sol:ERC721CommunityImplementation",
+    contract: "contracts/Artgene721Implementation.sol:Artgene721Implementation",
     address: implementation.address,
     constructorArgs: "./scripts/params.js",
     network: "rinkeby",
   });
 
-  const nft = ERC721CommunityImplementation.attach(implementation.address);
+  const nft = Artgene721Implementation.attach(implementation.address);
 
   // // Call the deployed contract.
   // const tx2 = await implementation.initialize(
@@ -196,13 +195,10 @@ export async function main() {
   // const receipt2 = await tx2.wait();
 
   // console.log('receipt', receipt2.transactionHash);
-
-
 }
 
 // call main only if executed directly
 if (process.argv[1] === __filename) {
-
   // We recommend this pattern to be able to use async/await everywhere
   // and properly handle errors.
   main().catch((error) => {
@@ -210,4 +206,3 @@ if (process.argv[1] === __filename) {
     process.exitCode = 1;
   });
 }
-
