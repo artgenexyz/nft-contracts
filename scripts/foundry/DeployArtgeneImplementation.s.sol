@@ -6,8 +6,8 @@ import "forge-std/Script.sol";
 import "../../contracts/Artgene721Implementation.sol";
 
 // from deploy-proxy.ts
-address constant IMPLEMENTATION_ADDRESS = 0x000007214f56DaF21c803252cc610360C70C01D5;
-address constant IMPLEMENTATION_DEPLOYER_ADDRESS = 0x1a597827e5d8818689200d521A28E477514db8B2;
+address constant IMPLEMENTATION_ADDRESS = 0x00000721bEb748401E0390Bb1c635131cDe1Fae8;
+address constant IMPLEMENTATION_DEPLOYER_ADDRESS = 0x156deFdb1c699B48506FfBC97d37612189de788D;
 
 // function loginVanity(Vm vm) {
 //     vm.prank(IMPLEMENTATION_DEPLOYER_ADDRESS);
