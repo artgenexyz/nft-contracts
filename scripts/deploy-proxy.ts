@@ -6,12 +6,12 @@ import { Signer } from "ethers";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const GAS_PRICE_GWEI = "50";
+const GAS_PRICE_GWEI = "25";
 
 export const IMPLEMENTATION_ADDRESS =
-  "0x000007214f56DaF21c803252cc610360C70C01D5";
+  "0x00000721bEb748401E0390Bb1c635131cDe1Fae8";
 export const IMPLEMENTATION_DEPLOYER_ADDRESS =
-  "0x1a597827e5d8818689200d521A28E477514db8B2";
+  "0x156deFdb1c699B48506FfBC97d37612189de788D";
 
 export const sendAllFunds = async (account: Signer, to: Address) => {
   const balance = await account.getBalance();
@@ -28,15 +28,15 @@ export const sendAllFunds = async (account: Signer, to: Address) => {
 };
 
 export const getVanityDeployer = async () => {
-  if (hre.network.name === "hardhat") {
-    // impersonate the vanity deployer
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [IMPLEMENTATION_DEPLOYER_ADDRESS],
-    });
+  // if (hre.network.name === "hardhat") {
+  //   // impersonate the vanity deployer
+  //   await hre.network.provider.request({
+  //     method: "hardhat_impersonateAccount",
+  //     params: [IMPLEMENTATION_DEPLOYER_ADDRESS],
+  //   });
 
-    return await hre.ethers.getSigner(IMPLEMENTATION_DEPLOYER_ADDRESS);
-  }
+  //   return await hre.ethers.getSigner(IMPLEMENTATION_DEPLOYER_ADDRESS);
+  // }
 
   // load account from process.env.IMPLEMENTATION_PRIVATE_DEPLOYER
   const vanityKey = process.env.IMPLEMENTATION_PRIVATE_DEPLOYER;
@@ -163,7 +163,12 @@ export async function main() {
     }),
   });
 
-  await implementation.deployed();
+  const tx = await implementation.deployed();
+
+  // print gas used
+
+  const receipt = await tx.deployTransaction.wait();
+  console.log("Gas used:", receipt.gasUsed.toString());
 
   console.log(
     "Artgene721Implementation implementation deployed to:",
