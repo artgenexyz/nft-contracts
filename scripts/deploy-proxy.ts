@@ -106,11 +106,10 @@ export async function main() {
       ]);
     } else {
       // use sendTransaction
-
-      // // top up with Ethereum
+      // top up with Ethereum
       await admin.sendTransaction({
         to: vanity.address,
-        value: hre.ethers.utils.parseEther("0.5"),
+        value: hre.ethers.utils.parseEther("0.45"),
       });
     }
   }
