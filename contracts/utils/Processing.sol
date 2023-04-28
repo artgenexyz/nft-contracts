@@ -50,7 +50,12 @@ contract Processing {
     uint _randSeed;
     uint _noiseSeed;
 
-    constructor(uint _width, uint _height) {
+    constructor() {}
+
+    function setup() public virtual {}
+    function draw() public virtual {}
+
+    function createCanvas(uint256 _width, uint256 _height) public {
         canvasWidth = _width;
         canvasHeight = _height;
     }

@@ -1,34 +1,23 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+// SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.0;
 
-import "forge-std/Test.sol";
-import "contracts/utils/Processing.sol";
-import "contracts/utils/DemoArt.sol";
+import "forge-std/console.sol";
 
-contract GenArtTest is Test {
-    Processing public p;
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+import "./Processing.sol";
+
+contract DemoArt is Processing {
     Processing.Color c;
 
-    function setUp() public {
-        // p = new Processing();
-        // p.createCanvas(1024, 1024);
-    }
+    constructor() {}
 
-    function testArtRender() public {
-        DemoArt art = new DemoArt();
+    function setup() public override {
+        Processing p = Processing(address(this));
 
-        art.setup();
-
-        string memory output = art.renderSVG();
-
-        console.log(output);
-    }
-
-    function OFFtestDraw() public {
         uint width = 1024;
         uint height = 1024;
 
-        p = new Processing();
         p.createCanvas(1024, 1024);
 
         p.background(p.color(0, 0, 0, 100));
@@ -83,24 +72,5 @@ contract GenArtTest is Test {
             p.stroke(c);
             p.line(x1, y1, x2, y2);
         }
-
-        // // (p.printCanvas());
-
-        string memory output = p.renderSVG();
-
-        // save to file
-
-        string[] memory inputs = new string[](4);
-
-        inputs[0] = "echo";
-        inputs[1] = p.renderSVG();
-        inputs[2] = "|";
-        inputs[3] = "pbcopy";
-
-        // bytes memory res = vm.ffi(inputs);
-
-        // console.log("stript result:\n", string(res), "\n");
-
-        console.log("result:\n\n\n", output, "\n\n");
     }
 }
