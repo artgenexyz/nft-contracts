@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">
+        <rect x='0' y='0' width='1024' height='1024' fill='rgba(255,255,0,255)' />
+        <line x1='0' y1='0' x2='1024' y2='1024' stroke='rgba(255,0,170,255)' stroke-width='1' />
+        <line x1='1024' y1='0' x2='0' y2='1024' stroke='rgba(255,0,187,255)' stroke-width='1' />
+        <rect x='25' y='25' width='50' height='50' fill='rgba(254,0,187,255)' />
+        <path fill="rgba(0,0,0,0)" stroke="rgba(255,0,187,255)" stroke-width="5"
+                d="M 120 80 L 120 80 L 230 80 L 230 190 L 340 190 L 340 300 L 120 300 L 120 80 Z" />
+        <path fill="rgba(0,0,0,0)" stroke="rgba(31,31,31,255)" stroke-width="3"
+                d="M 520 80 L 520 80 L 530 80 L 530 190 L 540 190 L 540 300 L 520 300 L 520 80 Z" />
+</svg> 
