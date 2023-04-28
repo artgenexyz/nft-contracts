@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "forge-std/Test.sol";
 import "contracts/utils/Processing.sol";
 import "contracts/utils/DemoArt.sol";
+import "contracts/utils/DemoArtJCode.sol";
 
 contract GenArtTest is Test {
     Processing public p;
@@ -14,7 +15,7 @@ contract GenArtTest is Test {
         // p.createCanvas(1024, 1024);
     }
 
-    function testArtRender() public {
+    function OFFtestArtRender() public {
         DemoArt art = new DemoArt();
 
         art.setup();
@@ -22,6 +23,31 @@ contract GenArtTest is Test {
         string memory output = art.renderSVG();
 
         console.log(output);
+    }
+
+    function testArtJcode() public {
+        DemoArtJCode art = new DemoArtJCode();
+
+        art.setup();
+
+        string memory output = art.renderSVG();
+
+        console.log(output);
+    }
+
+    function testArtJcodeGasReport() public {
+        uint256 gasBefore = gasleft();
+
+        DemoArtJCode art = new DemoArtJCode();
+
+        art.setup();
+
+        console.log("Gas report:");
+        console.log("  - setup: ", gasBefore - gasleft());
+
+        string memory output = art.renderSVG();
+
+        console.log("  - renderSVG: ", gasBefore - gasleft());
     }
 
     function OFFtestDraw() public {
