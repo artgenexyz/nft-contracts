@@ -10,19 +10,27 @@ contract Processing {
     uint public canvasHeight;
 
     struct Style {
-        uint fill;
-        uint stroke;
+        Color fill;
+        Color stroke;
         uint strokeWidth;
-        // Add other relevant style properties here
     }
 
     Style currentStyle;
+
+    enum ColorType {
+        RGB,
+        HSL
+    }
 
     struct Color {
         uint8 r;
         uint8 g;
         uint8 b;
         uint8 a;
+        uint h;
+        uint s;
+        uint l;
+        ColorType kind;
     }
 
     enum ShapeMode {
@@ -39,18 +47,21 @@ contract Processing {
 
     string private buffer = "";
 
+    uint _randSeed;
+    uint _noiseSeed;
+
     constructor(uint _width, uint _height) {
         canvasWidth = _width;
         canvasHeight = _height;
     }
 
     // Set the fill color
-    function fill(uint color) public {
+    function fill(Color calldata color) public {
         currentStyle.fill = color;
     }
 
     // Set the stroke color and width
-    function stroke(uint color, uint strokeWidth) public {
+    function stroke(Color calldata color, uint strokeWidth) public {
         currentStyle.stroke = color;
         currentStyle.strokeWidth = strokeWidth;
     }
@@ -86,9 +97,9 @@ contract Processing {
             buffer,
             "<path ",
             'fill="',
-            uintToRGBA(currentStyle.fill),
+            colorToString(currentStyle.fill),
             '" stroke="',
-            uintToRGBA(currentStyle.stroke),
+            colorToString(currentStyle.stroke),
             '" ',
             'stroke-width="',
             Strings.toString(currentStyle.strokeWidth),
@@ -192,43 +203,73 @@ contract Processing {
     // ============ Colors =================
 
     function uintToColor(uint256 c) public returns (Color memory color) {
-        color = Color(uint8(c >> 24), uint8(c >> 16), uint8(c >> 8), uint8(c));
+        color = Color({
+            kind: ColorType.RGB,
+            r: uint8((c >> 24) & 0xff),
+            g: uint8((c >> 16) & 0xff),
+            b: uint8((c >> 8) & 0xff),
+            a: uint8(c & 0xff),
+            h: 0,
+            s: 0,
+            l: 0
+        });
     }
 
     function uintToRGBA(uint256 c) public returns (string memory rgb) {
         Color memory color = uintToColor(c);
-        rgb = string(
-            abi.encodePacked(
-                "rgba(",
-                Strings.toString(color.r),
-                ",",
-                Strings.toString(color.g),
-                ",",
-                Strings.toString(color.b),
-                ",",
-                Strings.toString(color.a),
-                ")"
-            )
-        );
+        return colorToString(color);
     }
 
-    function colorToRGBA(
+    function colorToString(
         Color memory color
     ) public returns (string memory rgb) {
-        rgb = string(
-            abi.encodePacked(
-                "rgb(",
-                Strings.toString(color.r),
-                ",",
-                Strings.toString(color.g),
-                ",",
-                Strings.toString(color.b),
-                ")"
-            )
-        );
+        if (color.kind == ColorType.RGB) {
+            return
+                string(
+                    abi.encodePacked(
+                        "rgba(",
+                        Strings.toString(color.r),
+                        ",",
+                        Strings.toString(color.g),
+                        ",",
+                        Strings.toString(color.b),
+                        ",",
+                        Strings.toString(color.a),
+                        ")"
+                    )
+                );
+        } else {
+            // background: hsl(50 100% 40% / 100%);
+            return
+                string(
+                    abi.encodePacked(
+                        "hsl(",
+                        Strings.toString(color.h),
+                        " ",
+                        Strings.toString(color.s),
+                        "% ",
+                        Strings.toString(color.l),
+                        "% / ",
+                        Strings.toString(color.a),
+                        "%)"
+                    )
+                );
+        }
     }
 
-    function background(uint256 color) public {
+    function colorToUint(Color memory color) public returns (uint256 c) {
+        if (color.kind == ColorType.HSL) {
+            revert("We cant convert HSL to uint yet");
+        }
+
+        c =
+            (uint256(color.r) << 24) |
+            (uint256(color.g) << 16) |
+            (uint256(color.b) << 8) |
+            uint256(color.a);
+    }
+
+    function background(Color memory color) public {
         string memory bg = string(
             abi.encodePacked(
                 "<rect x='0' y='0' width='",
@@ -236,7 +277,7 @@ contract Processing {
                 "' height='",
                 Strings.toString(canvasHeight),
                 "' fill='",
-                uintToRGBA(color),
+                colorToString(color),
                 "'/>\n"
             )
         );
@@ -244,13 +285,7 @@ contract Processing {
         buffer = string(abi.encodePacked(buffer, bg));
     }
 
-    function drawLine(
-        uint x1,
-        uint y1,
-        uint x2,
-        uint y2,
-        uint256 color
-    ) public {
+    function drawLine(uint x1, uint y1, uint x2, uint y2) public {
         string memory line = string(
             abi.encodePacked(
                 "<line x1='",
@@ -262,8 +297,10 @@ contract Processing {
                 "' y2='",
                 Strings.toString(y2),
                 "' stroke='",
-                uintToRGBA(color),
-                "' stroke-width='1'/>\n"
+                colorToString(currentStyle.stroke),
+                "' stroke-width='",
+                Strings.toString(currentStyle.strokeWidth),
+                "'/>\n"
             )
         );
 
@@ -277,7 +314,7 @@ contract Processing {
         uint h,
         uint256 color
     ) public {
-        // (uint64 r, uint64 g, uint64 b, uint256 a) = colorToRGBA(color);
+        // (uint64 r, uint64 g, uint64 b, uint256 a) = colorToString(color);
 
         string memory rect = string(
             abi.encodePacked(
@@ -344,6 +381,114 @@ contract Processing {
                 "</svg>"
             );
     }
+
+    // Solidity implementation of noise() function using _noiseSeed to seed the random number generator
+    // Perlin noise
+    // returns values between 0 and type(uint8).max
+    function noise(uint x, uint y) public pure returns (uint) {
+        uint n = x + y * 57;
+        n = (n << 13) ^ n;
+        uint nn = (n * (n * n * 15731 + 789221) + 1376312589);
+        return uint8(nn >> 24);
+    }
+
+    // Solidity implementation of noiseSeed() function
+    function noiseSeed(uint seed) public {
+        _noiseSeed = seed;
+    }
+
+    // Solidity implementation of random() function
+    function random() public returns (uint) {
+        unchecked {
+            _randSeed = (_randSeed * 16807) % 2147483647;
+            return _randSeed % 10000;
+        }
+    }
+
+    function rand(uint a, uint b) public returns (uint) {
+        require(a < b, "a must be less than b");
+
+        // console.log(
+        //     "rand a, b",
+        //     string.concat(Strings.toString(a), ", ", Strings.toString(b))
+        // );
+
+        uint _rand = random();
+
+        // console.log("rand ", Strings.toString(_rand));
+        uint result = a + (_rand * (b - a)) / 10000;
+
+        // console.log("rand result ", Strings.toString(result));
+
+        return result;
+    }
+
+    // Solidity implementation of randomSeed() function
+    function randomSeed(uint seed) public {
+        _randSeed = seed;
+    }
+
+    // Solidity implementation of color() function
+    function color(
+        uint hue,
+        uint saturation,
+        uint luminance,
+        uint alpha
+    ) public pure returns (Color memory) {
+        Color memory c = Color({
+            r: 0,
+            g: 0,
+            b: 0,
+            a: uint8(alpha),
+            h: hue,
+            s: saturation,
+            l: luminance,
+            kind: ColorType.HSL
+        });
+
+        return (c);
+    }
+
+    // Solidity implementation of stroke() function
+    function stroke(Color calldata color) public {
+        currentStyle.stroke = color;
+    }
+
+    // Solidity implementation of strokeWeight() function
+    function strokeWeight(uint width) public {
+        currentStyle.strokeWidth = width;
+    }
+
+    // Solidity implementation of line() function
+    function line(uint x1, uint y1, uint x2, uint y2) public {
+        // use drawLine
+
+        drawLine(x1, y1, x2, y2);
+    }
+
+    // Solidity implementation of fxpreview() function
+    // function fxpreview() public view returns (string memory) {
+    //     string memory svg = string(
+    //         abi.encodePacked(
+    //             '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">\n'
+    //         )
+    //     );
+
+    //     // Add background rectangle
+    //     svg = string(
+    //         abi.encodePacked(
+    //             svg,
+    //             "<rect x='0' y='0' width='1024' height='1024' fill='",
+    //             _getColorHex(_backgroundColor),
+    //             "' />\n"
+    //         )
+    //     );
+
+    //     // Add all shapes to SVG
+    //     svg = string(abi.encodePacked(svg, string(_buffer), "</svg>\n"));
+
+    //     return svg;
+    // }
 }
 
 contract ProccessingOnchain {

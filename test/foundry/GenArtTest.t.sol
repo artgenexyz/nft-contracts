@@ -6,52 +6,68 @@ import "contracts/utils/Processing.sol";
 
 contract GenArtTest is Test {
     Processing public p;
+    Processing.Color c;
 
     function setUp() public {
         p = new Processing(1024, 1024);
     }
 
     function testDraw() public {
-        p.background(0xffff00ff);
+        uint width = 1024;
+        uint height = 1024;
 
-        p.drawLine(0, 0, 1024, 1024, 0xff00aaff);
-        p.drawLine(1024, 0, 0, 1024, 0xff00bbff);
+        p.background(p.color(0, 0, 0, 100));
 
-        p.drawRectangle(25, 25, 50, 50, 0xfe00bbff);
+        p.strokeWeight(3);
 
-        p.stroke(0xff00bbff, 5);
+        p.randomSeed(uint256(blockhash(block.number - 1)));
 
-        p.beginShape();
-        p.vertex(120, 80);
-        p.vertex(230, 80);
-        p.vertex(230, 190);
-        p.vertex(340, 190);
-        p.vertex(340, 300);
-        p.vertex(120, 300);
-        p.endShape(true);
+        uint seed = p.rand(0, 10000);
+        p.noiseSeed(seed);
 
-        p.stroke(0x1f1f1fff, 3);
+        uint step = 20;
+        uint noiseStep = 3; // of 100
 
-        p.beginShape();
-        p.vertex(520, 80);
-        p.vertex(530, 80);
-        p.vertex(530, 190);
-        p.vertex(540, 190);
-        p.vertex(540, 300);
-        p.vertex(520, 300);
-        p.endShape(true);
+        // Vertical lines
+        for (uint x = step; x < width; x += step) {
+            c = p.color(p.rand(0, 360), 78, 54, 100);
 
-        // // draw more random rectangles
-        // p.drawRectangle(0, 0, 10, 10, 0xfe00bb00);
-        // p.drawRectangle(10, 10, 20, 20, 0xfe00bb00);
-        // p.drawRectangle(20, 20, 30, 30, 0xfe00bb00);
-        // // with very different colors
-        // p.drawRectangle(30, 30, 40, 40, 0xfe00bbff);
-        // p.drawRectangle(40, 40, 50, 50, 0xaa00bbff);
-        // p.drawRectangle(50, 50, 60, 60, 0x0000bbff);
-        // p.drawRectangle(60, 60, 70, 70, 0x00ffbb00);
+            uint y1 = p.rand(0, (height + step));
+            uint y2 = height;
 
-        // p.drawCircle(50, 50, 25, 0xff00bb00);
+            uint x1 = x + ((p.rand(0, step)) / 2) - (step / 4);
+            uint x2 = x + ((p.rand(0, step)) / 2) - (step / 4);
+
+            x1 +=
+                (p.noise((x1 * noiseStep) / 100, (0 * noiseStep) / 100) * 20) /
+                type(uint8).max;
+            x2 +=
+                (p.noise((x2 * noiseStep) / 100, (0 * noiseStep) / 100) * 20) /
+                type(uint8).max;
+
+            p.stroke(c);
+            p.line(x1, y1, x2, y2);
+        }
+
+        // Horizontal lines
+        for (uint y = step; y < height; y += step) {
+            c = p.color(p.rand(0, 360), 78, 54, 100);
+
+            uint x1 = p.rand(0, width + step);
+            uint x2 = width;
+            uint y1 = y + ((p.rand(0, step)) / 2) - (step / 4);
+            uint y2 = y + ((p.rand(0, step)) / 2) - (step / 4);
+
+            y1 +=
+                (p.noise((0 * noiseStep) / 100, (y1 * noiseStep) / 100) * 20) /
+                type(uint8).max;
+            y2 +=
+                (p.noise((0 * noiseStep) / 100, (y2 * noiseStep) / 100) * 20) /
+                type(uint8).max;
+
+            p.stroke(c);
+            p.line(x1, y1, x2, y2);
+        }
 
         // // (p.printCanvas());
 
