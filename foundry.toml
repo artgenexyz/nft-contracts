@@ -9,6 +9,11 @@ extra_output_files = ['metadata']
 
 via_ir = true
 
+# evm_version = "shanghai"
+# evm_version = "paris"
+
+ffi = true
+
 optimizer = true
 optimizer_runs = 10000
 

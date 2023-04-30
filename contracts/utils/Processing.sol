@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "forge-std/console.sol";
 
 import "solidity-trigonometry/Trigonometry.sol";
-
 import "@openzeppelin/contracts/utils/Strings.sol";
+
+import "contracts/utils/StringConcat.sol";
 
 contract Processing {
     uint public width;
@@ -606,28 +607,4 @@ contract Processing {
 
         drawLine(x1, y1, x2, y2);
     }
-
-    // Solidity implementation of fxpreview() function
-    // function fxpreview() public view returns (string memory) {
-    //     string memory svg = string(
-    //         abi.encodePacked(
-    //             '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">\n'
-    //         )
-    //     );
-
-    //     // Add background rectangle
-    //     svg = string(
-    //         abi.encodePacked(
-    //             svg,
-    //             "<rect x='0' y='0' width='1024' height='1024' fill='",
-    //             _getColorHex(_backgroundColor),
-    //             "' />", LINE_BREAK
-    //         )
-    //     );
-
-    //     // Add all shapes to SVG
-    //     svg = string(abi.encodePacked(svg, string(_buffer), "</svg>", LINE_BREAK));
-
-    //     return svg;
-    // }
 }
