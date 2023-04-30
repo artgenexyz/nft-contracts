@@ -44,6 +44,10 @@ contract ERC721CommunityBase is Context, Ownable, ERC721Enumerable, ERC721URISto
         require(newMaxSupply >= _totalMinted, "ERC721CommunityBase: New max supply is less than total minted");
         _maxSupply = newMaxSupply;
     }
+        require(newMaxSupply <= _maxSupply, "ERC721CommunityBase: New max supply is greater than current max supply");
+        require(newMaxSupply >= _totalMinted, "ERC721CommunityBase: New max supply is less than total minted");
+        _maxSupply = newMaxSupply;
+    }
 
     // Overriden functions from OpenZeppelin's ERC721
 
