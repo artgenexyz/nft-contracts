@@ -11,6 +11,8 @@ import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import "@openzeppelin/contracts/proxy/Clones.sol";
+
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
@@ -280,6 +282,25 @@ contract ERC721CommunityBase is
 
     function extensionsLength() public view returns (uint256) {
         return extensions.length;
+    }
+
+    function deployExtension(
+        address implementation,
+        bytes memory initData
+    ) public onlyOwner returns (address extension) {
+        require(implementation != address(0), "Factory cannot be zero address");
+
+        extension = Clones.clone(implementation);
+
+        // call extension.initialize encoded with selector and data
+
+        (bool success, ) = extension.call(initData);
+
+        require(success, "Extension initialization failed");
+
+        // TODO: transfer ownership?
+
+        addExtension(extension);
     }
 
     // Extensions are allowed to mint

@@ -19,7 +19,7 @@ contract DutchAuctionFactory {
         implementation = new DutchAuction();
     }
 
-    function createAuction(
+    function createExtension(
         address _nft,
         uint256 _price,
         uint256 _maxPerAddress,

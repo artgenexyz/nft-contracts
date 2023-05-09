@@ -171,19 +171,37 @@ contract DutchAuctionTest is Test {
     }
 
     function testDeployExtension() public {
+
+        DutchAuction implementation = new DutchAuction();
+
         // we already have nft configured, we need to deploy the extension and add it to the nft
 
         uint gasCost = gasleft();
 
-        dutchAuction = dutchAuctionFactory.createAuction(
-            address(nft),
-            100,
-            10,
-            block.timestamp,
-            block.timestamp + 1000
+        // dutchAuction = dutchAuctionFactory.createExtension(
+        //     address(nft),
+        //     100,
+        //     10,
+        //     block.timestamp,
+        //     block.timestamp + 1000
+        // );
+
+        // nft.addExtension(address(dutchAuction));
+
+        address ext = ERC721CommunityBase(payable(address(nft))).deployExtension(
+            address(implementation),
+            abi.encodeWithSelector(
+                DutchAuction.initialize.selector,
+                address(nft),
+                100,
+                10,
+                block.timestamp,
+                block.timestamp + 1000,
+                admin
+            )
         );
 
-        nft.addExtension(address(dutchAuction));
+        // console.log("Deploy result: ", string(result));
 
         gasCost = gasCost - gasleft();
 
@@ -193,7 +211,7 @@ contract DutchAuctionTest is Test {
 
         gasCost = gasleft();
 
-        dutchAuction.mint{value: 100 * amount}(amount);
+        DutchAuction(ext).mint{value: 100 * amount}(amount);
 
         gasCost = gasCost - gasleft();
 
@@ -201,7 +219,6 @@ contract DutchAuctionTest is Test {
     }
 
     function testConfigSingleton() public {
-
         // we already have nft configured, we need to deploy the extension and add it to the nft
 
         uint gasCost = gasleft();
@@ -228,9 +245,6 @@ contract DutchAuctionTest is Test {
 
         gasCost = gasCost - gasleft();
 
-        console.log(
-            "Gas cost to mint via singleton: ",
-            gasCost / amount
-        );
+        console.log("Gas cost to mint via singleton: ", gasCost / amount);
     }
 }
