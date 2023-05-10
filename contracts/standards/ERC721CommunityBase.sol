@@ -288,7 +288,7 @@ contract ERC721CommunityBase is
         address implementation,
         bytes memory initData
     ) public onlyOwner returns (address extension) {
-        require(implementation != address(0), "Factory cannot be zero address");
+        require(implementation != address(0), "Extension implementation cannot be zero address");
 
         extension = Clones.clone(implementation);
 
