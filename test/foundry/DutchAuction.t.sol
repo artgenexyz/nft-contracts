@@ -57,13 +57,13 @@ contract DutchAuctionTest is Test {
             block.timestamp + 1000
         );
 
-        assertEq(dutchAuctionExtensionSingleton.startingPrice(nft), 100);
+        assertEq(dutchAuctionExtensionSingleton.startPrice(nft), 100);
         assertEq(dutchAuctionExtensionSingleton.maxPerAddress(nft), 200);
         assertEq(
             dutchAuctionExtensionSingleton.endTimestamp(nft),
             block.timestamp + 1000
         );
-        assertTrue(dutchAuctionExtensionSingleton.saleStarted(nft));
+        // assertTrue(dutchAuctionExtensionSingleton.saleStarted(nft));
 
         // test mint gas cost
         uint256 gasCost = gasleft();
@@ -122,13 +122,13 @@ contract DutchAuctionTest is Test {
             block.timestamp + 1000
         );
 
-        assertEq(dutchAuctionExtensionSingleton.startingPrice(nft), 100);
+        assertEq(dutchAuctionExtensionSingleton.startPrice(nft), 100);
         assertEq(dutchAuctionExtensionSingleton.maxPerAddress(nft), 200);
         assertEq(
             dutchAuctionExtensionSingleton.endTimestamp(nft),
             block.timestamp + 1000
         );
-        assertTrue(dutchAuctionExtensionSingleton.saleStarted(nft));
+        // assertTrue(dutchAuctionExtensionSingleton.saleStarted(nft));
 
         // test mint gas cost
         uint256 gasCost = gasleft();
@@ -227,8 +227,9 @@ contract DutchAuctionTest is Test {
             (nft),
             100,
             10,
-            10_000_000_000,
-            true
+            block.timestamp,
+            block.timestamp + 1000,
+            5 // max per address
         );
 
         nft.addExtension(address(dutchAuctionExtensionSingleton));

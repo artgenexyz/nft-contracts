@@ -8,8 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./base/NFTExtension.sol";
 // import "./base/SaleControl.sol";
 
-uint256 constant __SALE_NEVER_STARTS = 2**256 - 1;
-
+uint256 constant __SALE_NEVER_STARTS = 2 ** 256 - 1;
 
 contract DutchAuctionExtensionSingleton {
     modifier onlyNFTOwner(IERC721Community nft) {
@@ -20,45 +19,57 @@ contract DutchAuctionExtensionSingleton {
         _;
     }
 
-    mapping(IERC721Community => uint256) public startingPrice;
+    mapping(IERC721Community => uint256) public startPrice;
+    mapping(IERC721Community => uint256) public endPrice;
+
     mapping(IERC721Community => uint256) public startTimestamp;
     mapping(IERC721Community => uint256) public endTimestamp;
+
     mapping(IERC721Community => uint256) public maxPerAddress;
 
-    mapping(IERC721Community => bool) public saleStarted;
-
-    mapping(address => mapping(IERC721Community => uint256))
+    mapping(IERC721Community => mapping(address => uint256))
         public claimedByAddress;
 
     constructor() {}
 
     function configureSale(
         IERC721Community collection,
-        uint256 _price,
-        uint256 _maxPerAddress,
+        uint256 _startPrice,
+        uint256 _endPrice,
+        uint256 _startTimestamp,
         uint256 _endTimestamp,
-        bool _saleStarted
-    ) public onlyNFTOwner(collection) {
+        uint256 _maxPerAddress
+    ) public onlyNFTOwner(collection) returns (address) {
+        require(
+            _startTimestamp >= block.timestamp,
+            "Start time must be in the future"
+        );
+        require(
+            _endTimestamp > _startTimestamp,
+            "End time must be after start time"
+        );
 
-        startTimestamp[collection] = __SALE_NEVER_STARTS;
+        require(
+            _startPrice > _endPrice,
+            "Start price must be greater than end price"
+        );
+
+        startTimestamp[collection] = _startTimestamp;
         endTimestamp[collection] = _endTimestamp;
-        startingPrice[collection] = _price;
+
+        startPrice[collection] = _startPrice;
+        endPrice[collection] = _endPrice;
+
         maxPerAddress[collection] = _maxPerAddress;
 
-        // endTimestamp[collection] = __SALE_NEVER_STARTS;
-
-        saleStarted[collection] = _saleStarted;
-
-        if (_saleStarted) {
-            startTimestamp[collection] = block.timestamp;
-        }
+        return address(this);
     }
 
     function updatePrice(
         IERC721Community collection,
         uint256 _price
     ) public onlyNFTOwner(collection) {
-        startingPrice[collection] = _price;
+        startPrice[collection] = _price;
     }
 
     function updateMaxPerAddress(
@@ -80,8 +91,6 @@ contract DutchAuctionExtensionSingleton {
     ) public onlyNFTOwner(collection) {
         startTimestamp[collection] = block.timestamp;
         endTimestamp[collection] = __SALE_NEVER_STARTS;
-
-        saleStarted[collection] = true;
     }
 
     function stopSale(
@@ -89,8 +98,6 @@ contract DutchAuctionExtensionSingleton {
     ) public onlyNFTOwner(collection) {
         startTimestamp[collection] = __SALE_NEVER_STARTS;
         endTimestamp[collection] = __SALE_NEVER_STARTS;
-
-        saleStarted[collection] = false;
     }
 
     // function saleStarted(IERC721Community collection) public view returns (bool) {
@@ -101,14 +108,16 @@ contract DutchAuctionExtensionSingleton {
         IERC721Community collection,
         uint256 nTokens
     ) external payable {
-        require(saleStarted[collection], "Sale not started");
-
-        // require(block.timestamp >= startTimestamp[collection], "Sale not started");
-        // require(block.timestamp <= endTimestamp[collection], "Sale ended");
+        require(
+            block.timestamp >= startTimestamp[collection],
+            "Sale not started"
+        );
+        require(block.timestamp <= endTimestamp[collection], "Sale ended");
 
         require(
-            nTokens <= maxPerAddress[collection],
-            "Cannot claim more per transaction"
+            nTokens + claimedByAddress[collection][msg.sender] <=
+                maxPerAddress[collection],
+            "Cannot claim more than maxPerAddress"
         );
 
         require(
@@ -116,7 +125,7 @@ contract DutchAuctionExtensionSingleton {
             "Not enough ETH to mint"
         );
 
-        IERC721Community(collection).mintExternal{value: msg.value}(
+        collection.mintExternal{value: msg.value}(
             nTokens,
             msg.sender,
             bytes32(0x0)
@@ -128,11 +137,25 @@ contract DutchAuctionExtensionSingleton {
     function price(
         IERC721Community collection
     ) public view returns (uint256 currentPrice) {
-        // start at startTimestamp at startingPrice, gradually falls at reducePriceSpeed per second
-        // currentPrice = startingPrice - (block.timestamp - startTimestamp) *
-        currentPrice =
-            startingPrice[collection] -
-            (block.timestamp - startTimestamp[collection]) *
-            (endTimestamp[collection] - startTimestamp[collection]);
+        // start at startTimestamp at startPrice, gradually falls until endTimestamp at endPrice
+
+        if (block.timestamp <= startTimestamp[collection]) {
+            return startPrice[collection];
+        }
+
+        if (block.timestamp >= endTimestamp[collection]) {
+            return endPrice[collection];
+        }
+
+        uint256 timeDelta = endTimestamp[collection] -
+            startTimestamp[collection];
+
+        uint256 priceDelta = startPrice[collection] - endPrice[collection];
+
+        uint256 timeElapsed = block.timestamp - startTimestamp[collection];
+
+        uint256 priceChange = (timeElapsed * priceDelta) / timeDelta;
+
+        return startPrice[collection] - priceChange;
     }
 }
