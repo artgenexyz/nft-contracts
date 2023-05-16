@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-address constant ARTGENE_PLATFORM_ADDRESS = 0x88fadDFE9eC2d34C37F592c42141b152b382AE1b;
+address constant ARTGENE_PLATFORM_ADDRESS = 0x983A23615aC3ECdeBe7d1438251403d57956Ccba;
 
 interface IArtgenePlatform {
     function getPlatformFee() external view returns (uint256);
