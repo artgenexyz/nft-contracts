@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-address constant ARTGENE_PROXY_IMPLEMENTATION = 0x00000721bEb748401E0390Bb1c635131cDe1Fae8;
+address constant ARTGENE_PROXY_IMPLEMENTATION = 0x6f0978c21beeCa1d74DAfbCc5bc86a6c466CE67C;
 
 uint256 constant ARTGENE_MAX_SUPPLY_OPEN_EDITION = 0;
 

@@ -13,6 +13,10 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint";
 
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-verify";
+
 import "@tenderly/hardhat-tenderly";
 
 import "solidity-coverage";
@@ -40,6 +44,7 @@ const MNEMONIC = process.env.MNEMONIC;
 const ALCHEMY_GOERLI_API = process.env.ALCHEMY_GOERLI_API;
 const ALCHEMY_API = process.env.ALCHEMY_API;
 const FORK = process.env.FORK;
+const ZKSYNC = process.env.ZKSYNC;
 
 stdout.isTTY &&
   console.log("Using env variables", {
@@ -52,12 +57,13 @@ stdout.isTTY &&
     ALCHEMY_GOERLI_API: ALCHEMY_GOERLI_API ? "✅" : "❌",
     ALCHEMY_API: ALCHEMY_API ? "✅" : "❌",
     FORK: FORK ? "✅" : "❌",
+    ZKSYNC: ZKSYNC ? "✅" : "❌",
     MNEMONIC: MNEMONIC
       ? "✅" + MNEMONIC.slice(0, 4) + "..." + MNEMONIC.slice(-4)
       : "❌",
   });
 
-const mnemonic = (() => {
+export const mnemonic = (() => {
   if (MNEMONIC) {
     return MNEMONIC;
   }
@@ -69,7 +75,7 @@ const mnemonic = (() => {
   }
 })();
 
-const getRemappings = () => {
+export const getRemappings = () => {
   return fs
     .readFileSync("remappings.txt", "utf8")
     .split("\n")
@@ -100,8 +106,11 @@ task(
 );
 
 const config: HardhatUserConfig = {
+  defaultNetwork: ZKSYNC ? "zksync" : "hardhat",
+
   networks: {
     hardhat: {
+      zksync: false,
       forking:
         FORK === "mainnet" && ALCHEMY_API
           ? {
@@ -113,31 +122,70 @@ const config: HardhatUserConfig = {
             }
           : undefined,
     },
+
+    zksync: {
+      url: "https://testnet.era.zksync.dev",
+      ethNetwork: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+
+      zksync: true,
+
+      // Verification endpoint for Goerli
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+
+      // verifyURL:
+      // "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+
+      accounts: {
+        mnemonic,
+      },
+    },
+
+    zksyncEra: {
+      url: "https://mainnet.era.zksync.io",
+      ethNetwork: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+
+      zksync: true,
+
+      // Verification endpoint
+      verifyURL:
+        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+
+      accounts: {
+        mnemonic,
+      },
+    },
+
     goerli: {
       url: `https://goerli.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
+      zksync: false,
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
+      zksync: false,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
+      zksync: false,
     },
     polygon: {
       url: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
+      zksync: false,
     },
   },
+
   solidity: {
     version: "0.8.18",
     settings: {
@@ -146,6 +194,18 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 10000,
         // runs: 4_294_967_295, // 2**32 - 1
+      },
+    },
+  },
+
+  zksolc: {
+    version: "1.3.10",
+    compilerSource: "binary",
+
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 10000,
       },
     },
   },
@@ -175,25 +235,27 @@ const config: HardhatUserConfig = {
   },
 
   // This fully resolves paths for imports in the ./lib directory for Hardhat
-  preprocess: {
-    eachLine: (hre) => ({
-      settings: {
-        // this is needed so that etherscan verification works
-        cache: false,
-      },
-      transform: (line: string) => {
-        if (line.match(/^\s*import /i)) {
-          for (const [from, to] of getRemappings()) {
-            if (line.includes(from)) {
-              line = line.replace(from, to);
-              break;
+  preprocess: ZKSYNC
+    ? undefined
+    : {
+        eachLine: (hre) => ({
+          settings: {
+            // this is needed so that etherscan verification works
+            cache: false,
+          },
+          transform: (line: string) => {
+            if (line.match(/^\s*import /i)) {
+              for (const [from, to] of getRemappings()) {
+                if (line.includes(from)) {
+                  line = line.replace(from, to);
+                  break;
+                }
+              }
             }
-          }
-        }
-        return line;
+            return line;
+          },
+        }),
       },
-    }),
-  },
 
   dodoc: {
     runOnCompile: false,

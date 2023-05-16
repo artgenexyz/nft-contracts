@@ -26,6 +26,9 @@
   },
   "devDependencies": {
     "@foundry-rs/hardhat-forge": "^0.1.17",
+    "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
+    "@matterlabs/hardhat-zksync-solc": "^0.3.17",
+    "@matterlabs/hardhat-zksync-verify": "^0.1.7",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@nomiclabs/hardhat-ganache": "^2.0.1",
@@ -49,7 +52,7 @@
     "erc721a-upgradeable": "^4.2.1",
     "eth-gas-reporter": "^0.2.23",
     "ethereum-waffle": "^3.4.4",
-    "ethers": "^5.6.5",
+    "ethers": "^5.7.2",
     "ganache": "^7.0.1",
     "hardhat": "^2.14.0",
     "hardhat-contract-sizer": "^2.5.1",
@@ -72,10 +75,11 @@
     "truffle-contract-size": "^2.0.1",
     "truffle-flattener": "^1.6.0",
     "truffle-plugin-verify": "^0.5.21",
-    "ts-node": "^10.7.0",
+    "ts-node": "^10.9.1",
     "typechain": "^8.0.0",
-    "typescript": "^4.6.4",
-    "web3": "^1.7.1"
+    "typescript": "^4.9.5",
+    "web3": "^1.7.1",
+    "zksync-web3": "^0.14.3"
   },
   "resolutions": {
     "@solidity-parser/parser": "^0.14.0"

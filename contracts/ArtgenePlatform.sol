@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/StorageSlot.sol";
 
 import "./interfaces/IArtgenePlatform.sol";
 
@@ -11,11 +10,6 @@ contract ArtgenePlatform is Ownable, IArtgenePlatform {
     address payable platformAddress;
 
     constructor() {
-        require(
-            ARTGENE_PLATFORM_ADDRESS == address(this),
-            "ArtgenePlatformConfig: platform address mismatch"
-        );
-
         platformFee = 500;
         platformAddress = payable(0x3087c429ed4e7e5Cec78D006fCC772ceeaa67f00);
     }
