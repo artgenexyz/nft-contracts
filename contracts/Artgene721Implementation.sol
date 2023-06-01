@@ -266,7 +266,12 @@ contract Artgene721Implementation is
     // on the other hand, it's impossible to call this function in proxy,
     // so the real initializer is the only initializer
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    constructor() initializer {
+        require(
+            ARTGENE_PLATFORM_ADDRESS.code.length == 0,
+            "Artgene Platform is not deployed, revert"
+        );
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;

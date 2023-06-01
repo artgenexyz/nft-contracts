@@ -105,6 +105,32 @@ task(
   }
 );
 
+task(
+  "clean-zksync",
+  "Clears the zksync cache and artifacts",
+  async (taskArgs, hre) => {
+    const { rm } = require("fs/promises");
+    const { join } = require("path");
+
+    // dry run:
+    console.log("delete", join(hre.config.paths.cache, "..", "cache-zk"));
+    console.log(
+      "delete",
+      join(hre.config.paths.artifacts, "..", "artifacts-zk")
+    );
+
+    await rm(join(hre.config.paths.cache, "..", "cache-zk"), {
+      recursive: true,
+      force: true,
+    });
+
+    await rm(join(hre.config.paths.artifacts, "..", "artifacts-zk"), {
+      recursive: true,
+      force: true,
+    });
+  }
+);
+
 const config: HardhatUserConfig = {
   defaultNetwork: ZKSYNC ? "zksync" : "hardhat",
 
@@ -238,23 +264,30 @@ const config: HardhatUserConfig = {
   preprocess: ZKSYNC
     ? undefined
     : {
-        eachLine: (hre) => ({
-          settings: {
-            // this is needed so that etherscan verification works
-            cache: false,
-          },
-          transform: (line: string) => {
-            if (line.match(/^\s*import /i)) {
-              for (const [from, to] of getRemappings()) {
-                if (line.includes(from)) {
-                  line = line.replace(from, to);
-                  break;
-                }
+        eachLine: (hre) =>
+          hre.network.zksync
+            ? {
+                settings: {},
+                // Dont transform anything for zksync
+                transform: (line: string) => line,
               }
-            }
-            return line;
-          },
-        }),
+            : {
+                settings: {
+                  // this is needed so that etherscan verification works
+                  cache: false,
+                },
+                transform: (line: string) => {
+                  if (line.match(/^\s*import /i)) {
+                    for (const [from, to] of getRemappings()) {
+                      if (line.includes(from)) {
+                        line = line.replace(from, to);
+                        break;
+                      }
+                    }
+                  }
+                  return line;
+                },
+              },
       },
 
   dodoc: {
