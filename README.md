@@ -84,6 +84,29 @@ Then, to test your code:
 npx hardhat test
 ```
 
+### ZkSync
+
+1. Setup env variable ZKSYNC=true when you compile
+
+```bash
+ZKSYNC=true hh compile
+```
+
+2. Deploy contracts
+
+```bash
+hh deploy-zksync --network zksync|zksyncEra
+```
+
+#### Gas Costs?
+
+```
+    gasUsed     * maxFeePerGas  +   pubdata     * gasPerPubdata     * gasPriceL1
+  (developer)     (zksync load)    (developer)      (operator)          (l1 load)
+```
+
+Also see `results.md` for more details.
+
 ### Checking different versions of ERC721CommunityImplementation:
 
 ```bash
