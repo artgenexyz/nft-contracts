@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 
 describe("OnchainArtStorageExtension", function () {
-  it("Write tests for OnchainArtStorageExtension contract", async function () {
+  it("Add tests for the OnchainArtStorageExtension contract", async function () {
     const OnchainArtStorageExtension = await ethers.getContractFactory("OnchainArtStorageExtension");
     const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy();
     await onchainArtStorageExtension.deployed();
