@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 
 describe("OnchainArtStorageExtension", function () {
-  it("Should return the token URI and render the generative art for a given token ID", async function () {
+  it("Write tests for OnchainArtStorageExtension contract", async function () {
     const OnchainArtStorageExtension = await ethers.getContractFactory("OnchainArtStorageExtension");
     const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy();
     await onchainArtStorageExtension.deployed();
