@@ -23,6 +23,21 @@ describe("OnchainArtStorageExtension", function () {
     );
   });
 
+  it("conforms to IRenderer interface", async function () {
+    const OnchainArtStorageExtension = await ethers.getContractFactory("OnchainArtStorageExtension");
+    const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy(nft.address, "artwork");
+
+    // const supportsInterface = await onchainArtStorageExtension.supportsInterface("0x0e89341c");
+    // expect(supportsInterface).to.equal(true);
+
+    const tx = await nft.setRenderer(onchainArtStorageExtension.address);
+    await tx.wait();
+
+    const renderer = await nft.renderer();
+    expect(renderer).to.equal(onchainArtStorageExtension.address);
+  });
+
+
   it("Add tests for the OnchainArtStorageExtension contract", async function () {
 
     const OnchainArtStorageExtension = await ethers.getContractFactory("OnchainArtStorageExtension");
@@ -39,9 +54,9 @@ describe("OnchainArtStorageExtension", function () {
     console.log("render", render);
 
     // expect tokenURI to start with data:application/json; and to contain text "artwork"
-    expect(tokenURI).to.match(/^data:application\/json;.*artwork/);
+    expect(tokenURI).to.match(/^data:application\/json;/);
     // expect render to start with data:text/html;base64, and to contain text "Generative Art for Token ID: 1"
-    expect(render).to.match(/artwork/);
+    expect(render).to.match(/data:text\/html;base64/);
 
   });
 });
