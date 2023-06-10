@@ -1,11 +1,16 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { Artgene721Base } from "../typechain-types";
+import { checkDeployed } from "../scripts/deploy-platform";
 
 const { getGasCost, getMintConfig } = require("./utils");
 
 describe("OnchainArtStorageExtension", function () {
   let nft: Artgene721Base;
+
+  before(async () => {
+    await checkDeployed();
+  });
 
   beforeEach(async () => {
     const Artgene721Base = await ethers.getContractFactory("Artgene721Base");
