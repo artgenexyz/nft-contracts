@@ -40,17 +40,17 @@ const main = async () => {
     throw new Error("NFT contract address is not valid");
   }
 
-  const lib = await hre.ethers.getContractFactory("Base64Converter");
-  const libDeployed = await lib.deploy();
-  await libDeployed.deployed();
-  console.log("Base64Converter deployed to:", libDeployed.address);
+//   const lib = await hre.ethers.getContractFactory("Base64Converter");
+//   const libDeployed = await lib.deploy();
+//   await libDeployed.deployed();
+//   console.log("Base64Converter deployed to:", libDeployed.address);
 
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
     "OnchainArtStorageExtension",
     {
       libraries: {
-        Base64Converter: libDeployed.address, // 0x65581bfCcbAaD498Dac703c7e4462A6E3f48644b
+        Base64Converter: '0x65581bfCcbAaD498Dac703c7e4462A6E3f48644b'
       },
     }
   );

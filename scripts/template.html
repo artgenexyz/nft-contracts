@@ -96,7 +96,7 @@
                 if (!gene) {
                     genome.push({
                         name,
-                        value
+                        value,
                     });
                 } else {
                     gene.value = value;
@@ -104,7 +104,7 @@
 
                 return {
                     name,
-                    value
+                    value,
                 };
             };
 
@@ -119,64 +119,64 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
 
-    <script type="text/javascript+gzip" src="data:text/javascript;base64,eJzFU8FSwjAQvfcr9higQkgdRqdykQsHOTGj59imtENNmDRAq8O/u0mqrQ46cvJAE7Zv377dtw1KYSCVPA6CbC8TUygJlTD7HRnAWwCQaMGNWHB54BWZURoCPgYxvnnmyXaj1V6mJPKRRJVKr1QqyHJ9H0I0Q/SU9h4OVRmttuJJFJvckMiFpHpQCivaO2qBOay4ycdZqZQmWa051hjA0FK0JFIVlVgLkRLEY+TUk59qfmzV2+YqI3bIyGjcBnyuj9IxjbB1gMkEHoU2RcJLKAspKoxlSgOxGbVFxnjcwbFITW6vo7lj9nU8cTNFXE8uyV2TMGqRV+6MOzxDvMd0wdqSID30G3c9TIBZDtL+uR70ktgFSS4Ly2AHbhQE78NuKiFkmr+IBTpr+nFLyShyTakvjEU7CnYxxaf4BLW71emLd8tzg79b2vbp94YkH22jSag8xKmHKAVP5t6cWjeXShevSppzfjbezwb9bMeP9zOG1t8Nde7/6KdzwS/I151oLrTTLcZfk1xW07Pz/OztoH61s2F/oGD/YmdW77Q4FOJI/KcevANMH0pI">
-
+    <script type="text/javascript+gzip"
+        src="data:text/javascript;base64,eJzFU8FSwjAQvfcr9higQkgdRqdykQsHOTGj59imtENNmDRAq8O/u0mqrQ46cvJAE7Zv377dtw1KYSCVPA6CbC8TUygJlTD7HRnAWwCQaMGNWHB54BWZURoCPgYxvnnmyXaj1V6mJPKRRJVKr1QqyHJ9H0I0Q/SU9h4OVRmttuJJFJvckMiFpHpQCivaO2qBOay4ycdZqZQmWa051hjA0FK0JFIVlVgLkRLEY+TUk59qfmzV2+YqI3bIyGjcBnyuj9IxjbB1gMkEHoU2RcJLKAspKoxlSgOxGbVFxnjcwbFITW6vo7lj9nU8cTNFXE8uyV2TMGqRV+6MOzxDvMd0wdqSID30G3c9TIBZDtL+uR70ktgFSS4Ly2AHbhQE78NuKiFkmr+IBTpr+nFLyShyTakvjEU7CnYxxaf4BLW71emLd8tzg79b2vbp94YkH22jSag8xKmHKAVP5t6cWjeXShevSppzfjbezwb9bMeP9zOG1t8Nde7/6KdzwS/I151oLrTTLcZfk1xW07Pz/OztoH61s2F/oGD/YmdW77Q4FOJI/KcevANMH0pI">
     </script>
 
     <!-- JavaScript file for decoding and decompression -->
     <script id="decoder">
-        // decoder.js
+        (() => {
+            // decoder.js
 
-        // Decoding and decompression function
-        function decodeAndExecuteScript(base64EncodedGzipCompressedContent) {
-            // Iterate through the base64-encoded, gzip-compressed JavaScript files
-            //   for (let key in jsFiles) {
-            // Get the base64-encoded, gzip-compressed content
-            // const encodedContent = jsFiles[key];
+            // Decoding and decompression function
+            function decodeAndExecuteScript(base64EncodedGzipCompressedContent) {
+                // Iterate through the base64-encoded, gzip-compressed JavaScript files
+                //   for (let key in jsFiles) {
+                // Get the base64-encoded, gzip-compressed content
+                // const encodedContent = jsFiles[key];
 
-            const arr = atob(base64EncodedGzipCompressedContent);
+                const arr = atob(base64EncodedGzipCompressedContent);
 
-            console.log("ARR", arr);
+                console.log("ARR", arr);
 
-            const buffer = Uint8Array.from(
-                arr,
-                (s) => s.charCodeAt(0)
+                const buffer = Uint8Array.from(arr, (s) => s.charCodeAt(0));
+
+                // Decode the base64 content
+                // const decodedContent = atob(encodedContent);
+
+                console.log("DECODED", buffer);
+
+                const text = pako.inflate(buffer);
+                console.log("TEXT", text);
+
+                const decoded = new TextDecoder("utf-8").decode(text);
+
+                console.log("DECODED", decoded);
+
+                // // Decompress the content using pako.js (a JavaScript zlib implementation)
+                // const decompressedContent = pako.inflate(buffer, {
+                //   to: "string",
+                // });
+
+                // Create a <script> element and append it to the document's head
+                const script = document.createElement("script");
+                script.textContent = decoded;
+                document.head.appendChild(script);
+            }
+            // }
+
+            // read all scripts gzip type and decode them
+            const scripts = document.querySelectorAll(
+                "script[type='text/javascript+gzip']"
             );
 
-            // Decode the base64 content
-            // const decodedContent = atob(encodedContent);
+            scripts.forEach((script) => {
+                // src is data:text/javascript;base64,xxxxxxxxxxxxxxxxxxxx, extract the base64-encoded, gzip-compressed content
+                const base64EncodedGzipCompressedContent = script.src.split(",")[1];
+                decodeAndExecuteScript(base64EncodedGzipCompressedContent);
+            });
 
-            console.log("DECODED", buffer);
-
-            const text = pako.inflate(buffer);
-            console.log("TEXT", text);
-
-            const decoded = new TextDecoder("utf-8").decode(
-                text
-            );
-
-            console.log("DECODED", decoded);
-
-            // // Decompress the content using pako.js (a JavaScript zlib implementation)
-            // const decompressedContent = pako.inflate(buffer, {
-            //   to: "string",
-            // });
-
-            // Create a <script> element and append it to the document's head
-            const script = document.createElement("script");
-            script.textContent = decoded;
-            document.head.appendChild(script);
-        }
-        // }
-
-        // read all scripts gzip type and decode them
-        const scripts = document.querySelectorAll("script[type='text/javascript+gzip']");
-        scripts.forEach((script) => {
-            // src is data:text/javascript;base64,xxxxxxxxxxxxxxxxxxxx, extract the base64-encoded, gzip-compressed content
-            const base64EncodedGzipCompressedContent = script.src.split(",")[1];
-            decodeAndExecuteScript(base64EncodedGzipCompressedContent);
-        });
-
+        })(window);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>artgene.xyz</title>
