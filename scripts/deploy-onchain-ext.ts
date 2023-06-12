@@ -61,7 +61,7 @@ const main = async () => {
   if (fs.existsSync("./scripts/onchain/output.html")) {
     fs.unlinkSync("./scripts/onchain/output.html");
   }
-  
+
   // get values from console input: nft contract address, artwork string
   let nft = await question("Enter NFT contract address: ");
   // const artwork = await question("Enter artwork string: ");
@@ -71,7 +71,7 @@ const main = async () => {
 
   // check that nft is a valid address and has contract code
   // const code = await hre.ethers.provider.getCode(nft);
-  if (!nft || await hre.ethers.provider.getCode(nft) === "0x") {
+  if (!nft || (await hre.ethers.provider.getCode(nft)) === "0x") {
     if (hre.network.name === "goerli") {
       throw new Error("NFT contract address is not valid");
     }
@@ -81,8 +81,10 @@ const main = async () => {
     const f = await hre.ethers.getContractFactory("ERC721CommunityBase");
 
     const erc721 = await f.deploy(
-      "Test", "NFT",
-      1000, 3,
+      "Test",
+      "NFT",
+      1000,
+      3,
       false,
       "ipfs://factory-test/",
       {
@@ -119,13 +121,9 @@ const main = async () => {
 
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
-    "OnchainArtStorageExtensionScripty",
-    {
-      libraries: {
-        Base64Converter: "0x65581bfCcbAaD498Dac703c7e4462A6E3f48644b",
-      },
-    }
+    "OnchainArtStorageExtension"
   );
+
   const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy(
     nft,
     artgeneScript.address,
@@ -145,9 +143,9 @@ const main = async () => {
 
   const tx = await onchainArtStorageExtension.deployTransaction;
   const receipt = await tx.wait();
-    
+
   const cost = receipt.gasUsed.mul(tx.gasPrice ?? 0);
-  
+
   // print table of: gas used, gas limit, gas price in gwei, cost in eth, projected cost at 30 gwei, cost in usd at eth = 1800
   console.log(`\t====================\t`);
   console.log(`\tGas used:\t${receipt.gasUsed.toString()}`);
@@ -161,25 +159,29 @@ const main = async () => {
 
   console.log(`\tCost in ETH:\t${costInEth} ETH`);
 
-  const costInUsd = ethers.utils.formatEther(cost.mul(ethers.utils.parseEther("1800")).div('' + 1e18));
+  const costInUsd = ethers.utils.formatEther(
+    cost.mul(ethers.utils.parseEther("1800")).div("" + 1e18)
+  );
 
   console.log(`\tCost in USD:\t${costInUsd} USD`);
 
   // calculate cost as if gas price is 30 gwei
 
-  const costAt30Gwei = ethers.utils.formatEther(cost.mul((30e9)).div(gasPrice));
+  const costAt30Gwei = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice));
 
   console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
 
-  const costAt30GweiInUsd = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice).mul(ethers.utils.parseEther("1800")).div('' + 1e18));
+  const costAt30GweiInUsd = ethers.utils.formatEther(
+    cost
+      .mul(30e9)
+      .div(gasPrice)
+      .mul(ethers.utils.parseEther("1800"))
+      .div("" + 1e18)
+  );
 
   console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
 
-
-
   console.log(`\t====================\t`);
-
-
 
   // verify contract
 
@@ -196,7 +198,11 @@ const main = async () => {
     });
   }
 
-  const tokenHTML = await onchainArtStorageExtension.tokenHTML(1, ethers.constants.HashZero, []);
+  const tokenHTML = await onchainArtStorageExtension.tokenHTML(
+    1,
+    ethers.constants.HashZero,
+    []
+  );
   // const tokenURIDecoded = utilities.parseBase64DataURI(tokenURI);
   // const tokenURIJSONDecoded = JSON.parse(tokenURIDecoded);
   // const animationURL = utilities.parseBase64DataURI(
@@ -208,10 +214,7 @@ const main = async () => {
   //   tokenURI
   // );
   // create and write fil to ./scripts/onchain/output.html
-  fs.writeFileSync(
-    path.join(__dirname, "onchain", "output.html"),
-    tokenHTML
-  );
+  fs.writeFileSync(path.join(__dirname, "onchain", "output.html"), tokenHTML);
 
   // run in shell: 'open scripts/onchain/output.html' in browser
 
@@ -219,17 +222,10 @@ const main = async () => {
   //   stdio: "inherit",
   // });
 
-
-
-
-  
-
-
   // utilities.writeFile(
   //   path.join(__dirname, "onchain", "metadata.json"),
   //   tokenURIDecoded
   // );
-
 };
 
 // call main only if executed directly
