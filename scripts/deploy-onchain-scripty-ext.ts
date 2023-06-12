@@ -103,6 +103,12 @@ const main = async () => {
   //   await libDeployed.deployed();
   //   console.log("Base64Converter deployed to:", libDeployed.address);
 
+  // deploy ArtgeneScript
+  const ArtgeneScript = await hre.ethers.getContractFactory("ArtgeneScript");
+  const artgeneScript = await ArtgeneScript.deploy();
+  await artgeneScript.deployed();
+  console.log("ArtgeneScript deployed to:", artgeneScript.address);
+
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
     "OnchainArtStorageExtensionScripty",
@@ -114,6 +120,7 @@ const main = async () => {
   );
   const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy(
     nft,
+    artgeneScript.address,
     deployedContracts.goerli.ETHFSFileStorage,
     deployedContracts.goerli.ScriptyStorage,
     deployedContracts.goerli.ScriptyBuilder
@@ -152,11 +159,11 @@ const main = async () => {
 
   // calculate cost as if gas price is 30 gwei
 
-  const costAt30Gwei = ethers.utils.formatEther(cost.mul(ethers.utils.parseEther("30")).div(gasPrice));
+  const costAt30Gwei = ethers.utils.formatEther(cost.mul((30e9)).div(gasPrice));
 
   console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
 
-  const costAt30GweiInUsd = ethers.utils.formatEther(cost.mul(ethers.utils.parseEther("30")).div(gasPrice).mul(ethers.utils.parseEther("1800")).div('' + 1e18));
+  const costAt30GweiInUsd = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice).mul(ethers.utils.parseEther("1800")).div('' + 1e18));
 
   console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
 
