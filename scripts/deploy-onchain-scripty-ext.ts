@@ -109,6 +109,14 @@ const main = async () => {
   await artgeneScript.deployed();
   console.log("ArtgeneScript deployed to:", artgeneScript.address);
 
+  if (hre.network.name === "goerli") {
+    // dont wait for verification on goerli
+    hre.run("verify:verify", {
+      address: artgeneScript.address,
+      constructorArguments: [],
+    });
+  }
+
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
     "OnchainArtStorageExtensionScripty",
@@ -180,6 +188,7 @@ const main = async () => {
       address: onchainArtStorageExtension.address,
       constructorArguments: [
         nft,
+        artgeneScript.address,
         deployedContracts.goerli.ETHFSFileStorage,
         deployedContracts.goerli.ScriptyStorage,
         deployedContracts.goerli.ScriptyBuilder,
