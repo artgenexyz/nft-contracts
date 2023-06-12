@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 // import Base64
 // import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "../interfaces/IERC721Community.sol";
-import "../interfaces/INFTExtension.sol";
-import "./base/NFTExtension.sol";
-import "../interfaces/IRenderer.sol";
+import "../../interfaces/IERC721Community.sol";
+import "../../interfaces/INFTExtension.sol";
+import "../../interfaces/IRenderer.sol";
+import "../base/NFTExtension.sol";
 
 library Base64Converter {
     function bytesToBase64(
