@@ -5,7 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "solady/src/utils/Base64.sol";
 
-// Using https://github.com/artgenexyz/app/blob/08516e28b392a021237aca0792f0bc0f6d48b740/components/code-editor/iframe/renderHTML.ts
+// See full template: https://github.com/artgenexyz/generative-template
+//
 // ((window) => {
 //     let dna =
 //         new URLSearchParams(window.location.search).get("dna") ||
@@ -22,8 +23,7 @@ import "solady/src/utils/Base64.sol";
 //                 .join("");
 //     }
 
-//     // Read about random generators:
-//     // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+//     // Seeded PRNG
 //     function xmur3(str) {
 //         for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
 //             h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
@@ -62,8 +62,7 @@ import "solady/src/utils/Base64.sol";
 //     const preview = () => {
 //         window.rendered = true;
 //     };
-
-//     // rand(a) returns [0, a); rand(a, b) returns [a, b)
+//
 //     const rand = (a, b) => {
 //         if (Array.isArray(a) && b === undefined) {
 //             return a[Math.floor(_rand() * a.length)];
@@ -76,20 +75,19 @@ import "solady/src/utils/Base64.sol";
 //             return _rand() * (b - a) + a;
 //         }
 //     };
-
+//
 //     window.rand = rand;
 //     window.preview = preview;
-
-//     // for compatibility
+//
 //     window.fxrand = rand;
 //     window.fxpreview = preview;
-
+//
 //     window.genome = [];
-
+//
 //     const evolve = (name, value) => {
 //         const genome = window.genome;
 //         const gene = genome.find((g) => g.name === name);
-
+//
 //         if (!gene) {
 //             genome.push({
 //                 name,
@@ -98,15 +96,15 @@ import "solady/src/utils/Base64.sol";
 //         } else {
 //             gene.value = value;
 //         }
-
+//
 //         return {
 //             name,
 //             value,
 //         };
 //     };
-
+//
 //     window.dna = dna;
-
+//
 //     window.Artgene = {
 //         dna,
 //         genome: window.genome,
