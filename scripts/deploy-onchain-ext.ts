@@ -3,6 +3,13 @@
 import fs from "fs";
 import hre, { ethers } from "hardhat";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
+
+import readline from "readline";
+
+import { stdin as input, stdout as output } from "process";
+import path from "path";
+import { Address } from "hardhat-deploy/dist/types";
+
 const { getGasCost, getMintConfig } = require("../test/utils");
 
 // import * as utilities from "scripty.sol/utils";
@@ -32,12 +39,6 @@ const deployedContracts = {
   },
 };
 
-import readline from "readline";
-
-import { stdin as input, stdout as output } from "process";
-import path from "path";
-import { spawnSync } from "child_process";
-
 const rl = readline.createInterface({ input, output });
 
 const question = (query: string): Promise<string> =>
@@ -53,6 +54,49 @@ const question = (query: string): Promise<string> =>
   });
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const calculateCosts = async (tx: any) => {
+  const receipt = await tx.wait();
+
+  const cost = receipt.gasUsed.mul(tx.gasPrice ?? 0);
+
+  // print table of: gas used, gas limit, gas price in gwei, cost in eth, projected cost at 30 gwei, cost in usd at eth = 1800
+  console.log(`\t====================\t`);
+  console.log(`\tGas used:\t${receipt.gasUsed.toString()}`);
+  console.log(`\tGas limit:\t${tx.gasLimit.toString()}`);
+
+  const gasPrice = tx.gasPrice!;
+
+  console.log(`\tGas price:\t${gasPrice.div(1e9).toString()} gwei`);
+
+  const costInEth = ethers.utils.formatEther(cost);
+
+  console.log(`\tCost in ETH:\t${costInEth} ETH`);
+
+  const costInUsd = ethers.utils.formatEther(
+    cost.mul(ethers.utils.parseEther("1800")).div("" + 1e18)
+  );
+
+  console.log(`\tCost in USD:\t${costInUsd} USD`);
+
+  // calculate cost as if gas price is 30 gwei
+
+  const costAt30Gwei = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice));
+
+  console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
+
+  const costAt30GweiInUsd = ethers.utils.formatEther(
+    cost
+      .mul(30e9)
+      .div(gasPrice)
+      .mul(ethers.utils.parseEther("1800"))
+      .div("" + 1e18)
+  );
+
+  console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
+
+  console.log(`\t====================\t`);
+};
 
 const main = async () => {
   const [admin] = await hre.ethers.getSigners();
@@ -72,7 +116,7 @@ const main = async () => {
   // check that nft is a valid address and has contract code
   // const code = await hre.ethers.provider.getCode(nft);
   if (!nft || (await hre.ethers.provider.getCode(nft)) === "0x") {
-    if (hre.network.name === "goerli") {
+    if (hre.network.name === "goerli" || hre.network.name === "mainnet") {
       throw new Error("NFT contract address is not valid");
     }
 
@@ -106,13 +150,15 @@ const main = async () => {
   //   console.log("Base64Converter deployed to:", libDeployed.address);
 
   // deploy ArtgeneScript
-  const ArtgeneScript = await hre.ethers.getContractFactory("ArtgeneScript");
+  const ArtgeneScript = await hre.ethers.getContractFactory("Artgene_js");
   const artgeneScript = await ArtgeneScript.deploy();
   await artgeneScript.deployed();
   console.log("ArtgeneScript deployed to:", artgeneScript.address);
 
-  if (hre.network.name === "goerli") {
-    // dont wait for verification on goerli
+  await calculateCosts(artgeneScript.deployTransaction);
+
+  if (hre.network.name === "goerli" || hre.network.name === "mainnet") {
+    // dont wait for verification
     hre.run("verify:verify", {
       address: artgeneScript.address,
       constructorArguments: [],
@@ -121,15 +167,26 @@ const main = async () => {
 
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
-    "OnchainArtStorageExtension"
+    "InformationAge_js"
   );
+
+  const deps: [Address, Address, Address] =
+    hre.network.name === "goerli" || process.env.FORK === "goerli"
+      ? [
+          deployedContracts.goerli.ETHFSFileStorage,
+          deployedContracts.goerli.ScriptyStorage,
+          deployedContracts.goerli.ScriptyBuilder,
+        ]
+      : [
+          deployedContracts.mainnet.ETHFSFileStorage,
+          deployedContracts.mainnet.ScriptyStorage,
+          deployedContracts.mainnet.ScriptyBuilder,
+        ];
 
   const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy(
     nft,
     artgeneScript.address,
-    deployedContracts.goerli.ETHFSFileStorage,
-    deployedContracts.goerli.ScriptyStorage,
-    deployedContracts.goerli.ScriptyBuilder
+    ...deps
   );
 
   await onchainArtStorageExtension.deployed();
@@ -140,52 +197,10 @@ const main = async () => {
   );
 
   // deploy cost analysis
-
-  const tx = await onchainArtStorageExtension.deployTransaction;
-  const receipt = await tx.wait();
-
-  const cost = receipt.gasUsed.mul(tx.gasPrice ?? 0);
-
-  // print table of: gas used, gas limit, gas price in gwei, cost in eth, projected cost at 30 gwei, cost in usd at eth = 1800
-  console.log(`\t====================\t`);
-  console.log(`\tGas used:\t${receipt.gasUsed.toString()}`);
-  console.log(`\tGas limit:\t${tx.gasLimit.toString()}`);
-
-  const gasPrice = tx.gasPrice!;
-
-  console.log(`\tGas price:\t${gasPrice.div(1e9).toString()} wei`);
-
-  const costInEth = ethers.utils.formatEther(cost);
-
-  console.log(`\tCost in ETH:\t${costInEth} ETH`);
-
-  const costInUsd = ethers.utils.formatEther(
-    cost.mul(ethers.utils.parseEther("1800")).div("" + 1e18)
-  );
-
-  console.log(`\tCost in USD:\t${costInUsd} USD`);
-
-  // calculate cost as if gas price is 30 gwei
-
-  const costAt30Gwei = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice));
-
-  console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
-
-  const costAt30GweiInUsd = ethers.utils.formatEther(
-    cost
-      .mul(30e9)
-      .div(gasPrice)
-      .mul(ethers.utils.parseEther("1800"))
-      .div("" + 1e18)
-  );
-
-  console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
-
-  console.log(`\t====================\t`);
+  await calculateCosts(onchainArtStorageExtension.deployTransaction);
 
   // verify contract
-
-  if (hre.network.name === "goerli") {
+  if (hre.network.name === "goerli" || hre.network.name === "mainnet") {
     await hre.run("verify:verify", {
       address: onchainArtStorageExtension.address,
       constructorArguments: [
@@ -203,29 +218,24 @@ const main = async () => {
     ethers.constants.HashZero,
     []
   );
-  // const tokenURIDecoded = utilities.parseBase64DataURI(tokenURI);
-  // const tokenURIJSONDecoded = JSON.parse(tokenURIDecoded);
-  // const animationURL = utilities.parseBase64DataURI(
-  //   tokenURIJSONDecoded.animation_url
-  // );
 
-  // utilities.writeFile(
-  //   path.join(__dirname, "onchain", "tokenURI.txt"),
-  //   tokenURI
-  // );
-  // create and write fil to ./scripts/onchain/output.html
   fs.writeFileSync(path.join(__dirname, "onchain", "output.html"), tokenHTML);
+  // record gas usage calling tokenHTML and render() functions
+  const tokenHTMLGas = await onchainArtStorageExtension.estimateGas.tokenHTML(
+    1,
+    ethers.constants.HashZero,
+    []
+  );
 
-  // run in shell: 'open scripts/onchain/output.html' in browser
+  const renderGas = await onchainArtStorageExtension.estimateGas.render(
+    1,
+    ethers.constants.HashZero
+  );
 
-  // spawnSync("open", [path.join(__dirname, "onchain", "output.html")], {
-  //   stdio: "inherit",
-  // });
-
-  // utilities.writeFile(
-  //   path.join(__dirname, "onchain", "metadata.json"),
-  //   tokenURIDecoded
-  // );
+  console.log(`\t====================\t`);
+  console.log(`\tToken HTML gas:\t\t${tokenHTMLGas}`);
+  console.log(`\tRender gas:\t\t${renderGas}`);
+  console.log(`\t====================\t`);
 };
 
 // call main only if executed directly
