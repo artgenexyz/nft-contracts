@@ -25,7 +25,6 @@ import "./interfaces/IRenderer.sol";
 import "./interfaces/IArtgene721.sol";
 import "./interfaces/IArtgenePlatform.sol";
 import "./utils/OpenseaProxy.sol";
-import "./utils/operator-filterer/upgradable/DefaultOperatorFiltererUpgradeable.sol";
 
 /**
  * @title contract by artgene.xyz
@@ -88,7 +87,6 @@ contract Artgene721Implementation is
     ERC721ABurnableUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable,
-    DefaultOperatorFiltererUpgradeable,
     IArtgene721Implementation,
     IArtgene721 // implements IERC2981, IERC4906
 {
@@ -192,7 +190,6 @@ contract Artgene721Implementation is
 
         maxPerMint = MAX_PER_MINT_LIMIT;
         isOpenSeaProxyActive = true;
-        isOpenSeaTransferFilterEnabled = true;
 
         // test if platform is deployed
         require(
@@ -208,7 +205,6 @@ contract Artgene721Implementation is
         __ERC721ABurnable_init();
         __ReentrancyGuard_init();
         __Ownable_init();
-        __DefaultOperatorFilterer_init();
 
         _configure(
             _config.publicPrice,
@@ -271,11 +267,9 @@ contract Artgene721Implementation is
     // so the real initializer is the only initializer
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {
-        // NB: this is run only once per implementation, when it's deployed
-        // NB: this is NOT run when deploying Proxy
         require(
-            address(this) == ARTGENE_PROXY_IMPLEMENTATION,
-            "Only deployable to vanity address"
+            ARTGENE_PLATFORM_ADDRESS.code.length == 0,
+            "Artgene Platform is not deployed, revert"
         );
     }
 
@@ -332,10 +326,6 @@ contract Artgene721Implementation is
     }
 
     // ----- Admin functions -----
-
-    function toggleOpenSeaTransferFilter() public onlyOwner {
-        isOpenSeaTransferFilterEnabled = !isOpenSeaTransferFilterEnabled;
-    }
 
     function setBaseURI(string calldata uri) public onlyOwner {
         baseURI = uri;
@@ -737,15 +727,6 @@ contract Artgene721Implementation is
     }
 
     // -------- ERC721 overrides --------
-
-    function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startId,
-        uint256 quantity
-    ) internal override onlyAllowedOperator(from) {
-        super._beforeTokenTransfers(from, to, startId, quantity);
-    }
 
     function supportsInterface(
         bytes4 interfaceId

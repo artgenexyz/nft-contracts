@@ -45,3 +45,7 @@ wiki/
 
 generate-vanity.sh
 
+.parcel-cache/
+dist/
+
+
