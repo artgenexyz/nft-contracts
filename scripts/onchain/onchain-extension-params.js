@@ -16,7 +16,7 @@ const artgeneScript = {
 };
 
 module.exports = [
-  "0xb276D2184F6AaDA58BDb6526d86f00Fc8543c26C",
+  "0xA0aB30ABbb6135ddD2Be89D6CdAE5d6B33EE08aD",
   artgeneScript.address,
 
   deployedContracts.mainnet.ETHFSFileStorage,
