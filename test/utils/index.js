@@ -2,7 +2,7 @@ const BigNumber = require("bignumber.js");
 const { MerkleTree } = require('merkletreejs');
 const { isAddress, toChecksumAddress } = require('web3-utils');
 const keccak256 = require('keccak256');
-const ether = require("@openzeppelin/test-helpers/src/ether");
+const { ethers } = require("hardhat");
 
 const getGasCost = tx => {
     return new BigNumber(tx.receipt.gasUsed).times(tx.receipt.effectiveGasPrice);
@@ -37,6 +37,53 @@ const getAirdropTree = (addresses) => {
     }
 
 }
+
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const calculateCosts = async (tx) => {
+  const receipt = await tx.wait();
+
+  const cost = receipt.gasUsed.mul(tx.gasPrice || 0);
+
+  // print table of: gas used, gas limit, gas price in gwei, cost in eth, projected cost at 30 gwei, cost in usd at eth = 1800
+  console.log(`\t====================\t`);
+  console.log(`\tGas used:\t${receipt.gasUsed.toString()}`);
+  console.log(`\tGas limit:\t${tx.gasLimit.toString()}`);
+
+  const gasPrice = tx.gasPrice;
+
+  console.log(`\tGas price:\t${gasPrice.div(1e9).toString()} gwei`);
+
+  const costInEth = ethers.utils.formatEther(cost);
+
+  console.log(`\tCost in ETH:\t${costInEth} ETH`);
+
+  const costInUsd = ethers.utils.formatEther(
+    cost.mul(ethers.utils.parseEther("1800")).div("" + 1e18)
+  );
+
+  console.log(`\tCost in USD:\t${costInUsd} USD`);
+
+  // calculate cost as if gas price is 30 gwei
+
+  const costAt30Gwei = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice));
+
+  console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
+
+  const costAt30GweiInUsd = ethers.utils.formatEther(
+    cost
+      .mul(30e9)
+      .div(gasPrice)
+      .mul(ethers.utils.parseEther("1800"))
+      .div("" + 1e18)
+  );
+
+  console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
+
+  console.log(`\t====================\t`);
+};
+
 
 // struct MintConfig {
 //     uint256 publicPrice;
@@ -88,4 +135,4 @@ async function rpc(request) {
 }
 
 
-module.exports = { getGasCost, getMintConfig, getAirdropTree, processAddress, createNFTSale, mineBlock, rpc }
+module.exports = { getGasCost, getMintConfig, calculateCosts, getAirdropTree, processAddress, createNFTSale, delay, mineBlock, rpc }
