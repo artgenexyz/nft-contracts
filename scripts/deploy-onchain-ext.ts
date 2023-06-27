@@ -36,7 +36,7 @@ const deployedContracts = {
     ScriptyStorage: "0x730B0ADaaD15B0551928bAE7011F2C1F2A9CA20C",
     ScriptyBuilder: "0xc9AB9815d4D5461F3b53Ebd857b6582E82A45C49",
     ETHFSFileStorage: "0x70a78d91A434C1073D47b2deBe31C184aA8CA9Fa",
-    ArtgeneScript: "",
+    ArtgeneScript: "0x5CDdB347c38F5815b1bA7Ec6cC548b1FD4D3919E",
   },
 };
 
