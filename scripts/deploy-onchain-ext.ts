@@ -1,6 +1,5 @@
-import { ArtgeneScript } from "./../typechain-types/contracts/extensions/OnchainArtStorageExtensionScripty.sol/ArtgeneScript";
-// import { deployedContracts } from 'scripty.sol';
-// import { Base64Converter } from "../typechain-types/contracts/extensions/OnchainArtStorageExtension.sol/Base64Converter";
+import { Artgene_js } from "./../typechain-types/contracts/extensions/onchain-art/ArtgeneScript.sol/Artgene_js";
+
 import fs from "fs";
 import hre, { ethers } from "hardhat";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
@@ -10,12 +9,11 @@ import readline from "readline";
 import { stdin as input, stdout as output } from "process";
 import path from "path";
 import { Address } from "hardhat-deploy/dist/types";
+import { Artgene_js__factory } from "../typechain-types";
 
-const { getGasCost, getMintConfig } = require("../test/utils");
+const { calculateCosts, getMintConfig } = require("../test/utils");
 
-// import * as utilities from "scripty.sol/utils";
-
-// import deployedContracts from "scripty.sol/utilits/deployedContracts";
+const artScriptContractName = "Nests_js";
 
 // Deployed Contracts
 // Ethereum Mainnet contracts:
@@ -55,51 +53,6 @@ const question = (query: string): Promise<string> =>
       reject(err);
     }
   });
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const calculateCosts = async (tx: any) => {
-  const receipt = await tx.wait();
-
-  const cost = receipt.gasUsed.mul(tx.gasPrice ?? 0);
-
-  // print table of: gas used, gas limit, gas price in gwei, cost in eth, projected cost at 30 gwei, cost in usd at eth = 1800
-  console.log(`\t====================\t`);
-  console.log(`\tGas used:\t${receipt.gasUsed.toString()}`);
-  console.log(`\tGas limit:\t${tx.gasLimit.toString()}`);
-
-  const gasPrice = tx.gasPrice!;
-
-  console.log(`\tGas price:\t${gasPrice.div(1e9).toString()} gwei`);
-
-  const costInEth = ethers.utils.formatEther(cost);
-
-  console.log(`\tCost in ETH:\t${costInEth} ETH`);
-
-  const costInUsd = ethers.utils.formatEther(
-    cost.mul(ethers.utils.parseEther("1800")).div("" + 1e18)
-  );
-
-  console.log(`\tCost in USD:\t${costInUsd} USD`);
-
-  // calculate cost as if gas price is 30 gwei
-
-  const costAt30Gwei = ethers.utils.formatEther(cost.mul(30e9).div(gasPrice));
-
-  console.log(`\tCost at 30 gwei:\t${costAt30Gwei} ETH`);
-
-  const costAt30GweiInUsd = ethers.utils.formatEther(
-    cost
-      .mul(30e9)
-      .div(gasPrice)
-      .mul(ethers.utils.parseEther("1800"))
-      .div("" + 1e18)
-  );
-
-  console.log(`\tCost at 30 gwei:\t${costAt30GweiInUsd} USD`);
-
-  console.log(`\t====================\t`);
-};
 
 const main = async () => {
   const [admin] = await hre.ethers.getSigners();
@@ -148,6 +101,8 @@ const main = async () => {
 
   console.log("NFT contract address is", nft);
   const network = hre.network.name as keyof typeof deployedContracts;
+  let artgeneScript: Artgene_js;
+
   if (!deployedContracts[network]?.ArtgeneScript) {
     //   const lib = await hre.ethers.getContractFactory("Base64Converter");
     //   const libDeployed = await lib.deploy();
@@ -156,8 +111,11 @@ const main = async () => {
 
     // deploy ArtgeneScript
     const ArtgeneScript = await hre.ethers.getContractFactory("Artgene_js");
-    const artgeneScript = await ArtgeneScript.deploy();
-    await artgeneScript.deployed();
+    const contract = await ArtgeneScript.deploy();
+    await contract.deployed();
+
+    artgeneScript = contract;
+
     console.log("ArtgeneScript deployed to:", artgeneScript.address);
 
     await calculateCosts(artgeneScript.deployTransaction);
@@ -169,11 +127,16 @@ const main = async () => {
         constructorArguments: [],
       });
     }
+  } else {
+    artgeneScript = Artgene_js__factory.connect(
+      deployedContracts[network].ArtgeneScript,
+      admin
+    );
   }
 
   // deploy OnchainArtStorageExtension.sol
   const OnchainArtStorageExtension = await hre.ethers.getContractFactory(
-    "InformationAge_js"
+    artScriptContractName
   );
 
   const deps: [Address, Address, Address] =

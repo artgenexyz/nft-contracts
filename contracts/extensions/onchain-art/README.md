@@ -41,6 +41,12 @@ gzip -c scripts/user-script.js | xxd -p | tr -d '\n' | pbcopy
 
 Also see `scripts/onchain/gzip-hex.sh`
 
+## Deploying and testing gas
+
+```bash
+FORK=mainnet hh run scripts/deploy-onchain-ext.ts && open scripts/onchain/output.html
+```
+
 
 
 
