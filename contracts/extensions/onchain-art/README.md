@@ -31,7 +31,7 @@ Also see `compress.sh` for automated script doing that
 
 ## User Script
 
-Contract `OnchainArtStorageExtension` uses `scripty.sol` to fetch dependencies. This contract is an onchain code storage used per-project.
+Contract `ScriptyOnchainArt` uses `scripty.sol` to fetch dependencies. This contract is an onchain code storage used per-project.
 
 To generate hex version of your custom code, use same algorithm as for artgene.js:
 

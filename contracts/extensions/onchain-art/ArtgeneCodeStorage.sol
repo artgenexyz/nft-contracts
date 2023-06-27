@@ -10,7 +10,7 @@ import "../base/NFTExtension.sol";
 
 import "./ArtgeneScript.sol";
 
-contract ArtgeneCodeStorage is
+abstract contract ArtgeneCodeStorage is
     NFTExtension,
     INFTURIExtension,
     IRenderer
