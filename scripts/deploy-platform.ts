@@ -1,6 +1,7 @@
 import fs from "fs";
-import hre, { ethers } from "hardhat";
+import hre, { ethers, web3 } from "hardhat";
 import { getContractAddress, parseEther } from "ethers/lib/utils";
+
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -9,6 +10,21 @@ const GAS_PRICE_GWEI = "35";
 export const PLATFORM_ADDRESS = "0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9";
 export const PLATFORM_DEPLOYER_ADDRESS =
   "0xE4A02093339a9a908cF9d897481813Ddb5494d44";
+
+export const checkDeployed = async () => {
+  let deployedAddress;
+
+  // check if there is contract code at IMPLEMENTATION_ADDRESS
+  const code = await web3.eth.getCode(PLATFORM_ADDRESS);
+
+  if (code === "0x") {
+    deployedAddress = await main();
+  } else {
+    deployedAddress = PLATFORM_ADDRESS;
+  }
+
+  return deployedAddress;
+};
 
 export const getVanityDeployer = async () => {
   // if (hre.network.name === "hardhat") {
