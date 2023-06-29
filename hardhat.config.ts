@@ -15,7 +15,8 @@ import "@nomiclabs/hardhat-solhint";
 
 import "@matterlabs/hardhat-zksync-toolbox";
 
-import "@tenderly/hardhat-tenderly";
+// NB: temporarily disabled due to extensive logging
+// import "@tenderly/hardhat-tenderly";
 
 import "solidity-coverage";
 import "hardhat-gas-reporter";
