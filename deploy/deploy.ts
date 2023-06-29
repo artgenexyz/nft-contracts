@@ -4,7 +4,14 @@ import { Wallet, utils } from "zksync-web3";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
-import { mnemonic } from "./../hardhat.config";
+import { mnemonic } from "../hardhat.config";
+import { ZkSyncArtifact } from "@matterlabs/hardhat-zksync-deploy/dist/types";
+import {
+  TransactionDetails,
+  TransactionReceipt,
+  TransactionRequest,
+  TransactionResponse,
+} from "zksync-web3/build/src/types";
 
 const contractName = process.env.CONTRACT || "DemoCollection";
 
@@ -17,8 +24,12 @@ async function getDeployer(hre: HardhatRuntimeEnvironment) {
   return new Deployer(hre, wallet);
 }
 
-async function deployContract(deployer, artifact, args = []) {
-  const deploymentFee = await deployer.estimateDeployFee(artifact, []);
+async function deployContract(
+  deployer: Deployer,
+  artifact: ZkSyncArtifact,
+  args = []
+) {
+  const deploymentFee = await deployer.estimateDeployFee(artifact, args);
 
   const parsedFee = ethers.utils.formatEther(deploymentFee.toString());
 
@@ -55,7 +66,8 @@ async function deployContract(deployer, artifact, args = []) {
 
   const contract = await deployer.deploy(artifact, args);
 
-  const tx = contract.deployTransaction;
+  const tx = contract.deployTransaction as TransactionRequest &
+    TransactionResponse;
 
   console.log(
     `The contract was deployed.`,
@@ -105,10 +117,10 @@ async function deployContract(deployer, artifact, args = []) {
     `\n| gasPerPubdata\t\t| ${tx.customData.gasPerPubdata.toString()}\t\t\t\t|`,
     `\n| gasLimit\t\t| ${tx.gasLimit.toString()}\t\t\t|`,
     `\n| gasUsed\t\t| ${receipt.gasUsed.toString()}\t\t\t|`,
-    `\n| maxPriorityFeePerGas\t| ${tx.maxPriorityFeePerGas.toString()}\t\t\t|`,
-    `\n| maxFeePerGas\t\t| ${tx.maxFeePerGas.toString()}\t\t\t|`,
+    `\n| maxPriorityFeePerGas\t| ${tx.maxPriorityFeePerGas?.toString()}\t\t\t|`,
+    `\n| maxFeePerGas\t\t| ${tx.maxFeePerGas?.toString()}\t\t\t|`,
     `\n| totalCost\t\t| ${formatEther(
-      receipt.gasUsed.mul(tx.maxFeePerGas)
+      receipt.gasUsed.mul(tx.maxFeePerGas).div((1e18).toString())
     )} ETH\t\t|`,
     // refund
     // `\n| refund\t\t| ${formatEther(receipt.))} ETH\t|`,
@@ -155,10 +167,12 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const deployer = await getDeployer(hre);
   const artifact = await deployer.loadArtifact(contractName);
-  const args = [];
+  const args = process.env.ARGS ? JSON.parse(process.env.ARGS) : [];
+
+  console.log("Deploying the contract with args:", args);
 
   try {
-    const deployed = await deployContract(deployer, artifact);
+    const deployed = await deployContract(deployer, artifact, args);
 
     const verificationId = await verifyContract(hre, artifact, deployed, args);
 

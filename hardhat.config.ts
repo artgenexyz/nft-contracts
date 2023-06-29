@@ -13,9 +13,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint";
 
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-verify";
+import "@matterlabs/hardhat-zksync-toolbox";
 
 import "@tenderly/hardhat-tenderly";
 
@@ -136,7 +134,6 @@ const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
-      zksync: false,
       forking:
         FORK === "mainnet" && ALCHEMY_API
           ? {
@@ -187,28 +184,24 @@ const config: HardhatUserConfig = {
       accounts: {
         mnemonic,
       },
-      zksync: false,
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
-      zksync: false,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
-      zksync: false,
     },
     polygon: {
       url: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
       accounts: {
         mnemonic,
       },
-      zksync: false,
     },
   },
 
@@ -225,7 +218,7 @@ const config: HardhatUserConfig = {
   },
 
   zksolc: {
-    version: "1.3.10",
+    version: "1.3.11",
     compilerSource: "binary",
 
     settings: {
@@ -265,13 +258,16 @@ const config: HardhatUserConfig = {
     ? undefined
     : {
         eachLine: (hre) =>
-          hre.network.zksync
-            ? {
-                settings: {},
-                // Dont transform anything for zksync
-                transform: (line: string) => line,
-              }
-            : {
+          hre.network.name.includes("zksync")
+            ? undefined
+            : // ? {
+              //     settings: {
+              //       cache: false,
+              //     },
+              //     transform: (line: string) => line,
+              //   }
+              // (console.log("Using zksync, so turn off preprocess"), undefined)
+              {
                 settings: {
                   // this is needed so that etherscan verification works
                   cache: false,

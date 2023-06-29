@@ -29,8 +29,8 @@
   "devDependencies": {
     "@foundry-rs/hardhat-forge": "^0.1.17",
     "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
-    "@matterlabs/hardhat-zksync-solc": "^0.3.17",
-    "@matterlabs/hardhat-zksync-verify": "^0.1.7",
+    "@matterlabs/hardhat-zksync-toolbox": "^0.1.1",
+    "@matterlabs/hardhat-zksync-verify": "^0.1.8",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@nomiclabs/hardhat-ganache": "^2.0.1",
