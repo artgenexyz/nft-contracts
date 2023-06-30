@@ -193,12 +193,12 @@ contract Artgene721Base is
 
         // test if platform is deployed
         require(
-            ARTGENE_PLATFORM_ADDRESS.code.length != 0,
+            getArtgenePlatformAddress().code.length != 0,
             "Platform not deployed"
         );
 
         (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(
-            ARTGENE_PLATFORM_ADDRESS
+            getArtgenePlatformAddress()
         ).getPlatformInfo();
 
         _configure(
