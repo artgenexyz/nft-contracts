@@ -14,8 +14,9 @@ import {
 } from "zksync-web3/build/src/types";
 
 const contractName = process.env.CONTRACT || "DemoCollection";
+const args = process.env.ARGS ? JSON.parse(process.env.ARGS) : [];
 
-async function getDeployer(hre: HardhatRuntimeEnvironment) {
+export async function getDeployer(hre: HardhatRuntimeEnvironment) {
   const hdWallet = ethers.Wallet.fromMnemonic(mnemonic);
   const wallet = new Wallet(hdWallet.privateKey);
 
@@ -24,7 +25,7 @@ async function getDeployer(hre: HardhatRuntimeEnvironment) {
   return new Deployer(hre, wallet);
 }
 
-async function deployContract(
+export async function deployContract(
   deployer: Deployer,
   artifact: ZkSyncArtifact,
   args = []
@@ -134,7 +135,7 @@ async function deployContract(
   return contract;
 }
 
-async function verifyContract(hre, artifact, contract, args = []) {
+export async function verifyContract(hre, artifact, contract, args = []) {
   console.log(
     "Deployed with constructor args:",
     contract.interface.encodeDeploy(args)
@@ -167,7 +168,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   const deployer = await getDeployer(hre);
   const artifact = await deployer.loadArtifact(contractName);
-  const args = process.env.ARGS ? JSON.parse(process.env.ARGS) : [];
 
   console.log("Deploying the contract with args:", args);
 

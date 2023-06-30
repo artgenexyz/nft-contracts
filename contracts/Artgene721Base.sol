@@ -192,14 +192,17 @@ contract Artgene721Base is
         isOpenSeaProxyActive = true;
 
         // test if platform is deployed
-        require(
-            ARTGENE_PLATFORM_ADDRESS.code.length != 0,
-            "Platform not deployed"
-        );
+        // require(
+        //     ARTGENE_PLATFORM_ADDRESS.code.length != 0,
+        //     "Platform not deployed"
+        // );
 
-        (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(
-            ARTGENE_PLATFORM_ADDRESS
-        ).getPlatformInfo();
+        // HACK: temporary solution
+        (PLATFORM_FEE, PLATFORM_TREASURY) = (500, payable(msg.sender));
+
+        // IArtgenePlatform(
+        //     ARTGENE_PLATFORM_ADDRESS
+        // ).getPlatformInfo();
 
         _configure(
             _config.publicPrice,
