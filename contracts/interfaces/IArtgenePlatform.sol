@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-address constant ARTGENE_PLATFORM_ADDRESS = 0x983A23615aC3ECdeBe7d1438251403d57956Ccba;
+address constant ARTGENE_PLATFORM_ADDRESS = 0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9;
 address constant ARTGENE_PLATFORM_ADDRESS_ZKSYNC = 0x983A23615aC3ECdeBe7d1438251403d57956Ccba;
 
 function getChainID() view returns (uint256) {
