@@ -154,6 +154,7 @@ export async function verifyContract(hre, artifact, contract, args = []) {
     address: contractAddress,
     contract: `${artifact.sourceName}:${artifact.contractName}`,
     constructorArguments: args,
+    // NB: we just deployed and we just compiled, no need to re-compile here
   });
 
   return verificationId;
