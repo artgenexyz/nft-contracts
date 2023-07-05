@@ -15,6 +15,7 @@ import {
 
 const contractName = process.env.CONTRACT || "DemoCollection";
 const args = process.env.ARGS ? JSON.parse(process.env.ARGS) : [];
+const newOwner = process.env.NEW_OWNER;
 
 export async function getDeployer(hre: HardhatRuntimeEnvironment) {
   const hdWallet = ethers.Wallet.fromMnemonic(mnemonic);
@@ -175,6 +176,14 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     const deployed = await deployContract(deployer, artifact, args);
 
     const verificationId = await verifyContract(hre, artifact, deployed, args);
+
+    if (newOwner) {
+      console.log(`Transferring ownership to ${newOwner}...`);
+      // transfer ownership
+      const tx = await deployed.transferOwnership(newOwner);
+      await tx.wait();
+      console.log(`Ownership transferred to ${newOwner}`);
+    }
 
     console.log(
       "Check the verification status: \n\n\thh verify-status --verification-id",
