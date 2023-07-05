@@ -10,7 +10,27 @@ Deploy steps
 
 Plan
 
+TODO
+
+
+## send message to mainnet from l2
+
+- deploy Gradients to zksync goerli
+- mint 10 tokens
+- deploy ONFTProxy to zksync goerli
+- deploy ONFT to goerli l1
+- call setTrustedRemote on zksync and on goerli with addresses from that deployment
+- transfer and burn Gradient token to ONFTProxy
 - 
+
+## HH tools
+
+```sh
+hh deploy-zksync-contract --network zksync Gradients --args '["...","..."]'
+hh call --network zksync Gradients 0x7eEc4b2207aa54dbdF547e6619204d1b756C5889 totalSupply
+hh call --network zksync Gradients 0x7eEc4b2207aa54dbdF547e6619204d1b756C5889 transferOwnership --args '["0xnewowner"]'
+```
+
 
 
 ## Guide
