@@ -31,6 +31,8 @@ import "hardhat-output-validator";
 import "@buildship/hardhat-ipfs-upload";
 import "@primitivefi/hardhat-dodoc";
 
+import "@nomicfoundation/hardhat-foundry";
+
 import "./tasks/accounts";
 import "./tasks/call";
 import "./tasks/clean-zksync";
