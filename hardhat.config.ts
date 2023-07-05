@@ -37,6 +37,7 @@ import "./tasks/accounts";
 import "./tasks/call";
 import "./tasks/clean-zksync";
 import "./tasks/deploy-zksync";
+import "./tasks/deploy-contract";
 import "./tasks/send-all-funds";
 
 const INFURA_KEY = process.env.INFURA_KEY;
@@ -52,6 +53,7 @@ const FORK = process.env.FORK;
 const ZKSYNC = process.env.ZKSYNC;
 
 stdout.isTTY &&
+  false &&
   console.log("Using env variables", {
     INFURA_KEY: INFURA_KEY ? "✅" : "❌",
     ETHERSCAN_API_KEY: ETHERSCAN_API_KEY ? "✅" : "❌",

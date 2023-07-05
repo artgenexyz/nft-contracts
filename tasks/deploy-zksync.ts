@@ -217,7 +217,7 @@ task("deploy-zksync-contract", "Deploys a contract")
       console.log(`
         Verify using:
 
-            hh verify ${deployed.address} --contract-args ${argsFile} --network ${hre.network.name} --contract ${contractName}
+            hh verify ${deployed.address} --constructor-args ${argsFile} --network ${hre.network.name} --contract ${contractFullName}
       `);
 
       const verificationId = await verifyContract(
