@@ -41,13 +41,13 @@ era: 165,
 
 ```sh
 # testnet
-export NFT=0x898032245550EB4B24A982fdC5eef65734676f76
-export L2Endpoint=0x093D2CF57f764f09C3c2Ac58a42A2601B8C79281
-export L1Endpoint=0xbfD2135BFfbb0B5378b56643c2Df8a87552Bfa23
+# export NFT=0x898032245550EB4B24A982fdC5eef65734676f76
+# export L2Endpoint=0x093D2CF57f764f09C3c2Ac58a42A2601B8C79281
+# export L1Endpoint=0xbfD2135BFfbb0B5378b56643c2Df8a87552Bfa23
 # mainnet
-# export NFT=0x47087b347F04E51F4d612FC1a446A8881aBE1AC4
-# export L2Endpoint=0x9b896c0e23220469C7AE69cb4BbAE391eAa4C8da
-# export L1Endpoint=0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675
+export NFT=0x47087b347F04E51F4d612FC1a446A8881aBE1AC4
+export L2Endpoint=0x9b896c0e23220469C7AE69cb4BbAE391eAa4C8da
+export L1Endpoint=0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675
 
 hh clean
 hh compile
@@ -55,9 +55,9 @@ hh compile
 hh clean-zksync
 hh compile --network zksync
 
-hh deploy-zksync-contract L2NFTProxy --network zksync --args "[\"$L2Endpoint\",\"$NFT\"]"
+hh deploy-zksync-contract L2NFTProxy --network zksyncEra --args "[\"$L2Endpoint\",\"$NFT\"]"
 
-hh deploy-contract GradientsL1 --network goerli --args "[\"$L1Endpoint\"]"
+hh deploy-contract Gradients --network goerli --args "[\"$L1Endpoint\"]"
 
 export L2NFTProxy=6bb0642d00E81AcCaA71c9676768eECcDb00Fa67
 export L1NFT=42D00901F315f7902653D5f72F074424434235A3
@@ -67,7 +67,7 @@ hh call --network zksync L2NFTProxy 0x$L2NFTProxy \
     setTrustedRemote \
     --args "[10121,\"0x$L1NFT$L2NFTProxy\"]"
 
-hh call --network goerli GradientsL1 0x$L1NFT \
+hh call --network goerli Gradients 0x$L1NFT \
     setTrustedRemote \
     --args "[10165,\"0x$L2NFTProxy$L1NFT\"]"
 
@@ -76,18 +76,18 @@ hh call --network zksync L2NFTProxy 0x$L2NFTProxy \
     setMinDstGas \
     --args '[10121, 1, 1000000]'
 
-hh call --network goerli GradientsL1 0x$L1NFT \
+hh call --network goerli Gradients 0x$L1NFT \
     setMinDstGas \
     --args '[10165, 1, 1000000]'
 
 
 ## examples and fixes
 
-hh call --network goerli GradientsL1 0x$L1NFT \
+hh call --network goerli Gradients 0x$L1NFT \
     forceResumeReceive \
     --args "[10165,\"0x$L2NFTProxy$L1NFT\"]"
 
-hh call --network zksync GradientsL1 0x$L1NFT \
+hh call --network zksync Gradients 0x$L1NFT \
     setMinGasToTransferAndStore \
     --args "[150000]"
 

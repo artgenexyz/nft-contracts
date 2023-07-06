@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./Artgene721Base.sol";
 
-contract Gradients is Artgene721Base {
+contract GradientsL2 is Artgene721Base {
     constructor()
         Artgene721Base(
             "Infinite Shades of Gradient",
@@ -28,7 +28,7 @@ contract Gradients is Artgene721Base {
         setIsOpenSeaProxyActive(false);
 
         // transfer to artist wallet
-        transferOwnership(0x653d8554B690d54EA447aD82C933A6851CC35BF2);
+        // transferOwnership(0x653d8554B690d54EA447aD82C933A6851CC35BF2);
     }
 
     function _startTokenId() internal view virtual override returns (uint256) {

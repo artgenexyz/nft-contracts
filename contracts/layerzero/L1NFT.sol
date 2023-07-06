@@ -2,21 +2,29 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "lib/solidity-examples/contracts/token/onft/ONFT721.sol";
 
+import "../interfaces/IRenderer.sol";
 import "../utils/OpenseaProxy.sol";
 
-contract GradientsL1 is ONFT721 {
+contract Gradients is ONFT721 {
+    uint constant DEFAULT_MIN_GAS_STORE_TRANSFER = 150_000;
+
+    event RendererAdded(address indexed extensionAddress);
+
+    // ==== token metadata ====
+    address public renderer;
+
     string public uri = "https://metadata.artgene.xyz/api/g/era/gradients/";
+
+    // ==== marketplace metadata ====
+
+    // @dev true by default, can be disabled manually
+    bool public isOpenSeaProxyActive = true;
 
     address public royaltyReceiver;
     uint256 public royaltyFee = 500;
-
-    // true by default, can be disabled manually
-    bool public isOpenSeaProxyActive = true;
-
-    // minimal gas required to mint nft
-    uint constant DEFAULT_MIN_GAS_STORE_TRANSFER = 150_000;
 
     constructor(
         address _lzEndpoint
@@ -47,6 +55,23 @@ contract GradientsL1 is ONFT721 {
         royaltyReceiver = _receiver;
     }
 
+    function setRenderer(address _renderer) public onlyOwner {
+        require(_renderer != address(this), "Cannot add self as renderer");
+
+        require(
+            _renderer == address(0) ||
+                ERC165Checker.supportsInterface(
+                    _renderer,
+                    type(IRenderer).interfaceId
+                ),
+            "Not conforms to renderer interface"
+        );
+
+        renderer = _renderer;
+
+        emit RendererAdded(_renderer);
+    }
+
     function _baseURI() internal view virtual override returns (string memory) {
         return uri;
     }
@@ -71,6 +96,33 @@ contract GradientsL1 is ONFT721 {
     ) external view returns (address receiver, uint256 royaltyAmount) {
         receiver = getRoyaltyReceiver();
         royaltyAmount = (salePrice * royaltyFee) / 10000;
+    }
+
+    // ====== token metadata ======
+    function tokenHTML(
+        uint256 tokenId,
+        bytes32 dna,
+        bytes calldata _data
+    ) external view returns (string memory) {
+        if (renderer != address(0)) {
+            return IRenderer(renderer).tokenHTML(tokenId, dna, _data);
+        }
+
+        return "";
+    }
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        if (renderer != address(0)) {
+            string memory _uri = IRenderer(renderer).tokenURI(tokenId);
+
+            if (bytes(_uri).length > 0) {
+                return uri;
+            }
+        }
+
+        return super.tokenURI(tokenId);
     }
 
     /**
