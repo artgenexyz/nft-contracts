@@ -57,37 +57,37 @@ hh compile --network zksync
 
 hh deploy-zksync-contract L2NFTProxy --network zksyncEra --args "[\"$L2Endpoint\",\"$NFT\"]"
 
-hh deploy-contract Gradients --network goerli --args "[\"$L1Endpoint\"]"
+hh deploy-contract Gradients --network mainnet --args "[\"$L1Endpoint\"]"
 
-export L2NFTProxy=6bb0642d00E81AcCaA71c9676768eECcDb00Fa67
-export L1NFT=42D00901F315f7902653D5f72F074424434235A3
+export L2NFTProxy=0f9458E0fcF39047504609c1A5257D2060547646
+export L1NFT=682D3E5FCDfC4Dd6933A7745F59f5ec065bBfdfA
 
 # _path = abi.encodePacked(remoteAddress, localAddress)
-hh call --network zksync L2NFTProxy 0x$L2NFTProxy \
+hh call --network zksyncEra L2NFTProxy 0x$L2NFTProxy \
     setTrustedRemote \
-    --args "[10121,\"0x$L1NFT$L2NFTProxy\"]"
+    --args "[101,\"0x$L1NFT$L2NFTProxy\"]"
 
-hh call --network goerli Gradients 0x$L1NFT \
+hh call --network mainnet Gradients 0x$L1NFT \
     setTrustedRemote \
-    --args "[10165,\"0x$L2NFTProxy$L1NFT\"]"
+    --args "[165,\"0x$L2NFTProxy$L1NFT\"]"
 
 # setMinDstGas
-hh call --network zksync L2NFTProxy 0x$L2NFTProxy \
+hh call --network zksyncEra L2NFTProxy 0x$L2NFTProxy \
     setMinDstGas \
-    --args '[10121, 1, 1000000]'
+    --args '[101, 1, 80000]'
 
-hh call --network goerli Gradients 0x$L1NFT \
+hh call --network mainnet Gradients 0x$L1NFT \
     setMinDstGas \
-    --args '[10165, 1, 1000000]'
+    --args '[165, 1, 80000]'
 
 
 ## examples and fixes
 
-hh call --network goerli Gradients 0x$L1NFT \
+hh call --network mainnet Gradients 0x$L1NFT \
     forceResumeReceive \
-    --args "[10165,\"0x$L2NFTProxy$L1NFT\"]"
+    --args "[101,\"0x$L2NFTProxy$L1NFT\"]"
 
-hh call --network zksync Gradients 0x$L1NFT \
+hh call --network zksyncEra Gradients 0x$L1NFT \
     setMinGasToTransferAndStore \
     --args "[150000]"
 
