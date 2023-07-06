@@ -192,8 +192,6 @@ task("deploy-zksync-contract", "Deploys a contract")
     const deployer = await getDeployer(hre);
     const artifact = await deployer.loadArtifact(contractName);
 
-    args = JSON.parse(args);
-
     console.log("Deploying the contract with args:", args);
 
     try {
