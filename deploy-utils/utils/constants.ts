@@ -7,6 +7,9 @@ export const lzChainIds = {
   // https://layerzero.gitbook.io/docs/technical-reference/testnet/testnet-addresses#zksync-testnet
   goerli: 10121,
   zksync: 10165,
+
+  ethereum: 101,
+  era: 165,
 };
 
 export const lzEndpoints = {
@@ -21,7 +24,7 @@ export const artgenePlatformAddresses = {
   ethereum: "0xAaaeEee77ED0D0ffCc2813333b796E367f1E12d9",
 
   // TODO:
-  zksync: "",
+  zksync: "0x983A23615aC3ECdeBe7d1438251403d57956Ccba",
 
   zksyncEra: "0x983A23615aC3ECdeBe7d1438251403d57956Ccba",
 };
