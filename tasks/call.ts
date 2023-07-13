@@ -1,4 +1,4 @@
-import { formatEther } from "ethers/lib/utils";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { Event, Transaction } from "ethers";
 import { task, types } from "hardhat/config";
 
@@ -9,6 +9,7 @@ task("call", "Calls a contract")
   .addPositionalParam("contractAddress", "The contract address")
   .addPositionalParam("method", "The method to call")
   .addParam("args", "The method arguments", [], types.json)
+  .addParam("value", "Value sent with message", "0", types.string)
   .addFlag("dryRun", "Don't send the transaction")
   .setAction(async (taskArgs, hre) => {
     const { ethers } = hre;
@@ -41,8 +42,9 @@ task("call", "Calls a contract")
       return;
     }
 
-    const tx = await (contract as any)[taskArgs.method as string](
-      ...taskArgs.args
+    const tx = await(contract as any)[taskArgs.method as string](
+      ...taskArgs.args,
+      { value: parseEther(taskArgs.value) }
     );
 
     // const tx = result;
@@ -55,8 +57,9 @@ task("call", "Calls a contract")
 
     const receipt = await tx.wait();
 
-    // gas spent, eth spent
+    // gas spent, eth spent, gas price, value sent, gas limit
 
+    console.log("Gas price:", tx.gasPrice, "wei");
     console.log("Gas used:", receipt.gasUsed.toString());
 
     const txCost = receipt.gasUsed.mul(tx.gasPrice);

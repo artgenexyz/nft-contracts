@@ -23,11 +23,11 @@ task("deploy-contract", "Deploys a contract")
         const factory = await hre.ethers.getContractFactory(contractName);
         const artifact = await hre.artifacts.readArtifact(contractName);
 
-        const contract = await (factory as any).deploy(...args, {
+        const contract = await(factory as any).deploy(...args, {
           maxFeePerGas: gasPrice
             ? hre.ethers.utils.parseUnits(gasPrice, "gwei")
             : undefined,
-          maxPriorityFeePerGas: hre.ethers.utils.parseUnits("2", "gwei"),
+          // maxPriorityFeePerGas: hre.ethers.utils.parseUnits("2", "gwei"),
           gasLimit: gasLimit ? parseInt(gasLimit) : undefined,
           nonce: overrideNonce ? parseInt(overrideNonce) : undefined,
         });
