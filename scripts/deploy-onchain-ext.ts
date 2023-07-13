@@ -13,7 +13,7 @@ import { Artgene_js__factory } from "../typechain-types";
 
 const { calculateCosts, getMintConfig } = require("../test/utils");
 
-const artScriptContractName = "Nests_js";
+const artScriptContractName = "Squigmania_js";
 
 // Deployed Contracts
 // Ethereum Mainnet contracts:
