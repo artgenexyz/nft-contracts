@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Artgene721Base.sol";
+import "../Artgene721Base.sol";
 
 contract GradientsL2 is Artgene721Base {
     constructor()
