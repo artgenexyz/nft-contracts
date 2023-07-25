@@ -107,23 +107,34 @@ const config: HardhatUserConfig = {
           : undefined,
     },
 
-    zksync: {
-      url: "https://testnet.era.zksync.dev",
-      ethNetwork: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+    zksync:
+      process.env.NODE_ENV == "test"
+        ? {
+            url: "http://localhost:3050",
+            ethNetwork: "http://localhost:8545",
+            zksync: true,
 
-      zksync: true,
+            accounts: {
+              mnemonic,
+            },
+          }
+        : {
+            url: "https://testnet.era.zksync.dev",
+            ethNetwork: `https://goerli.infura.io/v3/${INFURA_KEY}`,
 
-      // Verification endpoint for Goerli
-      verifyURL:
-        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+            zksync: true,
 
-      // verifyURL:
-      // "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+            // Verification endpoint for Goerli
+            verifyURL:
+              "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
 
-      accounts: {
-        mnemonic,
-      },
-    },
+            // verifyURL:
+            // "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+
+            accounts: {
+              mnemonic,
+            },
+          },
 
     zksyncEra: {
       url: "https://mainnet.era.zksync.io",
