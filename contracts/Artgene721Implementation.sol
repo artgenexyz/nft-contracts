@@ -417,6 +417,14 @@ contract Artgene721Implementation is
         emit ExtensionRevoked(_extension);
     }
 
+    function revokeAllExtensions() public onlyOwner {
+        for (uint256 index = 0; index < extensions.length; index++) {
+            emit ExtensionRevoked(address(extensions[index]));
+        }
+
+        delete extensions;
+    }
+
     function setRenderer(address _renderer) public onlyOwner {
         require(_renderer != address(this), "Cannot add self as renderer");
 
