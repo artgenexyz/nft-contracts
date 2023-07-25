@@ -10,10 +10,11 @@ import { stdin as input, stdout as output } from "process";
 import path from "path";
 import { Address } from "hardhat-deploy/dist/types";
 import { Artgene_js__factory } from "../typechain-types";
+import { utils } from "ethers";
 
 const { calculateCosts, getMintConfig } = require("../test/utils");
 
-const artScriptContractName = "Squigmania_js";
+const artScriptContractName = "Aurora_js";
 
 // Deployed Contracts
 // Ethereum Mainnet contracts:
@@ -63,7 +64,7 @@ const main = async () => {
   }
 
   // get values from console input: nft contract address, artwork string
-  let nft = await question("Enter NFT contract address: ");
+  let nft = "0x0";
   // const artwork = await question("Enter artwork string: ");
 
   // print values
@@ -71,7 +72,7 @@ const main = async () => {
 
   // check that nft is a valid address and has contract code
   // const code = await hre.ethers.provider.getCode(nft);
-  if (!nft || (await hre.ethers.provider.getCode(nft)) === "0x") {
+  if (!nft && (await hre.ethers.provider.getCode(nft)) === "0x") {
     if (hre.network.name === "goerli" || hre.network.name === "mainnet") {
       throw new Error("NFT contract address is not valid");
     }
@@ -153,9 +154,13 @@ const main = async () => {
         ];
 
   const onchainArtStorageExtension = await OnchainArtStorageExtension.deploy(
-    nft,
     artgeneScript.address,
-    ...deps
+    ...deps,
+    {
+      // 25 gwei
+      gasPrice: utils.parseUnits("25", "gwei"),
+      gasLimit: 2_500_000,
+    }
   );
 
   await onchainArtStorageExtension.deployed();
@@ -173,7 +178,6 @@ const main = async () => {
     await hre.run("verify:verify", {
       address: onchainArtStorageExtension.address,
       constructorArguments: [
-        nft,
         artgeneScript.address,
         deployedContracts.goerli.ETHFSFileStorage,
         deployedContracts.goerli.ScriptyStorage,
