@@ -5,10 +5,17 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "lib/solidity-examples/contracts/token/onft/ONFT721.sol";
 
+import "lib/era-contracts/ethereum/contracts/common/interfaces/IAllowList.sol";
+import "lib/era-contracts/ethereum/contracts/zksync/interfaces/IZkSync.sol";
+import "lib/era-contracts/ethereum/contracts/common/libraries/L2ContractHelper.sol";
+import "lib/era-contracts/ethereum/contracts/vendor/AddressAliasHelper.sol";
+
 import "../interfaces/IRenderer.sol";
 import "../utils/OpenseaProxy.sol";
 
-contract Gradients is ONFT721 {
+import "../Artgene721Base.sol";
+
+contract L1NFT is ONFT721 {
     uint constant DEFAULT_MIN_GAS_STORE_TRANSFER = 150_000;
 
     event RendererAdded(address indexed extensionAddress);
@@ -26,8 +33,23 @@ contract Gradients is ONFT721 {
     address public royaltyReceiver;
     uint256 public royaltyFee = 500;
 
+    mapping(address => uint) totalMintedAmountPerUser;
+
+    IZkSync public immutable zkSync;
+    address public immutable l2Nft;
+
+    event MintInitiated(
+        bytes32 indexed l2TxHash,
+        address indexed sender,
+        address indexed l2Receiver,
+        // address l1Token,
+        uint256 tokenId
+    );
+
     constructor(
-        address _lzEndpoint
+        IZkSync _zkSync,
+        address _lzEndpoint,
+        address _l2nft
     )
         ONFT721(
             "Infinite Shades of Gradient",
@@ -35,7 +57,94 @@ contract Gradients is ONFT721 {
             DEFAULT_MIN_GAS_STORE_TRANSFER,
             _lzEndpoint
         )
-    {}
+    {
+        zkSync = _zkSync;
+        l2Nft = _l2nft;
+    }
+
+    event MintRequest(
+        address indexed sender,
+        address indexed l2Receiver,
+        uint256 quantity
+    );
+
+    function mintRequest(uint256 _quantity) external payable {
+        require(msg.value >= 0.001 ether * _quantity, "not enough funds");
+
+        emit MintRequest(msg.sender, msg.sender, _quantity);
+    }
+
+    function _verifyMintLimit(address _minter, uint256 _quantity) internal {
+        // IAllowList.Deposit memory limitData = IAllowList(allowList)
+        //     .getTokenMintLimitData(_l1Token);
+        // if (!limitData.mintLimitation) return; // no mint limitation is placed for this token
+
+        require(totalMintedAmountPerUser[_minter] + _quantity <= 100, "d0");
+        totalMintedAmountPerUser[_minter] += _quantity;
+    }
+
+    function estimateL2GasCost(
+        address _l2Receiver,
+        uint256 _quantity,
+        uint256 _gasPrice,
+        uint256 _l2TxGasPerPubdataByteLimit
+    ) public view returns (uint256) {
+        bytes memory l2TxCalldata = abi.encodeWithSelector(
+            Artgene721Base.mint.selector,
+            _quantity
+        );
+
+        return
+            zkSync.l2TransactionBaseCost(
+                _gasPrice,
+                l2TxCalldata.length,
+                _l2TxGasPerPubdataByteLimit // 800, // REQUIRED_L2_GAS_PRICE_PER_PUBDATA,
+            );
+    }
+
+    function mint(
+        address _l2Receiver,
+        uint256 _quantity,
+        uint256 _l2TxGasPrice,
+        uint256 _l2TxGasLimit,
+        uint256 _l2TxGasPerPubdataByte,
+        address _refundRecipient
+    ) public payable nonReentrant returns (bytes32 l2TxHash) {
+        require(_quantity != 0, "Token ID cannot be zero");
+
+        // Verify the minting limit
+        _verifyMintLimit(msg.sender, _quantity);
+
+        bytes memory l2TxCalldata = abi.encodeWithSelector(
+            Artgene721Base.mint.selector,
+            _quantity
+        );
+
+        address refundRecipient = _refundRecipient;
+        if (_refundRecipient == address(0)) {
+            refundRecipient = msg.sender != tx.origin
+                ? AddressAliasHelper.applyL1ToL2Alias(msg.sender)
+                : msg.sender;
+        }
+
+        l2TxHash = zkSync.requestL2Transaction{value: msg.value - 0.001 ether * _quantity}(
+            l2Nft,
+            0.001 ether * _quantity,
+            l2TxCalldata,
+            _l2TxGasLimit,
+            _l2TxGasPerPubdataByte,
+            new bytes[](0),
+            refundRecipient
+        );
+
+        emit MintInitiated(
+            l2TxHash,
+            msg.sender,
+            _l2Receiver,
+            // _l1Token,
+            _quantity
+        );
+    }
 
     function setBaseURI(string memory _uri) external onlyOwner {
         uri = _uri;
