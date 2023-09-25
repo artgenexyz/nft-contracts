@@ -8,10 +8,10 @@ import { generateMnemonic } from "bip39";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ganache";
 import "@nomiclabs/hardhat-truffle5";
-import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint";
+import "@nomicfoundation/hardhat-verify";
 
 import "@matterlabs/hardhat-zksync-toolbox";
 
