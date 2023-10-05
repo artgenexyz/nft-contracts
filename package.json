@@ -17,6 +17,8 @@
   "dependencies": {
     "@buildship/hardhat-ipfs-upload": "^0.1.3",
     "@divergencetech/ethier": "^0.33.0",
+    "@matterlabs/hardhat-zksync-solc": "^0.3.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
     "@openzeppelin/contracts": "^4.8.3",
     "@openzeppelin/contracts-upgradeable": "^4.8.3",
     "@openzeppelin/merkle-tree": "^1.0.4",
