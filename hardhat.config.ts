@@ -23,7 +23,7 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
-import "hardhat-nodemon";
+// import "hardhat-nodemon";
 import "hardhat-preprocessor";
 
 import "hardhat-output-validator";
