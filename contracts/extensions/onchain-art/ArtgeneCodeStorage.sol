@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "solady/src/utils/Base64.sol";
 
 import "../../interfaces/INFTExtension.sol";
@@ -11,16 +12,15 @@ import "../base/NFTExtension.sol";
 import "./ArtgeneScript.sol";
 
 abstract contract ArtgeneCodeStorage is
-    NFTExtension,
+    ERC165,
     INFTURIExtension,
     IRenderer
 {
     Artgene_js public immutable script;
 
     constructor(
-        address _nft,
         address _artgeneScriptAddress
-    ) NFTExtension(_nft) {
+    ) {
         script = Artgene_js(_artgeneScriptAddress);
     }
 
@@ -47,7 +47,7 @@ abstract contract ArtgeneCodeStorage is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(IERC165, NFTExtension) returns (bool) {
+    ) public view override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(INFTURIExtension).interfaceId ||
             interfaceId == type(IRenderer).interfaceId ||

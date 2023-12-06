@@ -1,7 +1,7 @@
 import fs from "fs";
 import "dotenv/config";
 import { stdout } from "process";
-import { HardhatUserConfig, task } from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 
 import { generateMnemonic } from "bip39";
 
@@ -13,14 +13,17 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint";
 
-import "@tenderly/hardhat-tenderly";
+import "@matterlabs/hardhat-zksync-toolbox";
+
+// NB: temporarily disabled due to extensive logging
+// import "@tenderly/hardhat-tenderly";
 
 import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
-import "hardhat-nodemon";
+// import "hardhat-nodemon";
 import "hardhat-preprocessor";
 
 import "hardhat-output-validator";
@@ -28,7 +31,14 @@ import "hardhat-output-validator";
 import "@buildship/hardhat-ipfs-upload";
 import "@primitivefi/hardhat-dodoc";
 
-import { sendAllFunds, getVanityDeployer } from "./scripts/helpers";
+import "@nomicfoundation/hardhat-foundry";
+
+import "./tasks/accounts";
+import "./tasks/call";
+import "./tasks/clean-zksync";
+import "./tasks/deploy-zksync";
+import "./tasks/deploy-contract";
+import "./tasks/send-all-funds";
 
 const INFURA_KEY = process.env.INFURA_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -40,8 +50,10 @@ const MNEMONIC = process.env.MNEMONIC;
 const ALCHEMY_GOERLI_API = process.env.ALCHEMY_GOERLI_API;
 const ALCHEMY_API = process.env.ALCHEMY_API;
 const FORK = process.env.FORK;
+const ZKSYNC = process.env.ZKSYNC;
 
 stdout.isTTY &&
+  false &&
   console.log("Using env variables", {
     INFURA_KEY: INFURA_KEY ? "✅" : "❌",
     ETHERSCAN_API_KEY: ETHERSCAN_API_KEY ? "✅" : "❌",
@@ -52,12 +64,13 @@ stdout.isTTY &&
     ALCHEMY_GOERLI_API: ALCHEMY_GOERLI_API ? "✅" : "❌",
     ALCHEMY_API: ALCHEMY_API ? "✅" : "❌",
     FORK: FORK ? "✅" : "❌",
+    ZKSYNC: ZKSYNC ? "✅" : "❌",
     MNEMONIC: MNEMONIC
       ? "✅" + MNEMONIC.slice(0, 4) + "..." + MNEMONIC.slice(-4)
       : "❌",
   });
 
-const mnemonic = (() => {
+export const mnemonic = (() => {
   if (MNEMONIC) {
     return MNEMONIC;
   }
@@ -69,7 +82,7 @@ const mnemonic = (() => {
   }
 })();
 
-const getRemappings = () => {
+export const getRemappings = () => {
   return fs
     .readFileSync("remappings.txt", "utf8")
     .split("\n")
@@ -77,29 +90,9 @@ const getRemappings = () => {
     .map((line) => line.trim().split("="));
 };
 
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
-  const accounts = await hre.ethers.getSigners();
-
-  for (const account of accounts) {
-    console.log(account.address);
-  }
-});
-
-task(
-  "send-all-funds",
-  "Sends all funds to an address",
-  async (taskArgs, hre) => {
-    const accounts = await hre.ethers.getSigners();
-
-    const vanity = await getVanityDeployer(hre);
-
-    await sendAllFunds(hre, vanity, accounts[0].address);
-
-    console.log("Done sending all funds");
-  }
-);
-
 const config: HardhatUserConfig = {
+  defaultNetwork: ZKSYNC ? "zksync" : "hardhat",
+
   networks: {
     hardhat: {
       forking:
@@ -113,6 +106,51 @@ const config: HardhatUserConfig = {
             }
           : undefined,
     },
+
+    zksync:
+      process.env.NODE_ENV == "test"
+        ? {
+            url: "http://localhost:3050",
+            ethNetwork: "http://localhost:8545",
+            zksync: true,
+
+            accounts: {
+              mnemonic,
+            },
+          }
+        : {
+            url: "https://testnet.era.zksync.dev",
+            ethNetwork: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+
+            zksync: true,
+
+            // Verification endpoint for Goerli
+            verifyURL:
+              "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+
+            // verifyURL:
+            // "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+
+            accounts: {
+              mnemonic,
+            },
+          },
+
+    zksyncEra: {
+      url: "https://mainnet.era.zksync.io",
+      ethNetwork: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+
+      zksync: true,
+
+      // Verification endpoint
+      verifyURL:
+        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+
+      accounts: {
+        mnemonic,
+      },
+    },
+
     goerli: {
       url: `https://goerli.infura.io/v3/${INFURA_KEY}`,
       accounts: {
@@ -138,6 +176,7 @@ const config: HardhatUserConfig = {
       },
     },
   },
+
   solidity: {
     version: "0.8.18",
     settings: {
@@ -146,6 +185,18 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 10000,
         // runs: 4_294_967_295, // 2**32 - 1
+      },
+    },
+  },
+
+  zksolc: {
+    version: "1.3.11",
+    compilerSource: "binary",
+
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 10000,
       },
     },
   },
@@ -175,25 +226,37 @@ const config: HardhatUserConfig = {
   },
 
   // This fully resolves paths for imports in the ./lib directory for Hardhat
-  preprocess: {
-    eachLine: (hre) => ({
-      settings: {
-        // this is needed so that etherscan verification works
-        cache: false,
+  preprocess: ZKSYNC
+    ? undefined
+    : {
+        eachLine: (hre) =>
+          hre.network.name.includes("zksync")
+            ? undefined
+            : // ? {
+              //     settings: {
+              //       cache: false,
+              //     },
+              //     transform: (line: string) => line,
+              //   }
+              // (console.log("Using zksync, so turn off preprocess"), undefined)
+              {
+                settings: {
+                  // this is needed so that etherscan verification works
+                  cache: false,
+                },
+                transform: (line: string) => {
+                  if (line.match(/^\s*import /i)) {
+                    for (const [from, to] of getRemappings()) {
+                      if (line.includes(from)) {
+                        line = line.replace(from, to);
+                        break;
+                      }
+                    }
+                  }
+                  return line;
+                },
+              },
       },
-      transform: (line: string) => {
-        if (line.match(/^\s*import /i)) {
-          for (const [from, to] of getRemappings()) {
-            if (line.includes(from)) {
-              line = line.replace(from, to);
-              break;
-            }
-          }
-        }
-        return line;
-      },
-    }),
-  },
 
   dodoc: {
     runOnCompile: false,

@@ -16,12 +16,11 @@ abstract contract ScriptyOnchainArt is ArtgeneCodeStorage {
     string private constant ART_SCRIPT_NAME = "art-script.js.gz";
 
     constructor(
-        address _nft,
         address _artgeneScriptAddress,
         address _ethfsFileStorageAddress,
         address _scriptyStorageAddress,
         address _scriptyBuilderAddress
-    ) ArtgeneCodeStorage(_nft, _artgeneScriptAddress) {
+    ) ArtgeneCodeStorage(_artgeneScriptAddress) {
         ethfsFileStorage = _ethfsFileStorageAddress;
         scriptyStorage = _scriptyStorageAddress;
         scriptyBuilder = IScriptyBuilder(_scriptyBuilderAddress);

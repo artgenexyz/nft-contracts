@@ -82,7 +82,7 @@ import "./utils/OpenseaProxy.sol";
 //                                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-contract Artgene721Implementation is
+contract Artgene721EmptyConstructor is
     ERC721AUpgradeable,
     ERC721ABurnableUpgradeable,
     ReentrancyGuardUpgradeable,
@@ -159,6 +159,12 @@ contract Artgene721Implementation is
         string memory _uri,
         MintConfig memory _config
     ) public initializerERC721A initializer {
+
+        require(
+            ARTGENE_PLATFORM_ADDRESS.code.length == 0,
+            "Artgene Platform is not deployed, revert"
+        );
+
         // CHECK INPUTS
         // either open edition or limited edition
         if (_maxSupply == ARTGENE_MAX_SUPPLY_OPEN_EDITION) {
@@ -258,19 +264,6 @@ contract Artgene721Implementation is
         if (shouldLockPayoutReceiver) {
             isPayoutChangeLocked = true;
         }
-    }
-
-    // This constructor ensures that this contract can only be used as a master copy
-    // Marking constructor as initializer makes sure that real initializer cannot be called
-    // Thus, as the owner of the contract is 0x0, no one can do anything with the contract
-    // on the other hand, it's impossible to call this function in proxy,
-    // so the real initializer is the only initializer
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {
-        require(
-            ARTGENE_PLATFORM_ADDRESS.code.length == 0,
-            "Artgene Platform is not deployed, revert"
-        );
     }
 
     function _baseURI() internal view override returns (string memory) {

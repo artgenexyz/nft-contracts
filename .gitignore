@@ -17,6 +17,7 @@ forge-coverage
 
 
 cache
+cache-zk
 forge-cache
 out
 

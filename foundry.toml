@@ -13,5 +13,7 @@ optimizer_runs = 10000
 [rpc_endpoints]
 mainnet = "${ALCHEMY_API}"
 goerli = "${ALCHEMY_GOERLI_API}"
+zksync = "https://testnet.era.zksync.dev"
+zksyncEra = "https://mainnet.era.zksync.io"
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

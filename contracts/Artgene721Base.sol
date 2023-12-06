@@ -193,12 +193,12 @@ contract Artgene721Base is
 
         // test if platform is deployed
         require(
-            ARTGENE_PLATFORM_ADDRESS.code.length != 0,
+            getArtgenePlatformAddress().code.length != 0,
             "Platform not deployed"
         );
 
         (PLATFORM_FEE, PLATFORM_TREASURY) = IArtgenePlatform(
-            ARTGENE_PLATFORM_ADDRESS
+            getArtgenePlatformAddress()
         ).getPlatformInfo();
 
         _configure(
@@ -393,6 +393,14 @@ contract Artgene721Base is
         extensions.pop();
 
         emit ExtensionRevoked(_extension);
+    }
+
+    function revokeAllExtensions() public onlyOwner {
+        for (uint256 index = 0; index < extensions.length; index++) {
+            emit ExtensionRevoked(address(extensions[index]));
+        }
+
+        delete extensions;
     }
 
     function setRenderer(address _renderer) public onlyOwner {
