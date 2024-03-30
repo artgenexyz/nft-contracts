@@ -20,7 +20,7 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "hardhat-contract-sizer";
 import "hardhat-tracer";
-import "hardhat-nodemon";
+// import "hardhat-nodemon";
 import "hardhat-preprocessor";
 
 import "hardhat-output-validator";
@@ -38,6 +38,7 @@ const MOONBEAM_API_KEY = process.env.MOONBEAM_API_KEY;
 const MOONRIVER_API_KEY = process.env.MOONRIVER_API_KEY;
 const MNEMONIC = process.env.MNEMONIC;
 const ALCHEMY_GOERLI_API = process.env.ALCHEMY_GOERLI_API;
+const ALCHEMY_SEPOLIA_API = process.env.ALCHEMY_SEPOLIA_API;
 const ALCHEMY_API = process.env.ALCHEMY_API;
 const FORK = process.env.FORK;
 
@@ -105,13 +106,13 @@ const config: HardhatUserConfig = {
       forking:
         FORK === "mainnet" && ALCHEMY_API
           ? {
-              url: ALCHEMY_API,
-            }
+            url: ALCHEMY_API,
+          }
           : FORK && ALCHEMY_GOERLI_API
-          ? {
+            ? {
               url: ALCHEMY_GOERLI_API,
             }
-          : undefined,
+            : undefined,
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${INFURA_KEY}`,
@@ -119,6 +120,14 @@ const config: HardhatUserConfig = {
         mnemonic,
       },
     },
+
+    sepolia: {
+      url: ALCHEMY_SEPOLIA_API,
+      accounts: {
+        mnemonic,
+      },
+    },
+
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
       accounts: {
@@ -166,6 +175,7 @@ const config: HardhatUserConfig = {
       mainnet: ETHERSCAN_API_KEY ?? "",
       rinkeby: ETHERSCAN_API_KEY ?? "",
       goerli: ETHERSCAN_API_KEY ?? "",
+      sepolia: ETHERSCAN_API_KEY ?? "",
       polygon: POLYGONSCAN_API_KEY ?? "",
       bsc: BSCSCAN_API_KEY ?? "",
       moonbeam: MOONBEAM_API_KEY ?? "",
