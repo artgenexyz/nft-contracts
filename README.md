@@ -118,6 +118,6 @@ ERC721A for their mint-optimized ERC721 https://erc721a.org/
 
 Our contributors
 
-Buildship users who have given us their trust and used our code on mainnet, already processing >5M$ in total volume and >35,000 NFT minted! https://dune.xyz/caffeinum/buildship_xyz
+Buildship users who have given us their trust and used our code on mainnet, already processing $10M+ in total volume ($5M+ primary sales, $5M+ secondary marketplace volume), 400,000+ NFTs minted across all contract versions, and 400+ NFT collections! https://dune.xyz/caffeinum/buildship_xyz
 
 
